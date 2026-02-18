@@ -253,7 +253,7 @@ template <class T>
 struct AndOp {
   __host__ __device__ T operator()(const T& lhs, const T& rhs)
   {
-    return lhs == 1 && rhs == 1;
+    return lhs & rhs;
   }
 };
 
@@ -261,7 +261,7 @@ template <class T>
 struct OrOp {
   __host__ __device__ T operator()(const T& lhs, const T& rhs)
   {
-    return lhs == 1 || rhs == 1;
+    return lhs | rhs;
   }
 };
 
