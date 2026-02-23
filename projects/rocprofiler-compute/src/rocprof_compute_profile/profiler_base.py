@@ -149,7 +149,8 @@ class RocProfCompute_Base:
                     )
                 script_candidate, script_index = get_python_script_candidate(args.remaining)
 
-                # None case reserved to allow -m and -c in future.
+                # TODO: get_python_script_candidate currently exits on -m/-c, so script_candidate
+                # will not be None in practice. Update this logic if/when -m/-c modes are supported.
                 if script_candidate is not None:
                     script_path = Path(script_candidate).resolve()
                     if not script_path.is_file():
