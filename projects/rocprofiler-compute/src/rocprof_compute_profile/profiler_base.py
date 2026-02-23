@@ -608,7 +608,7 @@ class RocProfCompute_Base:
         console_log(f"Profiler choice: {self.__profiler}")
         console_log(f"Path: {Path(self.__args.path).absolute().resolve()}")
         console_log(f"Target: {self._soc._mspec.gpu_model}")
-        console_log(f"Command: {shlex.join(args.remaining_list) if getattr(args, 'remaining_list', None) else args.remaining}")
+        console_log(f"Command: {shlex.join(args.remaining_list) if getattr(args, 'remaining_list', None) is not None else args.remaining}")
         console_log(f"Kernel Selection: {args.kernel}")
         console_log(f"Dispatch Selection: {args.dispatch}")
         if self._filter_blocks:
