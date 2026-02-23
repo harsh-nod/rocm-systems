@@ -171,7 +171,7 @@ class RocProfCompute_Base:
                     )
 
                 # Case 1: Explicit python command (python, python3, etc.)
-                if python_executable:
+                if python_executable and script_index is not None:
                     # Insert inject_roctx.py right before the script so it gets script as argv[1]
                     args.remaining.insert(script_index, str(inject_script))
                 else:
