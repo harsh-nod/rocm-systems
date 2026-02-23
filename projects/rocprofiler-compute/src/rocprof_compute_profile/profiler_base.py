@@ -217,7 +217,7 @@ class RocProfCompute_Base:
                         "Workload appears to be a self-contained binary. "
                         "Such bundles typically ship private ROCm/HSA libraries, which "
                         "prevents --torch-trace from collecting data."
-                        "Rebuild without packaging libhsa/libhip or "
+                        " Rebuild without packaging libhsa/libhip or "
                         "adjust LD_LIBRARY_PATH to /opt/rocm) before profiling."
                     )
             args.remaining_list = list(args.remaining)
