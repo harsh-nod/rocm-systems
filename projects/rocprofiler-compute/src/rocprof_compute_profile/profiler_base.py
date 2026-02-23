@@ -190,10 +190,10 @@ class RocProfCompute_Base:
                     except OSError:
                         python_script = False
                         interpreter_tokens = [sys.executable]
-                    finally:
-                        python_script = python_script or script_candidate.endswith(
-                            (".py", ".pyw", ".pyc", ".pyo")
-                        )
+
+                    python_script = python_script or script_candidate.endswith(
+                        (".py", ".pyw", ".pyc", ".pyo")
+                    )
                         
                     if python_script:                        
                         args.remaining.insert(0, str(inject_script))
