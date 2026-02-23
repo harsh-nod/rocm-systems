@@ -49,7 +49,10 @@ from utils.utils import (
     capture_subprocess_output,
     format_time,
     gen_sysinfo,
+    get_python_script_candidate,
     get_rank,
+    get_shebang_interpreter,
+    is_python_executable,
     pc_sampling_prof,
     print_status,
     run_prof,
@@ -131,10 +134,29 @@ class RocProfCompute_Base:
             exec_candidate = shutil.which(args.remaining[0])
             if not exec_candidate:
                 console_error(
-                    f"Your command {args.remaining[0]} doesn't point to a executable. "
-                    "Please verify."
+                    f"Your command {args.remaining[0]} doesn't point to an executable. "
+                    "Use an absolute path or ensure it is on PATH."
                 )
             resolved_exec_path = Path(exec_candidate).resolve()
+            python_executable = is_python_executable(str(resolved_exec_path))
+            script_candidate = None
+            # Validate Python workload: ensure script file exists when applicable
+            if python_executable:
+                if len(args.remaining) == 1:
+                    console_error(
+                        "Python interpreter with no script. "
+                        "Use a script-based workload: python script.py"
+                    )
+                script_candidate, script_index = get_python_script_candidate(args.remaining)
+
+                # None case reserved to allow -m and -c in future.
+                if script_candidate is not None:
+                    script_path = Path(script_candidate).resolve()
+                    if not script_path.is_file():
+                        console_error(
+                            f"Python script not found: {script_candidate}. "
+                            "Check the path or use: python script.py"
+                        )
 
             # Appending a wrapper for injecting roctx-markers
             if getattr(args, "torch_trace", False):
@@ -149,23 +171,43 @@ class RocProfCompute_Base:
                     )
 
                 # Case 1: Explicit python command (python, python3, etc.)
-                if args.remaining[0].startswith("python"):
-                    # Insert inject_roctx.py after the python interpreter
-                    args.remaining.insert(1, str(inject_script))
-                # Case 2: Direct Python script execution (./main.py, /path/to/script.py)
-                elif args.remaining[0].endswith((".py", ".pyw", ".pyc", ".pyo")):
-                    # Use current Python interpreter
-                    args.remaining.insert(0, str(inject_script))
-                    args.remaining.insert(0, sys.executable)
+                if python_executable:
+                    # Insert inject_roctx.py right before the script so it gets script as argv[1]
+                    args.remaining.insert(script_index, str(inject_script))
                 else:
-                    console_warning(
-                        "Command does not look like a Python entry point, "
-                        "skipping ROCTX auto-injection and launching workload as-is."
-                    )
-                    console_warning(
-                        "Ensure the binary already initializes PyTorch/ROCTX markers, "
-                        "otherwise --torch-trace will have no effect."
-                    )
+                    script_candidate = args.remaining[0]
+                    
+                    try:
+                        with open(script_candidate, "rb") as f:
+                            first_line = f.readline()
+                        python_script = (
+                            first_line.startswith(b"#!")
+                            and b"python" in first_line.lower()
+                        )
+                        interpreter_tokens = get_shebang_interpreter(
+                            script_candidate
+                        ) or [sys.executable]
+                    except OSError:
+                        python_script = False
+                        interpreter_tokens = [sys.executable]
+                    finally:
+                        python_script = python_script or script_candidate.endswith(
+                            (".py", ".pyw", ".pyc", ".pyo")
+                        )
+                        
+                    if python_script:                        
+                        args.remaining.insert(0, str(inject_script))
+                        for token in reversed(interpreter_tokens):
+                            args.remaining.insert(0, token)
+                    else:
+                        console_warning(
+                            "Command does not look like a Python entry point, "
+                            "skipping ROCTX auto-injection and launching workload as-is."
+                        )
+                        console_warning(
+                            "Ensure the binary already initializes PyTorch/ROCTX markers, "
+                            "otherwise --torch-trace will have no effect."
+                        )
 
                 if (
                     resolved_exec_path
@@ -178,6 +220,7 @@ class RocProfCompute_Base:
                         "Rebuild without packaging libhsa/libhip or "
                         "adjust LD_LIBRARY_PATH to /opt/rocm) before profiling."
                     )
+            args.remaining_list = list(args.remaining)
             args.remaining = " ".join(args.remaining)
         elif not args.attach_pid:
             console_error(
@@ -465,6 +508,7 @@ class RocProfCompute_Base:
 
         if args.attach_pid:
             args.remaining = ""
+            args.remaining_list = []
 
         self._filter_blocks = self._soc.profiling_setup()
 
@@ -564,7 +608,7 @@ class RocProfCompute_Base:
         console_log(f"Profiler choice: {self.__profiler}")
         console_log(f"Path: {Path(self.__args.path).absolute().resolve()}")
         console_log(f"Target: {self._soc._mspec.gpu_model}")
-        console_log(f"Command: {args.remaining}")
+        console_log(f"Command: {shlex.join(args.remaining_list) if getattr(args, 'remaining_list', None) else args.remaining}")
         console_log(f"Kernel Selection: {args.kernel}")
         console_log(f"Dispatch Selection: {args.dispatch}")
         if self._filter_blocks:

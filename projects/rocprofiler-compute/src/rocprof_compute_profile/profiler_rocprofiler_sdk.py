@@ -52,7 +52,14 @@ class rocprofiler_sdk_profiler(RocProfCompute_Base):
         self, native_tool_path: Optional[str] = None
     ) -> dict[str, Union[str, list[str]]]:
         args = self.get_args()
-        app_cmd = shlex.split(args.remaining)
+        # Use tokenized workload when available so the command is passed as a list
+        # to the subprocess (correct argv). Otherwise re-splitting the string can
+        # mangle arguments (e.g. python -u inject_roctx.py script.py).
+        app_cmd = (
+            getattr(args, "remaining_list", None)
+            if getattr(args, "remaining_list", None) is not None
+            else shlex.split(args.remaining or "")
+        )
 
         ld_preload = [args.rocprofiler_sdk_tool_path]
         if native_tool_path:

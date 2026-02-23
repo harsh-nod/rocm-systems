@@ -48,7 +48,14 @@ class rocprof_v3_profiler(RocProfCompute_Base):
 
     def get_profiler_options(self) -> list[str]:
         args = self.get_args()
-        app_cmd = shlex.split(args.remaining)
+        # Use tokenized workload when available so the command is passed as a list
+        # to the subprocess (correct argv). Otherwise re-splitting the string can
+        # mangle arguments (e.g. python -u inject_roctx.py script.py).
+        app_cmd = (
+            getattr(args, "remaining_list", None)
+            if getattr(args, "remaining_list", None) is not None
+            else shlex.split(args.remaining or "")
+        )
         if args.kokkos_trace:
             trace_option = "--kokkos-trace"
             # NOTE: --kokkos-trace feature is incomplete and is disabled for now.

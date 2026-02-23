@@ -46,7 +46,7 @@ import uuid
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Optional, Union, cast
+from typing import Any, List, Optional, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -394,6 +394,80 @@ def perform_attach_detach(new_env: dict[str, str], options: dict[str, Any]) -> N
                     )
             except Exception as e:
                 console_error(f"Error detaching from process {pid}: {e}")
+
+
+def is_python_executable(path: str) -> bool:
+    """Returns True if path points to a Python interpreter."""
+    try:
+        result = subprocess.run(
+            [path, "--version"],
+            capture_output=True,
+            text=True,
+            timeout=1,
+        )
+        return "Python" in (result.stdout + result.stderr)
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        return False
+
+
+def get_python_script_candidate(remaining: list[str]) -> tuple[Optional[str], Optional[int]]:
+    """
+    Given workload tokens with a Python interpreter as remaining[0], returns the
+    script path to validate, or None if there is no script file (e.g. -c, -m).
+    Handles flags before the script (e.g. python -u script.py).
+    """
+    arg_index = 1
+    while arg_index < len(remaining):
+        token = remaining[arg_index]
+        if token in ("-c", "-m"):
+            console_error(
+                "python -c and -m are not supported at the moment. "
+                "Use a script-based workload: python script.py"
+            )
+            return None, None
+
+        # Ignoring flags like -u, -v, etc.
+        if token.startswith("-"):
+            arg_index += 1
+            continue
+
+        # Returning the first non-flag token
+        return token, arg_index
+
+    console_error(
+        "No script file found, provide a script-based workload: python script.py"
+    )
+    return None, None
+
+
+def get_shebang_interpreter(script_path: Union[str, Path]) -> Optional[List[str]]:
+    """
+    Read the first line of script_path; if it is a Python shebang (#!...python...),
+    return the interpreter command as a list (e.g. ['/usr/bin/env', 'python3']).
+    Return None if no shebang or not Python (caller should use sys.executable).
+    """
+    path = Path(script_path)
+    if not path.is_file():
+        return None
+    try:
+        with open(path, "rb") as f:
+            first_line = f.readline()
+    except OSError:
+        return None
+    if not first_line.startswith(b"#!"):
+        return None
+    try:
+        line = first_line.decode("utf-8", errors="replace").strip()
+    except Exception:
+        return None
+    if "python" not in line.lower():
+        return None
+    # After #! we have the interpreter and optional args (e.g. /usr/bin/env python3)
+    rest = line[2:].strip()
+    if not rest:
+        return None
+    tokens = shlex.split(rest)
+    return tokens if tokens else None
 
 
 def capture_subprocess_output(
