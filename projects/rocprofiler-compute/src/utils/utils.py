@@ -427,7 +427,14 @@ def get_python_script_candidate(remaining: list[str]) -> tuple[Optional[str], Op
             return None, None
 
         # Ignoring flags like -u, -v, etc.
+        # Some flags take an additional argument as a separate token (e.g. -W action, -X option, -Q arg).
+        # In those cases, skip both the flag and its argument so we do not treat the argument as the script.
         if token.startswith("-"):
+            # Flags that take a separate argument
+            if token in ("-W", "-X", "-Q") and (arg_index + 1) < len(remaining):
+                arg_index += 2
+                continue
+            # Flags with attached argument, or flags without additional arguments
             arg_index += 1
             continue
 
