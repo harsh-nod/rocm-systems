@@ -312,6 +312,13 @@ hipError_t ihipCreateTextureObject(hipTextureObject_t* pTexObject, const hipReso
       const size_t imageSizeInBytes = pResDesc->res.linear.sizeInBytes;
       amd::Memory* buffer =
           getMemoryObjectWithOffset(pResDesc->res.linear.devPtr, imageSizeInBytes);
+      // Validate that devPtr is a known HIP allocation (on APUs, host pointers may pass the
+      // previous checks)
+      amd::Device* curDev = hip::getCurrentDevice()->devices()[0];
+      if (amd::MemObjMap::FindMemObj(pResDesc->res.linear.devPtr, nullptr, curDev) == nullptr) {
+        return hipErrorInvalidValue;
+      }
+
       hipError_t status = hipSuccess;
       image = ihipImageCreate(channelOrder, channelType, imageType,
                               imageSizeInBytes / imageFormat.getElementSize(), /* imageWidth */
@@ -339,11 +346,20 @@ hipError_t ihipCreateTextureObject(hipTextureObject_t* pTexObject, const hipReso
           hip::getArrayFormat(pResDesc->res.pitch2D.desc), pTexDesc->readMode);
       const amd::Image::Format imageFormat({channelOrder, channelType});
       const cl_mem_object_type imageType = hip::getCLMemObjectType(pResDesc->resType);
-      const size_t imageSizeInBytes =
-          pResDesc->res.pitch2D.width * imageFormat.getElementSize() +
-          pResDesc->res.pitch2D.pitchInBytes * (pResDesc->res.pitch2D.height - 1);
+      // Guard against unsigned underflow when height is 0
+      const size_t imageSizeInBytes = (pResDesc->res.pitch2D.height > 0)
+          ? pResDesc->res.pitch2D.width * imageFormat.getElementSize() +
+            pResDesc->res.pitch2D.pitchInBytes * (pResDesc->res.pitch2D.height - 1)
+          : pResDesc->res.pitch2D.width * imageFormat.getElementSize();
       amd::Memory* buffer =
           getMemoryObjectWithOffset(pResDesc->res.pitch2D.devPtr, imageSizeInBytes);
+      // Validate that devPtr is a known HIP allocation (on APUs, host pointers may pass the
+      // previous checks)
+      amd::Device* curDev = hip::getCurrentDevice()->devices()[0];
+      if (amd::MemObjMap::FindMemObj(pResDesc->res.linear.devPtr, nullptr, curDev) == nullptr) {
+        return hipErrorInvalidValue;
+      }
+
       hipError_t status = hipSuccess;
       image = ihipImageCreate(channelOrder, channelType, imageType,
                               pResDesc->res.pitch2D.width,        /* imageWidth */
