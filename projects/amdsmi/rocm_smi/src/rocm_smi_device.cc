@@ -1846,7 +1846,7 @@ rsmi_status_t Device::isRestartInProgress(bool *isRestartInProgress,
   if ((success == true) && (!out.empty())) {
     isSystemAMDGPUModuleLive = containsString(out, "live");
   }
-  if (*isAMDGPUModuleLive) {
+  if (isSystemAMDGPUModuleLive) {
     deviceRestartInProgress = false;
   }
   *isRestartInProgress = deviceRestartInProgress;
