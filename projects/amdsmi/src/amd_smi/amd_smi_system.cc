@@ -22,6 +22,7 @@
 
 #include <cassert>
 #include <dirent.h>
+#include <filesystem>
 #include <sstream>
 #include <iomanip>
 #include <fstream>
@@ -549,10 +550,10 @@ amdsmi_status_t AMDSmiSystem::populate_brcm_nic_devices() {
       std::string nicPath;
       if ( (no_drm_nic_.get_device_path_by_index(i, &nicPath)) != AMDSMI_STATUS_SUCCESS) continue;
       std::string driverPath = nicPath + "/driver";
-      std::string command = "readlink " + driverPath;
-      std::string getData;
-      if (smi_brcm_execute_cmd_get_data(command, &getData) != AMDSMI_STATUS_SUCCESS) continue;
-      if (getData.find("bnxt_en") == std::string::npos) continue;
+      std::error_code ec;
+      auto target = std::filesystem::read_symlink(driverPath, ec);
+      if (ec) continue;
+      if (target.string().find("bnxt_en") == std::string::npos) continue;
 
       socket->add_processor(device.get());
       nic_processors_.insert(deviceget());
