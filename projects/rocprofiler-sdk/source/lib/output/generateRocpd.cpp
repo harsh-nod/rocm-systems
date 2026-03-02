@@ -563,7 +563,8 @@ write_rocpd(
     const generator<rocprofiler_buffer_tracing_scratch_memory_record_t>&    scratch_memory_gen,
     const generator<rocprofiler_buffer_tracing_rccl_api_record_t>&          rccl_api_gen,
     const generator<rocprofiler_buffer_tracing_rocdecode_api_ext_record_t>& rocdecode_api_gen,
-    const generator<tool_counter_record_t>&                                 counter_collection_gen)
+    const generator<tool_counter_record_t>&                                 counter_collection_gen,
+    const generator<tool_spm_counter_record_t>&                             spm_collection_gen)
 {
     static auto get_simple_timer = [](std::string_view label) {
         return common::simple_timer{fmt::format("SQLite3 generation :: {:24}", label)};
@@ -970,6 +971,7 @@ write_rocpd(
                         insert_value("expression", _expression, allow_empty_string{}),
                         insert_value("is_constant", aitr.is_constant),
                         insert_value("is_derived", aitr.is_derived),
+                        insert_value("spm_support", aitr.spm_support),
                         insert_value("extdata", json_data),
                     });
 
@@ -1037,6 +1039,8 @@ write_rocpd(
 
             auto agent_node_id = tool_metadata.get_agent(info.agent_id)->node_id;
 
+            get_thread_id(thread_id);
+
             // Insert into kernel dispatch table
             auto stmt = get_insert_statement(
                 "rocpd_kernel_dispatch{{uuid}}",
@@ -1101,6 +1105,39 @@ write_rocpd(
                     );
                 }
             }
+
+            for(auto pctr : spm_collection_gen)
+            {
+                auto _deferred = sql::deferred_transaction{conn};
+                for(const auto& record : spm_collection_gen.get(pctr))
+                {
+                    const auto& dispatch_data = record.dispatch_data;
+                    const auto& info          = dispatch_data.dispatch_info;
+
+                    // Register thread ID
+                    get_thread_id(record.thread_id);
+
+                    // Use buffer category for kernel dispatches
+                    auto kind =
+                        tool_metadata.buffer_names.at(ROCPROFILER_BUFFER_TRACING_KERNEL_DISPATCH);
+
+                    // Process this dispatch (SPM dispatch timestamps are not available)
+                    process_dispatch(info.dispatch_id,              // dispatch_id
+                                     info.kernel_id,                // kernel_id
+                                     dispatch_data.correlation_id,  // corr_id
+                                     info,                          // info
+                                     kind,                          // kind
+                                     record.thread_id,              // thread_id
+                                     get_queue_id(info.queue_id),   // queue_id
+                                     get_stream_id(rocprofiler_stream_id_t{.handle = 0}),
+                                     0,                    // start_timestamp
+                                     0,                    // end_timestamp
+                                     info.grid_size,       // grid
+                                     info.workgroup_size,  // workgroup
+                                     false                 // enable_duplicate_check
+                    );
+                }
+            }
         }
         else
         {
@@ -1110,7 +1147,7 @@ write_rocpd(
                 for(auto itr : kernel_dispatch_gen.get(pitr))
                 {
                     // Register thread ID
-                    get_thread_id(itr.thread_id);
+                    if(itr.thread_id != 0) get_thread_id(itr.thread_id);
 
                     // Process this dispatch
                     process_dispatch(itr.dispatch_info.dispatch_id,             // dispatch_id
@@ -1132,8 +1169,10 @@ write_rocpd(
         }
     };
 
-    auto insert_pmc_event_data = [&conn, &tool_metadata, &counter_collection_gen](
-                                     auto& dispatch_evt_ids) {
+    auto insert_pmc_event_data = [&conn,
+                                  &tool_metadata,
+                                  &counter_collection_gen,
+                                  &spm_collection_gen](auto& dispatch_evt_ids) {
         auto   _sqlgenperf_rocpd = get_simple_timer("rocpd_pmc_event");
         size_t idx               = tool_metadata.pmc_event_offset;
         for(auto ditr : counter_collection_gen)
@@ -1153,6 +1192,30 @@ write_rocpd(
                                                          insert_value("event_id", evt_id),
                                                          insert_value("pmc_id", count.id.handle),
                                                          insert_value("value", count.value),
+                                                     });
+
+                    execute_raw_sql_statements(conn, stmt);
+                }
+            }
+        }
+        for(auto ditr : spm_collection_gen)
+        {
+            auto _deferred = sql::deferred_transaction{conn};
+            for(const auto& record : spm_collection_gen.get(ditr))
+            {
+                const auto& info        = record.dispatch_data.dispatch_info;
+                auto        dispatch_id = info.dispatch_id;
+
+                auto evt_id = dispatch_evt_ids.at(dispatch_id);
+                for(const auto& count : record.read())
+                {
+                    auto stmt = get_insert_statement("rocpd_pmc_event{{uuid}}",
+                                                     {
+                                                         insert_value("id", idx++),
+                                                         insert_value("event_id", evt_id),
+                                                         insert_value("pmc_id", count.id.handle),
+                                                         insert_value("value", count.value),
+                                                         insert_value("timestamp", count.timestamp),
                                                      });
 
                     execute_raw_sql_statements(conn, stmt);

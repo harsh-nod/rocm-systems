@@ -131,6 +131,7 @@ struct config : output_config
     bool   list_metrics                = get_env("ROCPROF_LIST_METRICS", false);
     bool   list_metrics_output_file    = get_env("ROCPROF_OUTPUT_LIST_METRICS_FILE", false);
     bool   advanced_thread_trace       = get_env("ROCPROF_ADVANCED_THREAD_TRACE", false);
+    bool   spm_counter_collection      = get_env("ROCPROF_SPM_COUNTER_COLLECTION", false);
     bool   att_serialize_all           = get_env("ROCPROF_ATT_PARAM_SERIALIZE_ALL", false);
     bool   enable_signal_handlers      = get_env("ROCPROF_SIGNAL_HANDLERS", true);
     bool   enable_process_sync         = get_env("ROCPROF_PROCESS_SYNC", false);
@@ -153,6 +154,10 @@ struct config : output_config
     uint64_t att_param_perf_ctrl   = get_env<uint64_t>("ROCPROF_ATT_PARAM_PERFCOUNTER_CTRL", 0);
     uint64_t att_consecutive_kernels = get_env<uint64_t>("ROCPROF_ATT_CONSECUTIVE_KERNELS", 0);
 
+    size_t spm_buffer_size_kb = get_env<size_t>("ROCPROF_SPM_BUFFER_SIZE", 1 << 15);
+    size_t spm_timeout_ms     = get_env<size_t>("ROCPROF_SPM_TIMEOUT_MS", 0);
+    double spm_frequency_ghz  = get_env<double>("ROCPROF_SPM_FREQUENCY", 0.5);
+
     std::string kernel_filter_include   = get_env("ROCPROF_KERNEL_FILTER_INCLUDE_REGEX", ".*");
     std::string kernel_filter_exclude   = get_env("ROCPROF_KERNEL_FILTER_EXCLUDE_REGEX", "");
     std::string pc_sampling_method      = get_env("ROCPROF_PC_SAMPLING_METHOD", "none");
@@ -163,6 +168,7 @@ struct config : output_config
 
     std::unordered_set<size_t>         kernel_filter_range    = {};
     std::vector<std::set<std::string>> counters               = {};
+    std::set<std::string>              spm_counters           = {};
     std::vector<att_perfcounter>       att_param_perfcounters = {};
 
     std::queue<CollectionPeriod> collection_periods = {};
@@ -273,6 +279,7 @@ config::save(ArchiveT& ar) const
     CFG_SERIALIZE_MEMBER(mpi_size);
     CFG_SERIALIZE_MEMBER(collection_periods);
     CFG_SERIALIZE_MEMBER(counters);
+    CFG_SERIALIZE_MEMBER(spm_counters);
     CFG_SERIALIZE_MEMBER(extra_counters_contents);
     CFG_SERIALIZE_MEMBER(kernel_filter_include);
     CFG_SERIALIZE_MEMBER(kernel_filter_exclude);
