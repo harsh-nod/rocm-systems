@@ -32,6 +32,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -53,7 +54,8 @@ public:
            std::string dsc,
            std::string expr,
            std::string constant,
-           uint64_t    id);
+           uint64_t    id,
+           bool        spm_support = false);
 
     const std::string& name() const { return name_; }
     const std::string& block() const { return block_; }
@@ -64,6 +66,7 @@ public:
     uint64_t           id() const { return id_; }
     uint32_t           flags() const { return flags_; }
     bool               empty() const { return empty_; }
+    bool               spm_support() const { return spm_support_; }
 
     void setflags(uint32_t flags) { this->flags_ = flags; }
     void set_id(uint64_t id) { this->id_ = id; }
@@ -80,6 +83,7 @@ private:
     std::string constant_    = {};
     int64_t     id_          = -1;
     bool        empty_       = false;
+    bool        spm_support_ = false;
     uint32_t    flags_       = 0;
 };
 

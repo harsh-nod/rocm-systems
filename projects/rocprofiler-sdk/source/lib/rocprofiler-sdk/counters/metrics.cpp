@@ -29,6 +29,8 @@
 #include "lib/common/synchronized.hpp"
 #include "lib/common/utility.hpp"
 #include "lib/rocprofiler-sdk/agent.hpp"
+#include "lib/rocprofiler-sdk/aql/helpers.hpp"
+#include "lib/rocprofiler-sdk/spm/dlsym.hpp"
 
 #include <rocprofiler-sdk/fwd.h>
 
@@ -85,11 +87,36 @@ get_constants(uint64_t starting_id)
                                fmt::format("Constant value {} from agent properties", prop),
                                "",
                                "yes",
-                               starting_id);
+                               starting_id,
+                               false);
         starting_id++;
     }
     return constants;
 }
+
+bool
+isSupportSpm(const std::string& agent_name,
+             const std::string& block,
+             const std::string& name,
+             const std::string& event)
+{
+    auto agents = rocprofiler::agent::get_agents();
+
+    const auto it = std::find_if(agents.begin(), agents.end(), [&agent_name](const auto* agent) {
+        return std::string_view(agent->name) == std::string_view(agent_name);
+    });
+    if(it == agents.end()) return false;
+    if(event.empty()) return false;
+    auto sym = spm::Dlsym{};
+    if(!sym.valid()) return false;
+    auto aql_agent       = *CHECK_NOTNULL(rocprofiler::agent::get_aql_agent((*it)->id));
+    auto query_info      = rocprofiler::aql::get_query_info((*it)->id, block, name);
+    auto pmc_event       = aqlprofile_pmc_event_t{};
+    pmc_event.block_name = static_cast<hsa_ven_amd_aqlprofile_block_name_t>(query_info.id);
+    pmc_event.event_id   = static_cast<uint32_t>(std::stoul(event.c_str(), nullptr));
+    return sym.is_supported_fn(aql_agent, pmc_event);
+}
+
 /**
  * Expected YAML Format:
  * COUNTER_NAME:
@@ -177,15 +204,20 @@ loadYAML(const std::string& filename, std::optional<ArchMetric> add_metric)
                     metricVec.insert(metricVec.end(), constants.begin(), constants.end());
                     current_id += constants.size();
                 }
+                auto block_name =
+                    (definition["block"] ? definition["block"].as<std::string>() : "");
+                auto event_name =
+                    (definition["event"] ? definition["event"].as<std::string>() : "");
                 metricVec.emplace_back(
                     arch.as<std::string>(),
                     counter_name,
-                    (definition["block"] ? definition["block"].as<std::string>() : ""),
-                    (definition["event"] ? definition["event"].as<std::string>() : ""),
+                    block_name,
+                    event_name,
                     description,
                     (definition["expression"] ? definition["expression"].as<std::string>() : ""),
                     "",
-                    current_id);
+                    current_id,
+                    isSupportSpm(arch.as<std::string>(), block_name, counter_name, event_name));
                 current_id++;
             }
         }
@@ -209,7 +241,12 @@ loadYAML(const std::string& filename, std::optional<ArchMetric> add_metric)
                                 add_metric->second.description(),
                                 add_metric->second.expression(),
                                 "",
-                                current_id);
+                                current_id,
+                                isSupportSpm(add_metric->first,
+                                             add_metric->second.block(),
+                                             add_metric->second.name(),
+                                             add_metric->second.event()));
+
         added_metrics.emplace(add_metric->first, std::vector<Metric>{})
             .first->second.push_back(with_id);
         ret.emplace(add_metric->first, std::vector<Metric>{}).first->second.push_back(with_id);
@@ -409,7 +446,8 @@ Metric::Metric(const std::string&,  // Get rid of this...
                std::string dsc,
                std::string expr,
                std::string constant,
-               uint64_t    id)
+               uint64_t    id,
+               bool        spm_support)
 : name_(std::move(name))
 , block_(std::move(block))
 , event_(std::move(event))
@@ -417,6 +455,7 @@ Metric::Metric(const std::string&,  // Get rid of this...
 , expression_(std::move(expr))
 , constant_(std::move(constant))
 , id_(id)
+, spm_support_(spm_support)
 {
     if(!event_.empty())
     {
