@@ -992,7 +992,7 @@ def amdsmi_get_socket_handles() -> List[c_void_p]:
 
     return sockets
 
-def amdsmi_get_cpusocket_handles() -> List[c_void_p]:
+def amdsmi_get_cpu_handles() -> List[c_void_p]:
     """
     Function that gets cpu socket handles. Wraps the same named function call.
 
@@ -7081,11 +7081,6 @@ def amdsmi_get_rocm_version()-> Tuple[bool, str]:
         return False, "Could not find librocm-core.so"
     except Exception as e:
         return False, f"Unable to detect ROCm installation, Unknown Error: {e}"
-
-
-def amdsmi_get_cpu_handles() -> Dict[str, Any]:
-    cpu_handles = amdsmi_get_cpusocket_handles()
-    return { 'cpu_count': len(cpu_handles), 'processor_handles': cpu_handles }
 
 
 def amdsmi_get_esmi_err_msg(status: AmdSmiStatus) -> str:

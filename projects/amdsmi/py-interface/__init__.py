@@ -36,7 +36,7 @@ from .amdsmi_interface import amdsmi_get_npm_info
 
 # ESMI Dependent Functions
 try:
-    from .amdsmi_interface import amdsmi_get_cpusocket_handles
+    from .amdsmi_interface import amdsmi_get_cpu_handles
     from .amdsmi_interface import amdsmi_get_cpucore_handles
     from .amdsmi_interface import amdsmi_get_processor_info
     from .amdsmi_interface import amdsmi_get_cpu_hsmp_proto_ver
