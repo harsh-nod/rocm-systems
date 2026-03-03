@@ -19,7 +19,6 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import ctypes
 import inspect
 import json
 import os
@@ -32,8 +31,40 @@ if not os.path.exists(amdsmi_path):
 sys.path.append(amdsmi_path)
 try:
     import amdsmi
-except ImportError:
-    raise ImportError(f'Could not import the "amdsmi" module from "{amdsmi_path}"')
+except ImportError as e:
+    raise ImportError(f'Could not import the "amdsmi" module from "{amdsmi_path}"') from e
+
+#################################################
+# Module level functions, not part of the class #
+#################################################
+
+VERBOSITY_QUIET = 0    # -q / --quiet
+VERBOSITY_NORMAL = 1   # default (dot-per-test)
+VERBOSITY_VERBOSE = 2  # -v / --verbose (per-test result lines)
+
+def print_test_ids(suite):
+    for test in suite:
+        if isinstance(test, unittest.TestSuite):
+            print_test_ids(test)
+        else:
+            print(f' -{test.id()}', file=sys.stderr)
+    return
+
+def print_tests(module_name):
+    loader = unittest.TestLoader()
+    suite = loader.loadTestsFromModule(sys.modules[module_name])
+    print('==============================================================', file=sys.stderr)
+    print('Available tests:', file=sys.stderr)
+    print_test_ids(suite)
+    return
+
+def print_legend():
+    # Provide Legend for test results, otherwise it is not clear what the output means
+    print('==============================================================', file=sys.stderr)
+    print('Legend: . = pass, s = skipped, F = fail, E = error', file=sys.stderr)
+    print('==============================================================', file=sys.stderr)
+    print(file=sys.stderr)
+    return
 
 
 class Common(unittest.TestCase):
