@@ -99,7 +99,7 @@ class PTraceRunner
     runner_map_t m_runners;
 
 public:
-    PTraceRunner(){};
+    PTraceRunner() = default;
     ~PTraceRunner()
     {
         m_runners.wlock([&](auto& all_runners) {
@@ -175,7 +175,7 @@ public:
             }
         });
 
-        if(runner.get() == nullptr)
+        if(runner == nullptr)
         {
             return ROCATTACH_STATUS_ERROR;
         }
