@@ -35,11 +35,19 @@
 // Signal handler - handles signal without affecting execution
 namespace
 {
-int signal_received = 0;
+bool sigint_received   = false;
+bool sigwinch_received = false;
 void
 signal_handler(int signum)
 {
-    signal_received = signum;
+    if(signum == SIGINT)
+    {
+        sigint_received = true;
+    }
+    else if(signum == SIGWINCH)
+    {
+        sigwinch_received = true;
+    }
 }
 }  // namespace
 
@@ -76,12 +84,13 @@ execute_kernels(const size_t tid, const size_t device_id)
     HIP_ASSERT(hipStreamCreate(&stream));
 
     // Allocate memory
-    const int    size  = 1024 * 1024;  // 1M elements
+    const int    size  = 512 * 512;  // 256K elements
     const size_t bytes = size * sizeof(float);
 
-    float* h_data = new float[size];
+    float* h_data = nullptr;
     float* d_data = nullptr;
 
+    HIP_ASSERT(hipHostMalloc(&h_data, bytes));
     HIP_ASSERT(hipMalloc(&d_data, bytes));
 
     // Initialize data
@@ -98,13 +107,13 @@ execute_kernels(const size_t tid, const size_t device_id)
             << "...\n";
         std::cout << msg.str();
     }
-    const int num_iterations = 30;
+    size_t iter = 0;
 
-    for(int iter = 0; iter < num_iterations; ++iter)
+    while(!sigint_received)
     {
         // Add ROCTX markers for better profiling
         std::string range_name = "Iteration_" + std::to_string(iter + 1);
-        roctxRangePush(range_name.c_str());  // Removed - ROCTx not linked
+        roctxRangePush(range_name.c_str());
 
         // Copy data to device
         roctxMark("Start_H2D_Copy");
@@ -113,14 +122,14 @@ execute_kernels(const size_t tid, const size_t device_id)
         {
             std::cerr << "Failed to copy data for thread " << tid << " on device " << device_id
                       << "...\n";
-            roctxRangePop();  // Removed - ROCTx not linked
+            roctxRangePop();
             break;
         }
 
         // Launch kernel
         roctxMark("Launch_Kernel");
         int threads_per_block = 256;
-        int blocks_per_grid   = (size + threads_per_block - 1) / threads_per_block;
+        int blocks_per_grid   = size / threads_per_block;
 
         hipLaunchKernelGGL(
             simple_kernel, dim3(blocks_per_grid), dim3(threads_per_block), 0, stream, d_data, size);
@@ -132,7 +141,7 @@ execute_kernels(const size_t tid, const size_t device_id)
         {
             std::cerr << "Failed to copy data for thread " << tid << " on device " << device_id
                       << "...\n";
-            roctxRangePop();  // Removed - ROCTx not linked
+            roctxRangePop();
             break;
         }
 
@@ -143,34 +152,41 @@ execute_kernels(const size_t tid, const size_t device_id)
         {
             std::cerr << "Failed to synchronize stream " << stream << " with thread " << tid
                       << " on device " << device_id << "...\n";
-            roctxRangePop();  // Removed - ROCTx not linked
+            roctxRangePop();
             break;
         }
 
-        roctxRangePop();  // Removed - ROCTx not linked
+        roctxRangePop();
+
+        if(sigint_received)
+        {
+            break;
+        }
 
         // Small delay between iterations
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        iter++;
     }
 
     {
         // compose string first to avoid multithreaded handling of cout << operator
         auto msg = std::stringstream{};
-        msg << "Kernel execution loop completed for thread " << tid << " on device " << device_id
-            << "...\n";
+        msg << "Kernel execution loop completed " << iter << " iterations for thread " << tid
+            << " on device " << device_id << "\n";
         std::cout << msg.str();
     }
 
     HIP_ASSERT(hipStreamDestroy(stream));
     // Cleanup
+    HIP_ASSERT(hipHostFree(h_data));
     HIP_ASSERT(hipFree(d_data));
-    delete[] h_data;
 }
 
 int
 main(int argc, char** argv)
 {
-    // Install signal handler for SIGINT
+    // Install signal handler for SIGINT and SIGWINCH
+    std::signal(SIGINT, signal_handler);
     std::signal(SIGWINCH, signal_handler);
 
     size_t nthreads{8};
@@ -220,10 +236,10 @@ main(int argc, char** argv)
     for(auto& itr : _threads)
         itr.join();
 
-    if(signal_received)
+    if(sigwinch_received)
     {
-        std::cout << "Attachment test process " << getpid() << " received signal "
-                  << signal_received << "\n";
+        std::cout << "Attachment test process " << getpid() << " received signal " << SIGWINCH
+                  << "\n";
     }
     std::cout << "Attachment test app finished" << std::endl;
 
