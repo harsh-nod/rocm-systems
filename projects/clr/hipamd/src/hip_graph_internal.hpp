@@ -468,10 +468,13 @@ class GraphNode : public hipGraphNodeDOTAttribute {
     }
     out << "shape=\"" << GetShape(flag) << "\"";
     out << "label=\"" << label;
-    if (DEBUG_HIP_GRAPH_DOT_PRINT) {
+    if (DEBUG_HIP_GRAPH_DOT_PRINT || DEBUG_HIP_GRAPH_EXEC_DOT_PRINT) {
       out << "\nStreamId:" << stream_id_;
       // out << "\nSignalIsRequired: " << ((signal_is_required_) ? "true" : "false");
       // out << "\nDeviceId:" << dev_id_;
+    }
+    if (DEBUG_HIP_GRAPH_EXEC_DOT_PRINT) {
+      out << "\nLaunchId:" << launch_id_;
     }
     out << "\"";
     out << "];";
@@ -1057,10 +1060,13 @@ class GraphKernelNode : public GraphNode {
     out << "label";
     out << "=\"";
     out << label;
-    if (DEBUG_HIP_GRAPH_DOT_PRINT) {
+    if (DEBUG_HIP_GRAPH_DOT_PRINT || DEBUG_HIP_GRAPH_EXEC_DOT_PRINT) {
       out << "\nStreamId:" << stream_id_;
       // out << "\nSignalIsRequired: " << ((signal_is_required_) ? "true" : "false");
       // out << "\nDeviceId:" << dev_id_;
+    }
+    if (DEBUG_HIP_GRAPH_EXEC_DOT_PRINT) {
+      out << "\nLaunchId:" << launch_id_;
     }
     out << "\"";
     out << "];";

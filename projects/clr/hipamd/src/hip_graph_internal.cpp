@@ -769,12 +769,20 @@ bool Graph::RunNodes(
   }
 
   // Run all commands in the graph
-  for (auto node : GetTopoOrder()) {
-    node->launch_id_ = -1;
-    if (!RunOneNode(node)) {
-      return false;
+#if USE_RUN_NODE_DFS
+  for (auto node : GetNodes()) {
+    if (node->launch_id_ == -1) {
+      // XPUT("RunOneNodeDFS node %s", node->Xstring().c_str());
+      if (!RunOneNodeDFS(node, true)) return false;
     }
   }
+  for (auto node : GetNodes()) node->launch_id_ = -1;
+#else 
+  for (auto node : GetTopoOrder()) {
+    node->launch_id_ = -1;
+    if (!RunOneNode(node)) return false;
+  }
+#endif
   wait_list.clear();
   // Check if the graph has multiple leaf nodes
   for (uint32_t i = 0; i < DEBUG_HIP_FORCE_GRAPH_QUEUES; ++i) {
