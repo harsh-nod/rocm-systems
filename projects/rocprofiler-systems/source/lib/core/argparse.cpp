@@ -508,7 +508,7 @@ add_core_arguments(parser_t& _parser, parser_data& _data)
         _data.processed_environs.emplace("periods");
     }
 
-    if (_data.environ_filter("rank_filter_id", _data))
+    if(_data.environ_filter("rank_filter_id", _data))
     {
         _parser
             .add_argument({ "--rank-filter-id" },
@@ -516,13 +516,14 @@ add_core_arguments(parser_t& _parser, parser_data& _data)
             .max_count(1)
             .dtype("string")
             .action([&](parser_t& p) {
-                update_env(_data, "ROCPROFSYS_RANK_FILTER_ID", p.get<bool>("rank-filter-id"));
+                update_env(_data, "ROCPROFSYS_RANK_FILTER_ID",
+                           p.get<std::string>("rank-filter-id"));
             });
 
         _data.processed_environs.emplace("rank_filter_id");
     }
 
-    if (_data.environ_filter("rank_filter_output", _data))
+    if(_data.environ_filter("rank_filter_output", _data))
     {
         _parser
             .add_argument({ "--rank-filter-output" },
@@ -530,7 +531,10 @@ add_core_arguments(parser_t& _parser, parser_data& _data)
             .max_count(1)
             .dtype("int and/or range")
             .action([&](parser_t& p) {
-                update_env(_data, "ROCPROFSYS_RANK_FILTER_OUTPUT", p.get<bool>("rank-filter-output"));
+                update_env(
+                    _data, "ROCPROFSYS_RANK_FILTER_OUTPUT",
+                    fmt::format("{}",
+                                fmt::join(p.get<strvec_t>("rank-filter-output"), ",")));
             });
 
         _data.processed_environs.emplace("rank_filter_output");
