@@ -89,3 +89,4 @@ rtc:
     <<: *level_2
     # Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/327
     disabled: [amd_wsl]
+  Unit_Rtc_CoopReduce: *level_2
