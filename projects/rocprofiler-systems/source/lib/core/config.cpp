@@ -880,6 +880,17 @@ configure_settings(bool _init)
         kill_delay_config->set(0);
     }
 
+    ROCPROFSYS_CONFIG_SETTING(std::string, "ROCPROFSYS_RANK_FILTER_ID",
+                              "Name of environment variable used to represent rank",
+                              std::string{}, "data", "io");
+
+    ROCPROFSYS_CONFIG_SETTING(
+        std::string, "ROCPROFSYS_RANK_FILTER_OUTPUT",
+        "Ranks to inlcude in profiling. Values should be separated by commas "
+        "and can be explicit or ranges, e.g. 0,1,5-8. An empty value implies 'all' and "
+        "'none' suppresses profiling for all ranks",
+        std::string{ "all" }, "data", "io");
+
     // set the defaults
     _config->get_flamegraph_output()     = false;
     _config->get_ctest_notes()           = false;

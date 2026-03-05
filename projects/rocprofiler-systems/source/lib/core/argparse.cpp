@@ -508,6 +508,34 @@ add_core_arguments(parser_t& _parser, parser_data& _data)
         _data.processed_environs.emplace("periods");
     }
 
+    if (_data.environ_filter("rank_filter_id", _data))
+    {
+        _parser
+            .add_argument({ "--rank-filter-id" },
+                          "Sets the name of environment variable used to represent rank")
+            .max_count(1)
+            .dtype("string")
+            .action([&](parser_t& p) {
+                update_env(_data, "ROCPROFSYS_RANK_FILTER_ID", p.get<bool>("rank-filter-id"));
+            });
+
+        _data.processed_environs.emplace("rank_filter_id");
+    }
+
+    if (_data.environ_filter("rank_filter_output", _data))
+    {
+        _parser
+            .add_argument({ "--rank-filter-output" },
+                          "Sets range that represents the ranks to include")
+            .max_count(1)
+            .dtype("int and/or range")
+            .action([&](parser_t& p) {
+                update_env(_data, "ROCPROFSYS_RANK_FILTER_OUTPUT", p.get<bool>("rank-filter-output"));
+            });
+
+        _data.processed_environs.emplace("rank_filter_output");
+    }
+
     strset_t _backend_choices = { "all",        "kokkosp", "mpip", "ompt",
                                   "rcclp",      "amd-smi", "rocm", "mutex-locks",
                                   "spin-locks", "rw-locks" };
