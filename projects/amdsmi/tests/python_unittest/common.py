@@ -19,13 +19,10 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import ctypes
-import fcntl
 import inspect
 import json
 import os
 import pathlib
-import random
 import sys
 
 import unittest
@@ -72,11 +69,7 @@ def print_legend():
     return
 
 
-class DeviceHandle(ctypes.Structure):
-    _fields_ = [('handle', ctypes.c_uint64)]
-
-
-class Common(unittest.TestCase):
+class Common:
     DRIVER_INIT_FLAGS = \
     [
         ('INIT_ALL_PROCESSORS', amdsmi.AmdSmiInitFlags.INIT_ALL_PROCESSORS),
@@ -113,9 +106,9 @@ class Common(unittest.TestCase):
 
             # Get gpus
             self.processors = amdsmi.amdsmi_get_processor_handles()
-            # Set bad gpu
-            bad_gpu_handle = DeviceHandle(random.randint(0, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF))
-            self.bad_gpu = id(bad_gpu_handle)
+            # Set bad gpu: an obviously invalid sentinel integer; amdsmi_interface.py
+            # type-validates all processor handles and rejects non-handle values with INVAL.
+            self.bad_gpu = 0xDEADBEEFDEADBEEF
 
             self.virt_mode = []
             self.asic_info = []
@@ -169,6 +162,8 @@ class Common(unittest.TestCase):
             '17': 'AMDSMI_STATUS_INPUT_OUT_OF_BOUNDS',
             '18': 'AMDSMI_STATUS_INIT_ERROR',
             '19': 'AMDSMI_STATUS_REFCOUNT_OVERFLOW',
+            '20': 'AMDSMI_STATUS_DIRECTORY_NOT_FOUND',
+            '21': 'AMDSMI_STATUS_IPC_ERROR',
             '30': 'AMDSMI_STATUS_BUSY',
             '31': 'AMDSMI_STATUS_NOT_FOUND',
             '32': 'AMDSMI_STATUS_NOT_INIT',
@@ -555,15 +550,19 @@ class Common(unittest.TestCase):
         # Check for when there are multiple passing conditions
         if isinstance(expected_code_name, list):
             for ec in expected_code_name:
-                rc = self.check_ret(msg, exc, ec, False)  # Do not print msg, otherwise multiple msgs printed
-                if not rc:
-                    rc = self.check_ret(msg, exc, ec) # Call check again so msg is printed
-                    return rc
+                if not self.check_ret(msg, exc, ec, False):  # check without printing
+                    # This expected code matched - print once and return success
+                    if self.verbose > VERBOSITY_QUIET and printIt:
+                        if msg:
+                            print(f'{msg}\n', end='')
+                        print(f'\tTest PASSED with expected result {ec}', flush=True)
+                    return False
 
-            # No expected results found
-            if msg:
-                print(f'{msg}\n', end='')
-            print(f'Test FAILED with expected results {expected_code_name} but received {error_code_name}', flush=True)
+            # No expected result matched - print failure (respects same guards as single-condition path)
+            if self.verbose > VERBOSITY_QUIET and printIt:
+                if msg:
+                    print(f'{msg}\n', end='')
+                print(f'\tTest FAILED with expected results {expected_code_name} but received {error_code_name}', flush=True)
             return True
 
         # Check for single passing condition
@@ -583,61 +582,6 @@ class Common(unittest.TestCase):
                 print(f'{msg}\n', end='')
             print(f'{status_msg}', flush=True)
         return status_ret
-
-    # Keeping just incase this will be needed for future tests
-    # Have an example in integration power_cap test (commented out atm)
-    def check_runtime_pm_status(self, render_minor: int) -> bool:
-        """Check if device is in runtime suspend state."""
-        try:
-            # Read runtime_enabled
-            device_path = f"/sys/class/drm/renderD{render_minor}/device"
-            enabled_path = os.path.join(device_path, "power/runtime_enabled")
-            with open(enabled_path, 'r') as f:
-                enabled = f.read().strip()
-
-            if "disabled" in enabled or "forbidden" in enabled:
-                return False
-
-            # Read runtime_status
-            status_path = os.path.join(device_path, "power/runtime_status")
-            with open(status_path, 'r') as f:
-                status = f.read().strip()
-
-            return "suspended" in status
-        except (IOError, OSError):
-            return False
-
-    # Keeping just incase this will be needed for future tests
-    # Have an example in integration power_cap test (commented out atm)
-    def wake_device(self, render_minor: int) -> bool:
-        """Wake device from runtime suspend using DRM ioctl."""
-        render_path = f"/dev/dri/renderD{render_minor}"
-
-        try:
-            fd = os.open(render_path, os.O_RDWR | os.O_CLOEXEC)
-            try:
-                # DRM_IOCTL_AMDGPU_INFO = 0xc0206405 (from libdrm headers)
-                # Just issuing any ioctl wakes the device
-                DRM_IOCTL_AMDGPU_INFO = 0xc0206405
-                request = bytes(32)  # Empty drm_amdgpu_info struct
-                fcntl.ioctl(fd, DRM_IOCTL_AMDGPU_INFO, request)
-            finally:
-                os.close(fd)
-            return True
-        except (IOError, OSError) as e:
-            self.print(f'Failed to wake device: {e}')
-            return False
-
-    # Keeping just incase this will be needed for future tests
-    def get_gpu_id_from_device_handle(self, input_device_handle):
-        """Get the gpu index from the device_handle.
-        amdsmi_get_processor_handles() returns the list of device_handles in order of gpu_index
-        """
-        device_handles = amdsmi.amdsmi_get_processor_handles()
-        for gpu_index, device_handle in enumerate(device_handles):
-            if input_device_handle.value == device_handle.value:
-                return gpu_index
-        return None  # handle not found
 
     def _check_amdgpu_driver(self):
         """ Returns true if amdgpu is found in the list of initialized modules """
@@ -662,10 +606,7 @@ class Common(unittest.TestCase):
 
     def _check_amd_hsmp_driver(self):
         """ Returns true if amd_hsmp or hsmp_acpi is found in the list of initialized modules """
-        amd_cpu_status_file = pathlib.Path("/dev/hsmp")
-        if amd_cpu_status_file.exists():
-            return True
-        return False
+        return pathlib.Path("/dev/hsmp").exists()
 
     def _init_with_flag(self, init_flag, driver_msg):
         ret = None
@@ -701,17 +642,17 @@ class Common(unittest.TestCase):
             test_name = self.id().split('.')[-1]
             print_missing_msg = f"{test_name} | Missing amdsmi API(s) in amdsmi_interface.py: " + ", ".join(missing)
             print(file=sys.stderr)
-            self.skipTest(f"{str(print_missing_msg)}")
+            raise unittest.SkipTest(print_missing_msg)
         return
 
     def _build_call_msg(self, func_name, i, j, params):
         msg = f'\t### {func_name}('
-        if i != None:
+        if i is not None:
             msg += f'gpu={i}'
-        if j != None:
+        if j is not None:
             msg += f', gpu={j}'
         for param_name, param_value in params.items():
-            if type(param_value) == list:
+            if isinstance(param_value, list):
                 msg += f', {param_name}={{value}}'
             else:
                 msg += f', {param_name}={param_value}'
@@ -750,8 +691,6 @@ class Common(unittest.TestCase):
             sys.exit(-1)
 
         ret = self._init_with_flag(init_flag, msg)
-        flag_name = self.DRIVER_INIT_FLAGS_MAP.get(init_flag, 'UNKNOWN')
-        #self.print(f'\tAMDSMI initialized with at least one driver | init flag: {flag_name} ({init_flag})')
         return (ret, init_flag)
 
     def Test_API(self, **kwargs):
@@ -768,7 +707,6 @@ class Common(unittest.TestCase):
         iterator = iter(params.items())
         func_name, func = next(iterator, (None, None))
         del params[func_name]
-        iterator = None
 
         raise_exception = None
         cond = self.PASS
@@ -800,11 +738,9 @@ class Common(unittest.TestCase):
         iterator = iter(params.items())
         func_name, func = next(iterator, (None, None))
         del params[func_name]
-        iterator = None
 
         raise_exception = None
         for i in range(len(self.processors)+1):
-        #for i in range(len(self.processors)): #jcnii
             cond = self.PASS
             if i < len(self.processors):
                 gpu = self.processors[i]
@@ -843,13 +779,11 @@ class Common(unittest.TestCase):
         params = kwargs
         iterator = iter(params.items())
         func_name, func = next(iterator, (None, None))
-        name1, values1 = next(iterator, (None, None))
+        _, values1 = next(iterator, (None, None))
         del params[func_name]
-        iterator = None
 
         raise_exception = None
         for i in range(len(self.processors)+1):
-        #for i in range(len(self.processors)): #jcnii
             if i < len(self.processors):
                 gpu = self.processors[i]
                 self.print_device_header(i)
@@ -865,7 +799,7 @@ class Common(unittest.TestCase):
                 msg = self._build_call_msg(func_name, i, None, params)
                 msg = msg.replace('{value}', value1_name, 1)
                 try:
-                    data = func(gpu, *[value if type(value) != list else value1 for value in params.values()])
+                    data = func(gpu, *[value if not isinstance(value, list) else value1 for value in params.values()])
                     self.print(msg, data)
                     self.check_ret('', '', cond)
                 except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
@@ -896,14 +830,12 @@ class Common(unittest.TestCase):
         params = kwargs
         iterator = iter(params.items())
         func_name, func = next(iterator, (None, None))
-        name1, values1 = next(iterator, (None, None))
-        name2, values2 = next(iterator, (None, None))
+        _, values1 = next(iterator, (None, None))
+        _, values2 = next(iterator, (None, None))
         del params[func_name]
-        iterator = None
 
         raise_exception = None
         for i in range(len(self.processors)+1):
-        #for i in range(len(self.processors)): #jcnii
             if i < len(self.processors):
                 gpu = self.processors[i]
                 self.print_device_header(i)
@@ -915,13 +847,13 @@ class Common(unittest.TestCase):
             for value1_name, value1, value1_cond in values1:
                 for value2_name, value2, value2_cond in values2:
                     cond = self.PASS
-                    if i == 'invalid' or value1_cond == self.FAIL and value2_cond == self.FAIL:
+                    if i == 'invalid' or (value1_cond == self.FAIL and value2_cond == self.FAIL):
                         cond = self.FAIL
                     msg = self._build_call_msg(func_name, i, None, params)
                     msg = msg.replace('{value}', value1_name, 1)
                     msg = msg.replace('{value}', value2_name, 1)
                     try:
-                        data = func(gpu, *[value if type(value) != list else value1 if index == 0 else value2 for index, value in enumerate(params.values())])
+                        data = func(gpu, *[value if not isinstance(value, list) else value1 if index == 0 else value2 for index, value in enumerate(params.values())])
                         self.print(msg, data)
                         self.check_ret('', '', cond)
                     except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
@@ -953,11 +885,9 @@ class Common(unittest.TestCase):
         iterator = iter(params.items())
         func_name, func = next(iterator, (None, None))
         del params[func_name]
-        iterator = None
 
         raise_exception = None
         for i in range(len(self.processors)+1):
-        #for i, gpu_i in enumerate(self.processors): # jcnii
             if i < len(self.processors):
                 gpu_i = self.processors[i]
                 self.print_device_header(i)
@@ -966,7 +896,6 @@ class Common(unittest.TestCase):
                 gpu_i = self.bad_gpu
                 i = 'invalid'
             for j in range(len(self.processors)+1):
-            #for j, gpu_j in enumerate(self.processors): # jcnii
                 if j < len(self.processors):
                     gpu_j = self.processors[j]
                     self.print_device_header(j)
