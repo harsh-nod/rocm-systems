@@ -2619,6 +2619,20 @@ get_kill_delay()
     return static_cast<tim::tsettings<int>&>(*_v->second).get();
 }
 
+std::string&
+get_rank_filter_id()
+{
+    static auto _v = get_config()->at("ROCPROFSYS_RANK_FILTER_ID");
+    return static_cast<tim::tsettings<std::string>&>(*_v).get();
+}
+
+std::string&
+get_rank_filter_output()
+{
+    static auto _v = get_config()->at("ROCPROFSYS_RANK_FILTER_OUTPUT");
+    return static_cast<tim::tsettings<std::string>&>(*_v).get();
+}
+
 tmp_file::tmp_file(std::string _v)
 : filename{ std::move(_v) }
 {}
