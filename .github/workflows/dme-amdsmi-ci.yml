@@ -58,7 +58,7 @@ env:
 jobs:
   integration-test:
     name: DME Integration • ${{ matrix.os }}
-    runs-on: ${{ vars.RUNNER_TYPE }}
+    runs-on: [self-hosted, ${{ vars.RUNNER_TYPE }}]
     continue-on-error: true
     timeout-minutes: 120
     strategy:
