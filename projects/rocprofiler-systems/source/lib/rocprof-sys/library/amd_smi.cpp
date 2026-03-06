@@ -45,6 +45,7 @@
 #include "core/perfetto.hpp"
 #include "core/state.hpp"
 #include "core/trace_cache/metadata_registry.hpp"
+#include "core/utility.hpp"
 #include "library/amd_smi.hpp"
 #include "library/runtime.hpp"
 #include "library/thread_info.hpp"
@@ -1263,45 +1264,19 @@ setup()
     bool _no_devices  = _devices_v.find("none") != std::string::npos;
 
     std::set<uint32_t> _devices = {};
-    auto               _emplace = [&_devices](auto idx) {
-        if(idx < data::device_count) _devices.emplace(idx);
-    };
 
     if(_all_devices)
     {
         for(uint32_t i = 0; i < data::device_count; ++i)
-            _emplace(i);
+            _devices.emplace(i);
     }
     else if(!_no_devices)
     {
-        auto _enabled = tim::delimit(_devices_v, ",; \t");
-        for(auto&& itr : _enabled)
+        auto parsed_devices = utility::parse_numeric_range<uint32_t, std::set<uint32_t>>(
+            _devices_v, "GPU", 1);
+        for(auto idx : parsed_devices)
         {
-            if(itr.find_first_not_of("0123456789-") != std::string::npos)
-            {
-                throw std::runtime_error(
-                    fmt::format("Invalid GPU specification: '{}'. Only numerical values "
-                                "(e.g., 0) or ranges (e.g., 0-7) are permitted.",
-                                itr));
-            }
-
-            if(itr.find('-') != std::string::npos)
-            {
-                auto _v = tim::delimit(itr, "-");
-                if(_v.size() != 2)
-                {
-                    throw std::runtime_error(
-                        fmt::format("Invalid GPU range specification: '{}'. "
-                                    "Required format N-M, e.g. 0-4",
-                                    itr));
-                }
-                for(auto i = std::stoul(_v.at(0)); i < std::stoul(_v.at(1)); ++i)
-                    _emplace(i);
-            }
-            else
-            {
-                _emplace(std::stoul(itr));
-            }
+            if(idx < data::device_count) _devices.emplace(idx);
         }
     }
 

@@ -265,5 +265,7 @@ parse_numeric_range<int64_t, std::vector<int64_t>>(std::string, const std::strin
 extern template std::unordered_set<int64_t>
 parse_numeric_range<int64_t, std::unordered_set<int64_t>>(std::string, const std::string&,
                                                           long);
+extern template std::set<uint32_t>
+parse_numeric_range<uint32_t, std::set<uint32_t>>(std::string, const std::string&, int);
 }  // namespace utility
 }  // namespace rocprofsys
