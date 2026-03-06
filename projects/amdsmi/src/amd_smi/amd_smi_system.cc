@@ -556,7 +556,7 @@ amdsmi_status_t AMDSmiSystem::populate_brcm_nic_devices() {
       if (target.string().find("bnxt_en") == std::string::npos) continue;
 
       socket->add_processor(device.get());
-      nic_processors_.insert(deviceget());
+      nic_processors_.insert(device.get());
       device.release();
     }
 #endif  // BRCM_NIC

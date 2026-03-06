@@ -58,7 +58,7 @@ amdsmi_status_t get_lspci_device_data(std::string bdfStr, std::string search_key
     std::string lspci_data;
     std::string command = "lspci -s " + bdfStr + " -vv | grep -i '" + search_key + "'";
 
-    if (smi_brcm_execute_cmd_get_data(command, &lspci_data) != AMDSMI_STATUS_SUCCESS){
+    if (smi_brcm_execute_cmd_get_data(command, &lspci_data) != AMDSMI_STATUS_SUCCESS) {
         std::ostringstream ss;
         ss << __PRETTY_FUNCTION__ << " | "
            << "Failed to execute command: lspci -s " << bdfStr << " -vv | grep -i " << search_key << ".";
@@ -80,7 +80,7 @@ amdsmi_status_t get_lspci_device_data(std::string bdfStr, std::string search_key
     return AMDSMI_STATUS_SUCCESS;
 }
 
-amdsmi_status_t get_lspci_root_switch(amdsmi_bdf_t devicehBdf, amdsmi_bdf_t *switchBdf) {
+amdsmi_status_t get_lspci_root_switch(amdsmi_bdf_t device_bdf, amdsmi_bdf_t *switchBdf) {
 
     amdsmi_status_t status = AMDSMI_STATUS_SUCCESS;
     std::string lspci_data;
@@ -197,7 +197,7 @@ amdsmi_status_t get_lspci_root_switch(amdsmi_bdf_t devicehBdf, amdsmi_bdf_t *swi
 
         }
 
-        if (devicehBdf.bus_number >= switch_bus_start  && devicehBdf.bus_number <= switch_bus_end){
+        if (device_bdf.bus_number >= switch_bus_start  && device_bdf.bus_number <= switch_bus_end){
             switchBdf->bus_number = d.bus_number;
             switchBdf->device_number = d.device_number;
             switchBdf->function_number = d.function_number;
