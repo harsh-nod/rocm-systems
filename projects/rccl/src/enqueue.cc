@@ -2295,7 +2295,7 @@ static ncclResult_t topoGetAlgoInfo(
   rcclOverrideAlgorithm(ncclAlgoStr, table, info);
   rcclOverrideProtocol(ncclProtoStr, table, info);
 #ifdef ENABLE_WARP_SPEED
-  rcclSetWarpSpeedAuto(comm, info, nBytes);
+  NCCLCHECK(rcclSetWarpSpeedAuto(comm, info, nBytes));
   if(info->useWarpSpeed) {
     rcclSetWarpSpeedCUs(comm, info->algorithm, info->nWarps * comm->WarpSize, nc);
   }
