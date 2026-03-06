@@ -84,6 +84,10 @@ jobs:
         run: |
           PROJECT_DIR=$(find "$(pwd)" -maxdepth 3 -name "CMakeLists.txt" \
             -path "*/amdsmi/*" -exec dirname {} \; | head -1)
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "Error: AMDSMI project directory could not be found. Expected a CMakeLists.txt under an 'amdsmi' path within the repository." >&2
+            exit 1
+          fi
           echo "AMDSMI_DIR=${PROJECT_DIR}" >> "$GITHUB_ENV"
           echo "AMDSMI project: ${PROJECT_DIR}"
 
