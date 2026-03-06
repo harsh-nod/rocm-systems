@@ -217,8 +217,9 @@ jobs:
       - name: Install Go Protobuf Tools
         run: |
           export PATH="/usr/local/go/bin:${HOME}/go/bin:${PATH}"
-          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          # Pin protoc-gen-go and protoc-gen-go-grpc versions for reproducible CI
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.2
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 
       - name: Build Device Metrics Exporter
         timeout-minutes: 15
