@@ -27,6 +27,7 @@
 #include "core/defines.hpp"
 #include "core/perfetto.hpp"
 #include "core/timemory.hpp"
+#include "core/utility.hpp"
 
 #include <timemory/components/macros.hpp>
 #include <timemory/components/rusage/backends.hpp>
@@ -85,61 +86,30 @@ cpu_freq::configure()
         itr = tolower(itr);
     if(_enabled_val == "off")
         _enabled_val = "none";
-    else if(_enabled_val == "on")
+    else if(_enabled_val == "on" || _enabled_val.empty())
         _enabled_val = "all";
-    if(_enabled_val != "none" && _enabled_val != "all")
-    {
-        auto _enabled = tim::delimit(_enabled_val, ",; \t");
-        if(_enabled.empty())
-        {
-            for(size_t i = 0; i < _ncpu; ++i)
-                _enabled_freqs.emplace(i);
-        }
-        for(auto&& _v : _enabled)
-        {
-            if(_v.find_first_not_of("0123456789-") != std::string::npos)
-            {
-                LOG_DEBUG("Invalid CPU specification. Only numerical values (e.g., 0) or "
-                          "ranges (e.g., 0-7) are permitted. Ignoring {}...",
-                          _v.c_str());
-                continue;
-            }
-            if(_v.find('-') != std::string::npos)
-            {
-                auto _vv = tim::delimit(_v, "-");
-                if(_vv.size() != 2)
-                {
-                    throw std::runtime_error(
-                        fmt::format("Invalid CPU range specification: {}. Required "
-                                    "format N-M, e.g. 0-4",
-                                    _v));
-                }
-                for(size_t i = std::stoull(_vv.at(0)); i <= std::stoull(_vv.at(1)); ++i)
-                    _enabled_freqs.emplace(i);
-            }
-            else
-            {
-                _enabled_freqs.emplace(std::stoull(_v));
-            }
-        }
-    }
-    else if(_enabled_val == "all")
+    bool _all_cpus = _enabled_val.find("all") != std::string::npos;
+    bool _no_cpus  = _enabled_val.find("none") != std::string::npos;
+
+    if(_all_cpus)
     {
         for(size_t i = 0; i < _ncpu; ++i)
             _enabled_freqs.emplace(i);
     }
-    else if(_enabled_val == "none")
+    else if(!_no_cpus)
     {
-        _enabled_freqs.clear();
-    }
-
-    for(auto itr : _enabled_freqs)
-    {
-        if(itr < cpuinfo::freq::size())
-            _enabled_freqs.emplace(itr);
-        else
+        auto parsed_cpus = utility::parse_numeric_range<uint64_t, std::set<uint64_t>>(
+            _enabled_val, "CPU", 1);
+        for(auto idx : parsed_cpus)
         {
-            LOG_DEBUG("[cpu_freq::config] Removing invalid cpu {}...", itr);
+            if(idx < _ncpu)
+            {
+                _enabled_freqs.emplace(idx);
+            }
+            else
+            {
+                LOG_DEBUG("[cpu_freq::config] Removing invalid CPU {}", idx);
+            }
         }
     }
 

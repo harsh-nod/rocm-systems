@@ -1258,9 +1258,9 @@ setup()
         itr = tolower(itr);
     if(_devices_v == "off")
         _devices_v = "none";
-    else if(_devices_v == "on")
+    else if(_devices_v == "on" || _devices_v.empty())
         _devices_v = "all";
-    bool _all_devices = _devices_v.find("all") != std::string::npos || _devices_v.empty();
+    bool _all_devices = _devices_v.find("all") != std::string::npos;
     bool _no_devices  = _devices_v.find("none") != std::string::npos;
 
     std::set<uint32_t> _devices = {};
@@ -1276,7 +1276,14 @@ setup()
             _devices_v, "GPU", 1);
         for(auto idx : parsed_devices)
         {
-            if(idx < data::device_count) _devices.emplace(idx);
+            if(idx < data::device_count)
+            {
+                _devices.emplace(idx);
+            }
+            else
+            {
+                LOG_DEBUG("AMD SMI: removing invalid GPU {}", idx);
+            }
         }
     }
 

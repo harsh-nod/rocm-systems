@@ -258,6 +258,10 @@ template <typename Tp = int64_t, typename ContainerT = std::set<Tp>, typename Up
 ContainerT
 parse_numeric_range(std::string _input_string, const std::string& _label, Up _incr);
 
+extern template std::set<uint32_t>
+parse_numeric_range<uint32_t, std::set<uint32_t>>(std::string, const std::string&, int);
+extern template std::set<uint64_t>
+parse_numeric_range<uint64_t, std::set<uint64_t>>(std::string, const std::string&, int);
 extern template std::set<int64_t>
 parse_numeric_range<int64_t, std::set<int64_t>>(std::string, const std::string&, long);
 extern template std::vector<int64_t>
@@ -265,7 +269,5 @@ parse_numeric_range<int64_t, std::vector<int64_t>>(std::string, const std::strin
 extern template std::unordered_set<int64_t>
 parse_numeric_range<int64_t, std::unordered_set<int64_t>>(std::string, const std::string&,
                                                           long);
-extern template std::set<uint32_t>
-parse_numeric_range<uint32_t, std::set<uint32_t>>(std::string, const std::string&, int);
 }  // namespace utility
 }  // namespace rocprofsys
