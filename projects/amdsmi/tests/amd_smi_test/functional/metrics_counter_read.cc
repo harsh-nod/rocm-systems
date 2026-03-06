@@ -81,9 +81,9 @@ void TestMetricsCounterRead::Run(void) {
     uint64_t energy_accumulator;
     uint64_t timestamp;
     float counter_resolution;
-    DISPLAY_AMDSMI_API("amdsmi_get_energy_count", "gpu="+std::to_string(i));
+    DISPLAY_AMDSMI_API("amdsmi_get_energy_count", "gpu="+std::to_string(i), VERB(STANDARD));
     err = amdsmi_get_energy_count(processor_handles_[i], &energy_accumulator, &counter_resolution, &timestamp);
-    DISPLAY_AMDSMI_STATUS(__FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS);
+    DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS);
     if (err != AMDSMI_STATUS_SUCCESS) {
       if (err == AMDSMI_STATUS_NOT_SUPPORTED) {
         return;
@@ -101,9 +101,9 @@ void TestMetricsCounterRead::Run(void) {
     }
 
     // Verify api support checking functionality is working
-    DISPLAY_AMDSMI_API("amdsmi_get_energy_count", "gpu="+std::to_string(i));
+    DISPLAY_AMDSMI_API("amdsmi_get_energy_count", "gpu="+std::to_string(i), VERB(STANDARD));
     err = amdsmi_get_energy_count(processor_handles_[i], nullptr, nullptr, nullptr);
-    DISPLAY_AMDSMI_STATUS(__FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
+    DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
     ASSERT_EQ(err, AMDSMI_STATUS_INVAL);
 
     // Coarse Grain counters
@@ -113,10 +113,10 @@ void TestMetricsCounterRead::Run(void) {
     utilization_counters[1].type = AMDSMI_COARSE_GRAIN_MEM_ACTIVITY;
     utilization_counters[2].type = AMDSMI_COARSE_DECODER_ACTIVITY;
 
-    DISPLAY_AMDSMI_API("amdsmi_get_utilization_count", "gpu="+std::to_string(i));
+    DISPLAY_AMDSMI_API("amdsmi_get_utilization_count", "gpu="+std::to_string(i), VERB(STANDARD));
     err = amdsmi_get_utilization_count(processor_handles_[i], utilization_counters,
                     kUTILIZATION_COUNTERS, &timestamp);
-    DISPLAY_AMDSMI_STATUS(__FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS);
+    DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS);
     if (err != AMDSMI_STATUS_SUCCESS) {
       if (err == AMDSMI_STATUS_NOT_SUPPORTED) {
         return;
@@ -156,10 +156,10 @@ void TestMetricsCounterRead::Run(void) {
     utilization_counters[0].type = AMDSMI_FINE_GRAIN_GFX_ACTIVITY;
     utilization_counters[1].type = AMDSMI_FINE_GRAIN_MEM_ACTIVITY;
     utilization_counters[2].type = AMDSMI_FINE_DECODER_ACTIVITY;
-    DISPLAY_AMDSMI_API("amdsmi_get_utilization_count", "gpu="+std::to_string(i));
+    DISPLAY_AMDSMI_API("amdsmi_get_utilization_count", "gpu="+std::to_string(i), VERB(STANDARD));
     err = amdsmi_get_utilization_count(processor_handles_[i], utilization_counters,
                     kUTILIZATION_COUNTERS, &timestamp);
-    DISPLAY_AMDSMI_STATUS(__FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS);
+    DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS);
     if (err != AMDSMI_STATUS_SUCCESS) {
       if (err == AMDSMI_STATUS_NOT_SUPPORTED) {
         return;
@@ -196,9 +196,9 @@ void TestMetricsCounterRead::Run(void) {
     }
 
     // Verify api support checking functionality is working
-    DISPLAY_AMDSMI_API("amdsmi_get_utilization_count", "gpu="+std::to_string(i));
+    DISPLAY_AMDSMI_API("amdsmi_get_utilization_count", "gpu="+std::to_string(i), VERB(STANDARD));
     err = amdsmi_get_utilization_count(processor_handles_[i], nullptr, 1 , nullptr);
-    DISPLAY_AMDSMI_STATUS(__FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
+    DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
     ASSERT_EQ(err, AMDSMI_STATUS_INVAL);
   }  // end for
 }
