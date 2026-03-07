@@ -30,7 +30,7 @@
  * hipModuleLoadData, and function lookups are resolved via hipModuleGetFunction.
  */
 
-#include "hip_remote/hip_remote_client.h"
+#include "hip_remote/hip_remote_internal.h"
 #include "hip_remote/hip_remote_protocol.h"
 #include "hip_remote/hip_remote_platform.h"
 
@@ -50,9 +50,7 @@ extern void store_function_info_full(hipFunction_t function,
  * hip_remote_client.h.
  * ============================================================================ */
 
-typedef struct {
-    unsigned int x, y, z;
-} uint3;
+/* uint3 and dim3 come from <hip/hip_runtime_api.h> via hip_remote_client.h */
 
 /* ============================================================================
  * Fat Binary Module Registry

@@ -164,7 +164,6 @@ hipError_t hipBindTexture2D(void) { return 801; }
 hipError_t hipBindTextureToArray(void) { return 801; }
 hipError_t hipBindTextureToMipmappedArray(void) { return 801; }
 hipError_t hipChooseDeviceR0000(void) { return 801; }
-hipError_t hipChooseDeviceR0600(void) { return 801; }
 hipError_t hipConfigureCall(void) { return 801; }
 hipError_t hipCreateChannelDesc(void) { return 801; }
 hipError_t hipCreateSurfaceObject(void) { return 801; }

@@ -26,10 +26,15 @@ message(STATUS "hip-remote-client: Building remote HIP client library")
 
 set(ROCM_PATH "" CACHE PATH "ROCm SDK root directory containing include/hip/")
 
-if(ROCM_PATH AND EXISTS "${ROCM_PATH}/include/hip/hip_runtime_api.h")
-  set(HIP_REMOTE_HAS_HIP_HEADERS TRUE)
-  message(STATUS "hip-remote-client: Using HIP headers from ${ROCM_PATH}/include")
+if(NOT ROCM_PATH OR NOT EXISTS "${ROCM_PATH}/include/hip/hip_runtime_api.h")
+  message(FATAL_ERROR
+    "ROCM_PATH not set or HIP headers not found.\n"
+    "Set -DROCM_PATH=<path> to your ROCm SDK root.\n"
+    "  From wheels: -DROCM_PATH=$(rocm-sdk path --root)\n"
+    "  System:      -DROCM_PATH=/opt/rocm")
 endif()
+
+message(STATUS "hip-remote-client: Using HIP headers from ${ROCM_PATH}/include")
 
 ################################################################################
 # Library target
@@ -49,6 +54,7 @@ set(HIP_REMOTE_SOURCES
 set(HIP_REMOTE_HEADERS
   include/hip_remote/hip_remote_protocol.h
   include/hip_remote/hip_remote_client.h
+  include/hip_remote/hip_remote_internal.h
   include/hip_remote/hip_remote_platform.h
 )
 
@@ -62,10 +68,8 @@ target_include_directories(amdhip64
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-if(HIP_REMOTE_HAS_HIP_HEADERS)
-  target_include_directories(amdhip64 PRIVATE "${ROCM_PATH}/include")
-  target_compile_definitions(amdhip64 PRIVATE HIP_REMOTE_HAS_HIP_HEADERS=1)
-endif()
+target_include_directories(amdhip64 PRIVATE "${ROCM_PATH}/include")
+target_compile_definitions(amdhip64 PRIVATE __HIP_PLATFORM_AMD__=1)
 
 # Proxy mode: output DLL as amdhip64_7 to replace the real HIP runtime DLL
 option(HIP_REMOTE_PROXY_MODE "Build as amdhip64_7 drop-in replacement" OFF)

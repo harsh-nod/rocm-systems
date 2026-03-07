@@ -8,7 +8,7 @@
  * to the remote worker which uses HIP's implicit context model.
  */
 
-#include "hip_remote/hip_remote_client.h"
+#include "hip_remote/hip_remote_internal.h"
 #include "hip_remote/hip_remote_protocol.h"
 #include <string.h>
 

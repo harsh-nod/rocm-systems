@@ -19,7 +19,7 @@
  * @brief Device management API implementations for remote HIP
  */
 
-#include "hip_remote/hip_remote_client.h"
+#include "hip_remote/hip_remote_internal.h"
 #include "hip_remote/hip_remote_protocol.h"
 
 #include <string.h>
@@ -210,7 +210,10 @@ typedef struct {
 static HipRemoteDevicePropertiesResponse g_cached_props[MAX_CACHED_DEVICES];
 static int g_props_cached[MAX_CACHED_DEVICES];
 
-hipError_t hipGetDeviceProperties(void* prop, int deviceId) {
+#ifdef hipGetDeviceProperties
+#undef hipGetDeviceProperties
+#endif
+hipError_t hipGetDeviceProperties(hipDeviceProp_t* prop, int deviceId) {
     return hipGetDevicePropertiesR0600(prop, deviceId);
 }
 
@@ -273,7 +276,7 @@ hipError_t hipDriverGetVersion(int* driverVersion) {
  * Device Limits
  * ============================================================================ */
 
-hipError_t hipDeviceGetLimit(size_t* pValue, hipLimit_t limit) {
+hipError_t hipDeviceGetLimit(size_t* pValue, enum hipLimit_t limit) {
     if (!pValue) {
         return hipErrorInvalidValue;
     }
@@ -296,7 +299,7 @@ hipError_t hipDeviceGetLimit(size_t* pValue, hipLimit_t limit) {
     return err;
 }
 
-hipError_t hipDeviceSetLimit(hipLimit_t limit, size_t value) {
+hipError_t hipDeviceSetLimit(enum hipLimit_t limit, size_t value) {
     HipRemoteDeviceLimitRequest req = {
         .limit = (int32_t)limit,
         .value = (uint64_t)value
@@ -582,16 +585,15 @@ hipError_t hipDeviceGetStreamPriorityRange(int* leastPriority, int* greatestPrio
     return hipSuccess;
 }
 
-hipError_t hipDeviceGetDefaultMemPool(void** memPool, int device) {
+hipError_t hipDeviceGetDefaultMemPool(hipMemPool_t* memPool, int device) {
     hip_remote_log_debug("hipDeviceGetDefaultMemPool: device=%d (not supported remotely)", device);
     if (memPool) *memPool = NULL;
     return hipSuccess;
 }
 
-#ifdef HIP_REMOTE_HAS_HIP_HEADERS
-/* Use the real hipDeviceProp_t from the ROCm SDK headers */
-#endif
-#ifndef HIP_REMOTE_HAS_HIP_HEADERS
+/* hipDeviceProp_t comes from <hip/hip_runtime_api.h> via hip_remote_client.h.
+ * The following compat struct is kept for reference but not compiled. */
+#if 0
 typedef struct {
     char name[256];                   /* 0 */
     char uuid[16];                    /* 256 */
@@ -689,11 +691,10 @@ typedef struct {
     int reserved[63];                 /* 780 - padding */
     int hipReserved[32];              /* 1032 */
     char gcnArchName[256];            /* 1160 - arch name */
-} hipDeviceProp_tR0600_Compat;
-typedef hipDeviceProp_tR0600_Compat hipDeviceProp_t;
+} hipDeviceProp_tR0600_Compat_;
 #endif
 
-hipError_t hipGetDevicePropertiesR0600(void* prop, int deviceId) {
+hipError_t hipGetDevicePropertiesR0600(hipDeviceProp_t* prop, int deviceId) {
     if (!prop) return hipErrorInvalidValue;
 
     /* Use cached response if available */
@@ -821,13 +822,13 @@ hipError_t hipMemPtrGetInfo(void* ptr, size_t* size) {
     return err;
 }
 
-hipError_t hipStreamGetDevice(void* stream, int* device) {
+hipError_t hipStreamGetDevice(hipStream_t stream, hipDevice_t* device) {
     hip_remote_log_debug("hipStreamGetDevice: stream=%p (returning device 0)", stream);
     if (device) *device = 0;
     return hipSuccess;
 }
 
-hipError_t hipCtxGetCurrent(void** ctx) {
+hipError_t hipCtxGetCurrent(hipCtx_t* ctx) {
     if (ctx) *ctx = (void*)(uintptr_t)1;
     return hipSuccess;
 }
@@ -839,10 +840,10 @@ hipError_t hipDevicePrimaryCtxGetState(int device, unsigned int* flags, int* act
     return hipSuccess;
 }
 
-const char* hipDrvGetErrorString(hipError_t hipError, const char** errorString) {
+hipError_t hipDrvGetErrorString(hipError_t hipError, const char** errorString) {
     const char* s = hipGetErrorString(hipError);
     if (errorString) *errorString = s;
-    return s;
+    return hipSuccess;
 }
 
 hipError_t hipFuncSetAttribute(const void* func, int attr, int value) {
@@ -872,7 +873,7 @@ hipError_t hipMemAdvise(const void* devPtr, size_t count, int advice, int device
     return hipSuccess;
 }
 
-hipError_t hipCtxSetCurrent(void* ctx) {
+hipError_t hipCtxSetCurrent(hipCtx_t ctx) {
     hip_remote_log_debug("hipCtxSetCurrent: ctx=%p (single-context remote mode)", ctx);
     return hipSuccess;
 }
@@ -882,13 +883,13 @@ hipError_t hipDeviceGet(int* device, int ordinal) {
     return hipSuccess;
 }
 
-hipError_t hipDevicePrimaryCtxRetain(void** pctx, int device) {
+hipError_t hipDevicePrimaryCtxRetain(hipCtx_t* pctx, hipDevice_t device) {
     hip_remote_log_debug("hipDevicePrimaryCtxRetain: device=%d", device);
     if (pctx) *pctx = (void*)(uintptr_t)1;
     return hipSuccess;
 }
 
-hipError_t hipFuncGetAttribute(int* value, int attrib, void* hfunc) {
+hipError_t hipFuncGetAttribute(int* value, hipFunction_attribute attrib, hipFunction_t hfunc) {
     hip_remote_log_debug("hipFuncGetAttribute: attrib=%d func=%p", attrib, hfunc);
     if (!value) return hipErrorInvalidValue;
 
@@ -946,7 +947,7 @@ hipError_t hipPointerGetAttribute(void* data, int attribute, void* ptr) {
         &resp, sizeof(resp)
     );
     if (err == hipSuccess) {
-        memcpy(data, resp.data, sizeof(uint64_t));
+        memcpy(data, &resp.data, sizeof(uint64_t));
     }
     return err;
 }
@@ -962,7 +963,7 @@ hipError_t hipSetValidDevices(int* device_arr, int len) {
     return hipSuccess;
 }
 
-hipError_t hipChooseDevice(int* device, const void* prop) {
+hipError_t hipChooseDevice(int* device, const hipDeviceProp_t* prop) {
     (void)prop;
     if (!device) return hipErrorInvalidValue;
     int device_count = 0;
@@ -973,7 +974,7 @@ hipError_t hipChooseDevice(int* device, const void* prop) {
     return hipSuccess;
 }
 
-hipError_t hipFuncGetAttributes(void* attr, const void* func) {
+hipError_t hipFuncGetAttributes(struct hipFuncAttributes* attr, const void* func) {
     if (attr) memset(attr, 0, 56);
     (void)func;
     return hipSuccess;

@@ -19,7 +19,7 @@
  * @brief Stream and event API implementations for remote HIP
  */
 
-#include "hip_remote/hip_remote_client.h"
+#include "hip_remote/hip_remote_internal.h"
 #include "hip_remote/hip_remote_protocol.h"
 
 /* ============================================================================
@@ -603,7 +603,7 @@ hipError_t hipStreamGetCaptureInfo(hipStream_t stream, int* captureStatus, unsig
     return hipSuccess;
 }
 
-hipError_t hipStreamGetCaptureInfo_v2(hipStream_t stream, int* captureStatus, unsigned long long* id, void** graph, const void** dependencies, size_t* numDependencies) {
+hipError_t hipStreamGetCaptureInfo_v2(hipStream_t stream, hipStreamCaptureStatus* captureStatus, unsigned long long* id, hipGraph_t* graph, const hipGraphNode_t** dependencies, size_t* numDependencies) {
     hip_remote_log_debug("hipStreamGetCaptureInfo_v2: stream=%p (not supported remotely)", (void*)stream);
     if (captureStatus) *captureStatus = 0;
     if (id) *id = 0;
@@ -618,11 +618,11 @@ hipError_t hipThreadExchangeStreamCaptureMode(int* mode) {
     return hipSuccess;
 }
 
-hipError_t hipGraphInstantiateWithFlags(void** pGraphExec, void* graph, unsigned long long flags) {
-    return hipGraphInstantiate(pGraphExec, graph, NULL, NULL, (unsigned int)flags);
+hipError_t hipGraphInstantiateWithFlags(hipGraphExec_t* pGraphExec, hipGraph_t graph, unsigned long long flags) {
+    return hipGraphInstantiate(pGraphExec, graph, NULL, NULL, (size_t)flags);
 }
 
-hipError_t hipGraphDebugDotPrint(void* graph, const char* path, unsigned int flags) {
+hipError_t hipGraphDebugDotPrint(hipGraph_t graph, const char* path, unsigned int flags) {
     hip_remote_log_debug("hipGraphDebugDotPrint: graph=%p path=%s (not supported remotely)",
                          graph, path ? path : "(null)");
     return hipErrorNotSupported;

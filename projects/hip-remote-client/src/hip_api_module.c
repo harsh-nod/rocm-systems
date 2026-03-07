@@ -19,7 +19,7 @@
  * @brief Module loading and kernel launch API implementation for remote HIP
  */
 
-#include "hip_remote/hip_remote_client.h"
+#include "hip_remote/hip_remote_internal.h"
 #include "hip_remote/hip_remote_protocol.h"
 
 #include "hip_remote/hip_remote_platform.h"
@@ -498,6 +498,8 @@ hipError_t hipModuleLaunchKernel(hipFunction_t f,
  */
 extern hipFunction_t hip_fatbin_lookup_function(const void* hostFunction);
 
+extern uint32_t hip_fatbin_get_registered_count(void);
+
 /*
  * Pop call configuration - defined in hip_api_fatbin.c.
  * Retrieves the launch configuration pushed by __hipPushCallConfiguration
@@ -604,7 +606,7 @@ static int g_occ_active_count = 0;
  * ============================================================================ */
 
 hipError_t hipOccupancyMaxPotentialBlockSize(int* minGridSize, int* blockSize,
-                                              hipFunction_t f, size_t dynSharedMemPerBlk,
+                                              const void* f, size_t dynSharedMemPerBlk,
                                               int blockSizeLimit) {
     if (!minGridSize || !blockSize || !f) {
         return hipErrorInvalidValue;
@@ -650,7 +652,7 @@ hipError_t hipOccupancyMaxPotentialBlockSize(int* minGridSize, int* blockSize,
     return err;
 }
 
-hipError_t hipOccupancyMaxActiveBlocksPerMultiprocessor(int* numBlocks, hipFunction_t f,
+hipError_t hipOccupancyMaxActiveBlocksPerMultiprocessor(int* numBlocks, const void* f,
                                                          int blockSize, size_t dynSharedMemPerBlk) {
     if (!numBlocks || !f) {
         return hipErrorInvalidValue;

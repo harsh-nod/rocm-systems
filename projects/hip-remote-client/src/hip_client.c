@@ -20,7 +20,7 @@
  * Cross-platform: Works on Windows, macOS, and Linux.
  */
 
-#include "hip_remote/hip_remote_client.h"
+#include "hip_remote/hip_remote_internal.h"
 #include "hip_remote/hip_remote_protocol.h"
 #include "hip_remote/hip_remote_platform.h"
 

@@ -19,7 +19,7 @@
  * @brief Graph Node API implementations for remote HIP
  */
 
-#include "hip_remote/hip_remote_client.h"
+#include "hip_remote/hip_remote_internal.h"
 #include "hip_remote/hip_remote_protocol.h"
 
 #include <stdlib.h>
