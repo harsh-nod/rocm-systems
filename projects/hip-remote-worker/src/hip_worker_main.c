@@ -335,6 +335,10 @@ static const CachedFunctionInfo* lookup_function_info(hipFunction_t func) {
         if (g_func_cache[i].function == func)
             return &g_func_cache[i];
     }
+    if (g_debug_enabled) {
+        fprintf(stderr, "[HIP-Worker] lookup_function_info: func=%p NOT FOUND in %d entries\n",
+                (void*)func, g_func_cache_count);
+    }
     return NULL;
 }
 
@@ -4136,17 +4140,16 @@ static void handle_launch_kernel(int fd, uint32_t request_id,
                 }
             }
         } else {
-            /* No COMGR metadata: translate only exact 8-byte args from
-             * the client-provided arg descriptors.  Don't scan blindly
-             * as that can corrupt non-pointer values and poison the GPU
-             * (especially from stale clients with unknown functions). */
-            for (uint32_t ai = 0; ai < req->num_args; ai++) {
-                if (arg_descs[ai].size == 8 && arg_descs[ai].offset + 8 <= buf_size) {
-                    uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + arg_descs[ai].offset);
-                    if (*slot >= VADDR_BASE) {
-                        uint64_t translated = vaddr_map_get(*slot);
-                        if (translated != *slot) *slot = translated;
-                    }
+            /* No COMGR metadata (e.g. Tensile/rocBLAS assembly kernels, or
+             * flat buffer from hipExtModuleLaunchKernel). Scan all 8-byte-
+             * aligned positions for vaddrs. Tensile kernel scalars (matrix
+             * dimensions, strides, alpha/beta) are small values that won't
+             * collide with the vaddr range (>= 0x7F0000000000). */
+            for (uint32_t off = 0; off + 8 <= buf_size; off += 8) {
+                uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + off);
+                if (*slot >= VADDR_BASE) {
+                    uint64_t translated = vaddr_map_get(*slot);
+                    if (translated != *slot) *slot = translated;
                 }
             }
         }
