@@ -583,12 +583,12 @@ hipError_t hipExtStreamCreateWithCUMask(hipStream_t* stream, uint32_t cuMaskSize
     return hipStreamCreate(stream);
 }
 
-hipError_t hipGetStreamDeviceId(hipStream_t stream) {
+int hipGetStreamDeviceId(hipStream_t stream) {
     hip_remote_log_debug("hipGetStreamDeviceId: stream=%p (returning device 0)", (void*)stream);
     return 0;
 }
 
-hipError_t hipStreamGetCaptureInfo(hipStream_t stream, int* captureStatus, unsigned long long* id) {
+hipError_t hipStreamGetCaptureInfo(hipStream_t stream, hipStreamCaptureStatus* captureStatus, unsigned long long* id) {
     hip_remote_log_debug("hipStreamGetCaptureInfo: stream=%p (not supported remotely)", (void*)stream);
     if (captureStatus) *captureStatus = 0;
     if (id) *id = 0;
@@ -605,7 +605,7 @@ hipError_t hipStreamGetCaptureInfo_v2(hipStream_t stream, hipStreamCaptureStatus
     return hipSuccess;
 }
 
-hipError_t hipThreadExchangeStreamCaptureMode(int* mode) {
+hipError_t hipThreadExchangeStreamCaptureMode(hipStreamCaptureMode* mode) {
     hip_remote_log_debug("hipThreadExchangeStreamCaptureMode: mode=%p (not supported remotely)", (void*)mode);
     return hipSuccess;
 }

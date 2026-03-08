@@ -84,7 +84,7 @@ set_target_properties(amdhip64 PROPERTIES
 )
 
 if(WIN32 AND HIP_REMOTE_PROXY_MODE)
-  set_target_properties(amdhip64 PROPERTIES OUTPUT_NAME "amdhip64_7")
+  set_target_properties(amdhip64 PROPERTIES OUTPUT_NAME "amdhip64_7" PREFIX "")
 endif()
 
 # Platform-specific settings

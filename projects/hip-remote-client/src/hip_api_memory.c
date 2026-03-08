@@ -706,11 +706,11 @@ hipError_t hipMemcpyPeerAsync(void* dst, int dstDeviceId, const void* src,
  * Additional Memory Stubs
  * ============================================================================ */
 
-hipError_t hipMemcpyWithStream(void* dst, const void* src, size_t sizeBytes, int kind, hipStream_t stream) {
+hipError_t hipMemcpyWithStream(void* dst, const void* src, size_t sizeBytes, hipMemcpyKind kind, hipStream_t stream) {
     return hipMemcpyAsync(dst, src, sizeBytes, (hipMemcpyKind)kind, stream);
 }
 
-hipError_t hipMemcpyToSymbol(const void* symbol, const void* src, size_t count, size_t offset, int kind) {
+hipError_t hipMemcpyToSymbol(const void* symbol, const void* src, size_t count, size_t offset, hipMemcpyKind kind) {
     (void)symbol; (void)src; (void)count; (void)offset; (void)kind;
     hip_remote_log_error("hipMemcpyToSymbol: not implemented in remote mode");
     return hipErrorNotSupported;

@@ -130,7 +130,7 @@ hipError_t hipDeviceReset(void) {
 static struct { uint32_t key; int value; int valid; } g_attr_cache[ATTR_CACHE_SIZE];
 static hip_mutex_t g_attr_cache_lock = HIP_MUTEX_INIT;
 
-hipError_t hipDeviceGetAttribute(int* value, int attr, int deviceId) {
+hipError_t hipDeviceGetAttribute(int* value, hipDeviceAttribute_t attr, int deviceId) {
     if (!value) {
         return hipErrorInvalidValue;
     }
@@ -846,7 +846,7 @@ hipError_t hipDrvGetErrorString(hipError_t hipError, const char** errorString) {
     return hipSuccess;
 }
 
-hipError_t hipFuncSetAttribute(const void* func, int attr, int value) {
+hipError_t hipFuncSetAttribute(const void* func, hipFuncAttribute attr, int value) {
     hip_remote_log_debug("hipFuncSetAttribute: func=%p attr=%d value=%d (not forwarded)", func, attr, value);
     return hipSuccess;
 }
@@ -862,12 +862,12 @@ hipError_t hipLaunchHostFunc(hipStream_t stream, void (*fn)(void*), void* userDa
     return hipSuccess;
 }
 
-hipError_t hipMemcpyFromSymbol(void* dst, const void* symbol, size_t count, size_t offset, int kind) {
+hipError_t hipMemcpyFromSymbol(void* dst, const void* symbol, size_t count, size_t offset, hipMemcpyKind kind) {
     (void)dst; (void)symbol; (void)count; (void)offset; (void)kind;
     return hipErrorNotSupported;
 }
 
-hipError_t hipMemAdvise(const void* devPtr, size_t count, int advice, int device) {
+hipError_t hipMemAdvise(const void* devPtr, size_t count, hipMemoryAdvise advice, int device) {
     hip_remote_log_debug("hipMemAdvise: ptr=%p count=%zu advice=%d device=%d (hint, not forwarded)",
                          devPtr, count, advice, device);
     return hipSuccess;
@@ -911,12 +911,12 @@ hipError_t hipFuncGetAttribute(int* value, hipFunction_attribute attrib, hipFunc
     return hipSuccess;
 }
 
-hipError_t hipFuncSetCacheConfig(const void* func, int cacheConfig) {
+hipError_t hipFuncSetCacheConfig(const void* func, hipFuncCache_t cacheConfig) {
     hip_remote_log_debug("hipFuncSetCacheConfig: func=%p config=%d (hint, not forwarded)", func, cacheConfig);
     return hipSuccess;
 }
 
-hipError_t hipPointerGetAttribute(void* data, int attribute, void* ptr) {
+hipError_t hipPointerGetAttribute(void* data, hipPointer_attribute attribute, hipDeviceptr_t ptr) {
     if (!data || !ptr) return hipErrorInvalidValue;
 
     /* Only claim the pointer is a device pointer if it's in the vaddr range
