@@ -3729,15 +3729,14 @@ static void handle_module_load_data(int fd, uint32_t request_id,
         return;
     }
 
-    /* Drain any pending async GPU errors before loading a module.
-     * Without this, a prior FnF kernel error can cause hipModuleLoadData
-     * to hang indefinitely or return hipErrorNotInitialized. */
+    /* Drain pending async GPU errors so hipModuleLoadData doesn't hang.
+     * Log the error but proceed -- MIOpen's solver search triggers many
+     * module loads and can recover from transient GPU errors. */
     hipError_t sync_err = hipDeviceSynchronize();
     if (sync_err != hipSuccess) {
-        LOG_ERROR("ModuleLoadData: GPU sync error before load: %d (%s)",
+        LOG_ERROR("ModuleLoadData: GPU had pending error: %d (%s), clearing",
                   sync_err, hipGetErrorString(sync_err));
-        send_simple_response(fd, HIP_OP_MODULE_LOAD_DATA, request_id, sync_err);
-        return;
+        hipGetLastError();
     }
 
     hipModule_t module = NULL;
@@ -3918,14 +3917,9 @@ static void handle_module_load_and_get_function(int fd, uint32_t request_id,
 
     hipError_t sync_err = hipDeviceSynchronize();
     if (sync_err != hipSuccess) {
-        LOG_ERROR("ModuleLoadAndGetFunction: GPU sync error before load: %d (%s)",
+        LOG_ERROR("ModuleLoadAndGetFunction: GPU had pending error: %d (%s), clearing",
                   sync_err, hipGetErrorString(sync_err));
-        HipRemoteModuleLoadAndGetFunctionResponse resp;
-        memset(&resp, 0, sizeof(resp));
-        resp.header.error_code = (int32_t)sync_err;
-        send_response(fd, HIP_OP_MODULE_LOAD_AND_GET_FUNCTION, request_id, &resp, sizeof(resp));
-        free(kernel_name);
-        return;
+        hipGetLastError();
     }
 
     hipModule_t module = NULL;
@@ -4108,32 +4102,34 @@ static void handle_launch_kernel(int fd, uint32_t request_id,
             }
         }
         /* Translate vaddrs using COMGR metadata:
-         * - global_buffer (is_pointer=1): single 8-byte range lookup
-         * - by_value struct (size > 8, is_pointer=0): scan ALL 8-byte-aligned
-         *   sub-fields, since PyTorch packs multiple data pointers into structs
-         *   (e.g. TrivialOffsetCalculator with output+input ptrs)
-         * - by_value scalar (size <= 8, is_pointer=0): skip entirely to avoid
-         *   corrupting counters/seeds that happen to be >= VADDR_BASE */
+         * - global_buffer (is_pointer=1): range lookup
+         * - by_value, size == 8: translate if >= VADDR_BASE (Tensile marks
+         *   pointer params as by_value; real scalars are always < VADDR_BASE)
+         * - by_value, size > 8: scan ALL 8-byte sub-fields (PyTorch packs
+         *   multiple tensor pointers into structs)
+         * - by_value, size < 8: skip (definitely a scalar) */
         if (fi && fi->num_params > 0) {
             for (uint32_t pi = 0; pi < fi->num_params; pi++) {
                 uint32_t poff = fi->params[pi].offset;
                 uint32_t psize = fi->params[pi].size;
 
-                if (fi->params[pi].is_pointer) {
-                    if (poff + 8 <= buf_size) {
-                        uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + poff);
-                        if (*slot >= VADDR_BASE) {
-                            uint64_t translated = vaddr_map_get(*slot);
-                            if (translated != *slot) *slot = translated;
-                        }
-                    }
-                } else if (psize > 8) {
-                    for (uint32_t soff = 0; soff + 8 <= psize; soff += 8) {
-                        if (poff + soff + 8 <= buf_size) {
-                            uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + poff + soff);
+                if (psize >= 8) {
+                    if (fi->params[pi].is_pointer || psize == 8) {
+                        if (poff + 8 <= buf_size) {
+                            uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + poff);
                             if (*slot >= VADDR_BASE) {
                                 uint64_t translated = vaddr_map_get(*slot);
                                 if (translated != *slot) *slot = translated;
+                            }
+                        }
+                    } else {
+                        for (uint32_t soff = 0; soff + 8 <= psize; soff += 8) {
+                            if (poff + soff + 8 <= buf_size) {
+                                uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + poff + soff);
+                                if (*slot >= VADDR_BASE) {
+                                    uint64_t translated = vaddr_map_get(*slot);
+                                    if (translated != *slot) *slot = translated;
+                                }
                             }
                         }
                     }
