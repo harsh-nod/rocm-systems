@@ -244,9 +244,12 @@ static void* vaddr_translate(uint64_t v) {
 
 /* ============================================================================
  * Code Object Storage (for COMGR metadata extraction)
+ *
+ * Dynamically growable so Triton workloads with thousands of JIT-compiled
+ * kernels never lose module data needed for COMGR metadata extraction.
  * ============================================================================ */
 
-#define MAX_LOADED_MODULES 256
+#define LOADED_MODULES_INITIAL 256
 
 typedef struct {
     hipModule_t module;
@@ -254,12 +257,28 @@ typedef struct {
     size_t size;
 } LoadedModuleEntry;
 
-static LoadedModuleEntry g_loaded_modules[MAX_LOADED_MODULES];
+static LoadedModuleEntry* g_loaded_modules = NULL;
 static int g_loaded_module_count = 0;
+static int g_loaded_module_capacity = 0;
+
+static int loaded_modules_ensure_capacity(void) {
+    if (g_loaded_module_count < g_loaded_module_capacity) return 0;
+    int new_cap = g_loaded_module_capacity == 0 ? LOADED_MODULES_INITIAL : g_loaded_module_capacity * 2;
+    LoadedModuleEntry* new_arr = (LoadedModuleEntry*)realloc(
+        g_loaded_modules, new_cap * sizeof(LoadedModuleEntry));
+    if (!new_arr) return -1;
+    memset(new_arr + g_loaded_module_capacity, 0,
+           (new_cap - g_loaded_module_capacity) * sizeof(LoadedModuleEntry));
+    g_loaded_modules = new_arr;
+    g_loaded_module_capacity = new_cap;
+    return 0;
+}
 
 /* Per-function COMGR metadata cache — used to reconstruct kernelParams
- * from a flat buffer during kernel launch. */
-#define MAX_CACHED_FUNCTIONS 1024
+ * from a flat buffer during kernel launch.  Dynamically growable so that
+ * Triton workloads with thousands of unique JIT-compiled kernels don't
+ * overflow and fall back to the fragile 8-byte scan heuristic. */
+#define FUNC_CACHE_INITIAL 1024
 
 typedef struct {
     hipFunction_t function;
@@ -269,8 +288,22 @@ typedef struct {
     HipRemoteParamDesc params[HIP_REMOTE_MAX_PARAM_DESCS];
 } CachedFunctionInfo;
 
-static CachedFunctionInfo g_func_cache[MAX_CACHED_FUNCTIONS];
+static CachedFunctionInfo* g_func_cache = NULL;
 static int g_func_cache_count = 0;
+static int g_func_cache_capacity = 0;
+
+static int func_cache_ensure_capacity(void) {
+    if (g_func_cache_count < g_func_cache_capacity) return 0;
+    int new_cap = g_func_cache_capacity == 0 ? FUNC_CACHE_INITIAL : g_func_cache_capacity * 2;
+    CachedFunctionInfo* new_arr = (CachedFunctionInfo*)realloc(
+        g_func_cache, new_cap * sizeof(CachedFunctionInfo));
+    if (!new_arr) return -1;
+    memset(new_arr + g_func_cache_capacity, 0,
+           (new_cap - g_func_cache_capacity) * sizeof(CachedFunctionInfo));
+    g_func_cache = new_arr;
+    g_func_cache_capacity = new_cap;
+    return 0;
+}
 
 static void cache_function_info(hipFunction_t func, uint32_t num_params,
                                 uint32_t kernarg_size,
@@ -285,7 +318,10 @@ static void cache_function_info(hipFunction_t func, uint32_t num_params,
             return;
         }
     }
-    if (g_func_cache_count >= MAX_CACHED_FUNCTIONS) return;
+    if (func_cache_ensure_capacity() != 0) {
+        fprintf(stderr, "[HIP-Worker ERROR] func cache realloc failed (count=%d)\n", g_func_cache_count);
+        return;
+    }
     int idx = g_func_cache_count++;
     g_func_cache[idx].function = func;
     g_func_cache[idx].num_params = num_params;
@@ -320,11 +356,10 @@ static void store_module_data(hipModule_t module, const void* data, size_t size)
         }
     }
 
-    if (g_loaded_module_count >= MAX_LOADED_MODULES) {
-        free(g_loaded_modules[0].data);
-        memmove(&g_loaded_modules[0], &g_loaded_modules[1],
-                (MAX_LOADED_MODULES - 1) * sizeof(LoadedModuleEntry));
-        g_loaded_module_count = MAX_LOADED_MODULES - 1;
+    if (loaded_modules_ensure_capacity() != 0) {
+        fprintf(stderr, "[HIP-Worker ERROR] loaded_modules realloc failed (count=%d)\n",
+                g_loaded_module_count);
+        return;
     }
     int idx = g_loaded_module_count++;
     g_loaded_modules[idx].module = module;
@@ -345,23 +380,36 @@ static const LoadedModuleEntry* find_module_data(hipModule_t module) {
     return NULL;
 }
 
-/* kernarg_segment_size cache per function handle */
-#define MAX_CACHED_KERNARG_SIZES 4096
+/* kernarg_segment_size cache per function handle -- dynamically growable */
+#define KERNARG_SIZES_INITIAL 4096
 
 typedef struct {
     hipFunction_t func;
     uint32_t kernarg_size;
 } KernargSizeEntry;
 
-static KernargSizeEntry g_kernarg_sizes[MAX_CACHED_KERNARG_SIZES];
+static KernargSizeEntry* g_kernarg_sizes = NULL;
 static int g_kernarg_size_count = 0;
+static int g_kernarg_size_capacity = 0;
 
 static void store_kernarg_size(hipFunction_t func, uint32_t size) {
-    if (g_kernarg_size_count < MAX_CACHED_KERNARG_SIZES) {
-        g_kernarg_sizes[g_kernarg_size_count].func = func;
-        g_kernarg_sizes[g_kernarg_size_count].kernarg_size = size;
-        g_kernarg_size_count++;
+    for (int i = 0; i < g_kernarg_size_count; i++) {
+        if (g_kernarg_sizes[i].func == func) {
+            g_kernarg_sizes[i].kernarg_size = size;
+            return;
+        }
     }
+    if (g_kernarg_size_count >= g_kernarg_size_capacity) {
+        int new_cap = g_kernarg_size_capacity == 0 ? KERNARG_SIZES_INITIAL : g_kernarg_size_capacity * 2;
+        KernargSizeEntry* new_arr = (KernargSizeEntry*)realloc(
+            g_kernarg_sizes, new_cap * sizeof(KernargSizeEntry));
+        if (!new_arr) return;
+        g_kernarg_sizes = new_arr;
+        g_kernarg_size_capacity = new_cap;
+    }
+    g_kernarg_sizes[g_kernarg_size_count].func = func;
+    g_kernarg_sizes[g_kernarg_size_count].kernarg_size = size;
+    g_kernarg_size_count++;
 }
 
 static uint32_t get_kernarg_size(hipFunction_t func) {
@@ -371,8 +419,8 @@ static uint32_t get_kernarg_size(hipFunction_t func) {
     return 0;
 }
 
-/* Cache for COMGR-extracted kernel arg metadata */
-#define MAX_CACHED_KERNEL_ARGS 4096
+/* Cache for COMGR-extracted kernel arg metadata -- dynamically growable */
+#define KERNEL_ARG_CACHE_INITIAL 1024
 
 typedef struct {
     hipModule_t module;
@@ -383,8 +431,9 @@ typedef struct {
     int valid;
 } CachedKernelArgs;
 
-static CachedKernelArgs g_kernel_arg_cache[MAX_CACHED_KERNEL_ARGS];
+static CachedKernelArgs* g_kernel_arg_cache = NULL;
 static int g_kernel_arg_cache_count = 0;
+static int g_kernel_arg_cache_capacity = 0;
 
 static const CachedKernelArgs* find_cached_kernel_args(hipModule_t module, const char* name) {
     for (int i = 0; i < g_kernel_arg_cache_count; i++) {
@@ -400,15 +449,25 @@ static const CachedKernelArgs* find_cached_kernel_args(hipModule_t module, const
 static void cache_kernel_args(hipModule_t module, const char* name,
                                uint32_t num_params, uint32_t kernarg_segment_size,
                                const HipRemoteParamDesc* params) {
-    int idx = g_kernel_arg_cache_count;
-    if (idx >= MAX_CACHED_KERNEL_ARGS) idx = MAX_CACHED_KERNEL_ARGS - 1;
-    else g_kernel_arg_cache_count++;
+    if (g_kernel_arg_cache_count >= g_kernel_arg_cache_capacity) {
+        int new_cap = g_kernel_arg_cache_capacity == 0 ? KERNEL_ARG_CACHE_INITIAL : g_kernel_arg_cache_capacity * 2;
+        CachedKernelArgs* new_arr = (CachedKernelArgs*)realloc(
+            g_kernel_arg_cache, new_cap * sizeof(CachedKernelArgs));
+        if (!new_arr) return;
+        memset(new_arr + g_kernel_arg_cache_capacity, 0,
+               (new_cap - g_kernel_arg_cache_capacity) * sizeof(CachedKernelArgs));
+        g_kernel_arg_cache = new_arr;
+        g_kernel_arg_cache_capacity = new_cap;
+    }
 
+    int idx = g_kernel_arg_cache_count++;
     g_kernel_arg_cache[idx].module = module;
     strncpy(g_kernel_arg_cache[idx].kernel_name, name, sizeof(g_kernel_arg_cache[idx].kernel_name) - 1);
+    g_kernel_arg_cache[idx].kernel_name[sizeof(g_kernel_arg_cache[idx].kernel_name) - 1] = '\0';
     g_kernel_arg_cache[idx].num_params = num_params;
     g_kernel_arg_cache[idx].kernarg_segment_size = kernarg_segment_size;
-    memcpy(g_kernel_arg_cache[idx].params, params, num_params * sizeof(HipRemoteParamDesc));
+    if (num_params > 0 && params)
+        memcpy(g_kernel_arg_cache[idx].params, params, num_params * sizeof(HipRemoteParamDesc));
     g_kernel_arg_cache[idx].valid = 1;
 }
 
@@ -708,6 +767,7 @@ static uint32_t comgr_extract_kernel_params(const void* code_data, size_t code_s
                 g_comgr.destroy_metadata(arg_node);
                 continue;
             }
+
             free(val_kind);
 
             char* off_str = comgr_lookup_string(arg_node, ".offset");
@@ -1120,11 +1180,19 @@ static void handle_malloc_vaddr(int fd, uint32_t request_id,
     void* ptr = NULL;
     hipError_t err;
 
-    if (is_async && req->stream) {
-        hipStream_t stream = vaddr_translate(req->stream);
-        err = hipMallocAsync(&ptr, req->size, stream);
-    } else {
-        err = hipMalloc(&ptr, req->size);
+    /* Retry transient allocation failures (GPU contention under high load) */
+    for (int attempt = 0; attempt < 3; attempt++) {
+        if (is_async && req->stream) {
+            hipStream_t stream = vaddr_translate(req->stream);
+            err = hipMallocAsync(&ptr, req->size, stream);
+        } else {
+            err = hipMalloc(&ptr, req->size);
+        }
+        if (err == hipSuccess && ptr) break;
+        if (attempt < 2) {
+            hipDeviceSynchronize();
+            usleep(1000 * (attempt + 1));
+        }
     }
 
     if (err == hipSuccess && ptr) {
@@ -1134,8 +1202,8 @@ static void handle_malloc_vaddr(int fd, uint32_t request_id,
     } else {
         vaddr_map_put(req->vaddr, VADDR_ERROR, 0);
         g_deferred_alloc_error = err;
-        LOG_ERROR("MallocVaddr: vaddr=0x%lx size=%lu FAILED err=%d",
-                  (unsigned long)req->vaddr, (unsigned long)req->size, err);
+        fprintf(stderr, "[HIP-Worker ERROR] MallocVaddr: vaddr=0x%lx size=%lu FAILED err=%d\n",
+                (unsigned long)req->vaddr, (unsigned long)req->size, err);
     }
     send_simple_response(fd, is_async ? HIP_OP_MALLOC_ASYNC_VADDR : HIP_OP_MALLOC_VADDR,
                          request_id, err);
@@ -3984,14 +4052,17 @@ static void handle_launch_kernel(int fd, uint32_t request_id,
                         pi, fi->params[pi].offset, fi->params[pi].size, (unsigned long)val);
             }
         }
-        /* Translate vaddrs in kernel args. For each param, scan all 8-byte-
-         * aligned positions within it (structs may embed pointers). */
+        /* Translate vaddrs in pointer-type kernel args (size == 8).
+         * For struct params (size > 8), only translate the first 8 bytes.
+         * Scanning deeper sub-fields risks corrupting non-pointer data
+         * (e.g., PhiloxState counters/seeds) that can't be distinguished
+         * from pointers without value_kind metadata. */
         if (fi && fi->num_params > 0) {
             for (uint32_t pi = 0; pi < fi->num_params; pi++) {
                 uint32_t poff = fi->params[pi].offset;
                 uint32_t psize = fi->params[pi].size;
-                for (uint32_t j = 0; j + 8 <= psize && poff + j + 8 <= buf_size; j += 8) {
-                    uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + poff + j);
+                if (psize >= 8 && poff + 8 <= buf_size) {
+                    uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + poff);
                     if (*slot >= VADDR_BASE) {
                         uint64_t translated = vaddr_map_get(*slot);
                         if (translated != *slot) *slot = translated;
@@ -3999,11 +4070,17 @@ static void handle_launch_kernel(int fd, uint32_t request_id,
                 }
             }
         } else {
-            for (size_t off = 0; off + 8 <= total_arg_size; off += 8) {
-                uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + off);
-                if (*slot >= VADDR_BASE) {
-                    uint64_t translated = vaddr_map_get(*slot);
-                    if (translated != *slot) *slot = translated;
+            /* No COMGR metadata: translate only exact 8-byte args from
+             * the client-provided arg descriptors.  Don't scan blindly
+             * as that can corrupt non-pointer values and poison the GPU
+             * (especially from stale clients with unknown functions). */
+            for (uint32_t ai = 0; ai < req->num_args; ai++) {
+                if (arg_descs[ai].size == 8 && arg_descs[ai].offset + 8 <= buf_size) {
+                    uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + arg_descs[ai].offset);
+                    if (*slot >= VADDR_BASE) {
+                        uint64_t translated = vaddr_map_get(*slot);
+                        if (translated != *slot) *slot = translated;
+                    }
                 }
             }
         }
@@ -4744,7 +4821,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    if (listen(g_server_fd, 5) < 0) {
+    if (listen(g_server_fd, 256) < 0) {
         LOG_ERROR("Failed to listen: %s", strerror(errno));
         return 1;
     }
@@ -4785,9 +4862,18 @@ int main(int argc, char** argv) {
             int nodelay = 1;
             setsockopt(client_fd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
 
-            struct timeval io_timeout = { .tv_sec = 60, .tv_usec = 0 };
-            setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, &io_timeout, sizeof(io_timeout));
-            setsockopt(client_fd, SOL_SOCKET, SO_SNDTIMEO, &io_timeout, sizeof(io_timeout));
+            /* Enable TCP keepalive instead of a hard I/O timeout.
+             * Triton kernel compilation can take minutes of CPU work during
+             * which no HIP requests are sent.  A hard timeout would kill the
+             * connection and lose all vaddr mappings. */
+            int keepalive = 1;
+            setsockopt(client_fd, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof(keepalive));
+            int keepidle = 300;   /* start probes after 5 min idle */
+            int keepintvl = 60;   /* probe every 60s */
+            int keepcnt = 5;      /* drop after 5 failed probes */
+            setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(keepidle));
+            setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(keepintvl));
+            setsockopt(client_fd, IPPROTO_TCP, TCP_KEEPCNT, &keepcnt, sizeof(keepcnt));
 
             handle_client(client_fd);
             _exit(0);

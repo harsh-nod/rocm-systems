@@ -36,7 +36,7 @@
  * argument count instead of requiring NULL-terminated arrays.
  * ============================================================================ */
 
-#define MAX_TRACKED_FUNCTIONS 1024
+#define FUNC_INFO_INITIAL 1024
 
 typedef struct {
     hipFunction_t function;
@@ -45,9 +45,22 @@ typedef struct {
     HipRemoteParamDesc params[HIP_REMOTE_MAX_PARAM_DESCS];
 } FunctionInfo;
 
-static FunctionInfo g_function_info[MAX_TRACKED_FUNCTIONS];
+static FunctionInfo* g_function_info = NULL;
 static uint32_t g_function_count = 0;
+static uint32_t g_function_capacity = 0;
 static hip_mutex_t g_function_lock = HIP_MUTEX_INIT;
+
+static int func_info_ensure_capacity(void) {
+    if (g_function_count < g_function_capacity) return 0;
+    uint32_t new_cap = g_function_capacity == 0 ? FUNC_INFO_INITIAL : g_function_capacity * 2;
+    FunctionInfo* new_arr = (FunctionInfo*)realloc(g_function_info, new_cap * sizeof(FunctionInfo));
+    if (!new_arr) return -1;
+    memset(new_arr + g_function_capacity, 0,
+           (new_cap - g_function_capacity) * sizeof(FunctionInfo));
+    g_function_info = new_arr;
+    g_function_capacity = new_cap;
+    return 0;
+}
 
 /* Thread-local ext-launch state set by hipExtModuleLaunchKernel and
  * consumed by hipModuleLaunchKernel so the events/flags are forwarded
@@ -96,7 +109,7 @@ void store_function_info_full(hipFunction_t function,
     }
 
     /* Add new entry */
-    if (g_function_count < MAX_TRACKED_FUNCTIONS) {
+    if (func_info_ensure_capacity() == 0) {
         uint32_t idx = g_function_count++;
         g_function_info[idx].function = function;
         g_function_info[idx].kernarg_size = kernarg_size;

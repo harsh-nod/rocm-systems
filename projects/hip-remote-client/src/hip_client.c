@@ -42,7 +42,7 @@ static HipRemoteClientState g_client_state = {
     .worker_host = "localhost",
     .worker_port = HIP_REMOTE_DEFAULT_PORT,
     .connect_timeout_sec = 30,
-    .io_timeout_sec = 60,
+    .io_timeout_sec = 0,  /* no timeout -- keepalive handles dead connections */
     .last_error = hipSuccess
 };
 
@@ -188,10 +188,12 @@ static int flush_write_buffer_locked(void) {
 /**
  * Mark connection as disconnected.
  */
+static int g_permanently_disconnected = 0;
+
 static void mark_disconnected_locked(const char* reason) {
     if (reason) {
         int err = hip_socket_errno();
-        hip_remote_log_debug("Disconnected: %s (errno=%d: %s)",
+        hip_remote_log_error("Disconnected: %s (errno=%d: %s)",
                              reason, err, hip_socket_strerror(err));
     }
     if (g_client_state.socket_fd != HIP_INVALID_SOCKET) {
@@ -199,6 +201,10 @@ static void mark_disconnected_locked(const char* reason) {
     }
     g_client_state.socket_fd = HIP_INVALID_SOCKET;
     g_client_state.connected = false;
+    /* Mark permanently disconnected. Reconnection would create a new
+     * worker child with empty vaddr/function caches, causing silent
+     * corruption from stale client-side handles. */
+    g_permanently_disconnected = 1;
 }
 
 /**
@@ -257,6 +263,9 @@ static void init_from_environment(void) {
 static int connect_to_worker_locked(void) {
     if (g_client_state.connected) {
         return 0;
+    }
+    if (g_permanently_disconnected) {
+        return -1;
     }
 
     /* Ensure socket subsystem is initialized */
