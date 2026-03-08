@@ -919,19 +919,23 @@ hipError_t hipFuncSetCacheConfig(const void* func, int cacheConfig) {
 hipError_t hipPointerGetAttribute(void* data, int attribute, void* ptr) {
     if (!data || !ptr) return hipErrorInvalidValue;
 
-    /* Handle pointer attribute queries locally for remote device pointers.
-     * hipPointerAttributeDevicePointer = 3: return the pointer itself.
-     * hipPointerAttributeMemoryType = 2: return 2 (hipMemoryTypeDevice).
-     * All device pointers in hip-remote are opaque remote handles. */
+    /* Only claim the pointer is a device pointer if it's in the vaddr range
+     * (allocated by our hipMalloc). CPU pointers are outside this range and
+     * should return hipErrorInvalidValue so callers (e.g. Triton) can detect
+     * them and raise appropriate errors. */
+    int is_device_ptr = ((uintptr_t)ptr >= 0x7F0000000000ULL);
+
     switch (attribute) {
         case 3: /* hipPointerAttributeDevicePointer */
+            if (!is_device_ptr) return hipErrorInvalidValue;
             *(void**)data = ptr;
             return hipSuccess;
         case 2: /* hipPointerAttributeMemoryType */
+            if (!is_device_ptr) return hipErrorInvalidValue;
             *(unsigned int*)data = 2; /* hipMemoryTypeDevice */
             return hipSuccess;
         case 4: /* hipPointerAttributeHostPointer */
-            *(void**)data = NULL;
+            *(void**)data = is_device_ptr ? NULL : ptr;
             return hipSuccess;
     }
 
