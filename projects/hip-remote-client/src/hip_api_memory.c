@@ -26,6 +26,32 @@
 #include <string.h>
 
 /* ============================================================================
+ * Virtual Address Allocator
+ *
+ * The client assigns opaque virtual addresses locally and sends allocations
+ * as fire-and-forget.  The worker maintains a vaddr->real_ptr hash map and
+ * translates addresses in every subsequent operation.  This eliminates the
+ * synchronous round-trip that hipMalloc previously required.
+ *
+ * The address range starts high (0x7F00_0000_0000) to avoid collisions with
+ * real host pointers.  Each allocation is page-aligned so that pointer
+ * arithmetic on the client produces valid offsets on the worker.
+ * ============================================================================ */
+
+#define VADDR_BASE  0x7F0000000000ULL
+#define VADDR_ALIGN 4096ULL
+
+static uint64_t g_next_vaddr = VADDR_BASE;
+
+static uint64_t vaddr_alloc(size_t size) {
+    uint64_t addr = g_next_vaddr;
+    uint64_t aligned = (size + VADDR_ALIGN - 1) & ~(VADDR_ALIGN - 1);
+    if (aligned == 0) aligned = VADDR_ALIGN;
+    g_next_vaddr += aligned;
+    return addr;
+}
+
+/* ============================================================================
  * Memory Allocation
  * ============================================================================ */
 
@@ -38,21 +64,20 @@ hipError_t hipMalloc(void** ptr, size_t size) {
         return hipSuccess;
     }
 
-    HipRemoteMallocRequest req = {
+    uint64_t vaddr = vaddr_alloc(size);
+    HipRemoteMallocVaddrRequest req = {
+        .vaddr = vaddr,
         .size = size,
+        .stream = 0,
         .flags = 0
     };
-    HipRemoteMallocResponse resp;
 
-    hipError_t err = hip_remote_request(
-        HIP_OP_MALLOC,
-        &req, sizeof(req),
-        &resp, sizeof(resp)
+    hipError_t err = hip_remote_request_fire_and_forget(
+        HIP_OP_MALLOC_VADDR, &req, sizeof(req)
     );
 
     if (err == hipSuccess) {
-        /* Store the remote pointer as an opaque handle */
-        *ptr = (void*)(uintptr_t)resp.device_ptr;
+        *ptr = (void*)(uintptr_t)vaddr;
     } else {
         *ptr = NULL;
     }
@@ -133,18 +158,7 @@ hipError_t hipFreeHost(void* ptr) {
         return hipSuccess;
     }
 
-    /* Notify remote (best effort) */
-    HipRemoteFreeRequest req = {
-        .device_ptr = (uint64_t)(uintptr_t)ptr
-    };
-    HipRemoteResponseHeader resp;
-    (void)hip_remote_request(
-        HIP_OP_FREE_HOST,
-        &req, sizeof(req),
-        &resp, sizeof(resp)
-    );
-
-    /* Free local memory */
+    /* hipMallocHost allocates locally, so just free locally. */
     free(ptr);
     return hipSuccess;
 }
@@ -158,20 +172,20 @@ hipError_t hipMallocManaged(void** ptr, size_t size, unsigned int flags) {
         return hipSuccess;
     }
 
-    HipRemoteMallocRequest req = {
+    uint64_t vaddr = vaddr_alloc(size);
+    HipRemoteMallocVaddrRequest req = {
+        .vaddr = vaddr,
         .size = size,
+        .stream = 0,
         .flags = flags
     };
-    HipRemoteMallocResponse resp;
 
-    hipError_t err = hip_remote_request(
-        HIP_OP_MALLOC_MANAGED,
-        &req, sizeof(req),
-        &resp, sizeof(resp)
+    hipError_t err = hip_remote_request_fire_and_forget(
+        HIP_OP_MALLOC_VADDR, &req, sizeof(req)
     );
 
     if (err == hipSuccess) {
-        *ptr = (void*)(uintptr_t)resp.device_ptr;
+        *ptr = (void*)(uintptr_t)vaddr;
     } else {
         *ptr = NULL;
     }
@@ -187,20 +201,20 @@ hipError_t hipMallocAsync(void** ptr, size_t size, hipStream_t stream) {
         return hipSuccess;
     }
 
-    HipRemoteMallocAsyncRequest req = {
+    uint64_t vaddr = vaddr_alloc(size);
+    HipRemoteMallocVaddrRequest req = {
+        .vaddr = vaddr,
         .size = size,
-        .stream = (uint64_t)(uintptr_t)stream
+        .stream = (uint64_t)(uintptr_t)stream,
+        .flags = 0
     };
-    HipRemoteMallocResponse resp;
 
-    hipError_t err = hip_remote_request(
-        HIP_OP_MALLOC_ASYNC,
-        &req, sizeof(req),
-        &resp, sizeof(resp)
+    hipError_t err = hip_remote_request_fire_and_forget(
+        HIP_OP_MALLOC_ASYNC_VADDR, &req, sizeof(req)
     );
 
     if (err == hipSuccess) {
-        *ptr = (void*)(uintptr_t)resp.device_ptr;
+        *ptr = (void*)(uintptr_t)vaddr;
     } else {
         *ptr = NULL;
     }

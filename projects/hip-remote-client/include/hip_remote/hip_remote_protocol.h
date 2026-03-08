@@ -238,6 +238,10 @@ typedef enum {
     HIP_OP_FUNC_SET_ATTRIBUTE       = 0x0515,  /* hipFuncSetAttribute */
     HIP_OP_FUNC_SET_CACHE_CONFIG    = 0x0516,  /* hipFuncSetCacheConfig */
 
+    /* Virtual-handle allocation (client assigns handle, worker maps to real) */
+    HIP_OP_MALLOC_VADDR                 = 0x0280,
+    HIP_OP_MALLOC_ASYNC_VADDR           = 0x0281,
+
     /* Batched/combined operations (0x074x-0x075x) */
     HIP_OP_MODULE_LOAD_AND_GET_FUNCTION = 0x0744,
     HIP_OP_MALLOC_BATCH                 = 0x0745,
@@ -628,6 +632,16 @@ typedef struct HIP_PACKED_ATTR {
     uint64_t device_ptr;
     uint64_t stream;          /**< Stream for async deallocation */
 } HipRemoteFreeAsyncRequest;
+
+/* HIP_OP_MALLOC_VADDR / HIP_OP_MALLOC_ASYNC_VADDR
+ * Client assigns a virtual handle and sends FnF; worker allocates real memory
+ * and stores the mapping. Eliminates the round-trip for hipMalloc. */
+typedef struct HIP_PACKED_ATTR {
+    uint64_t vaddr;           /**< Client-assigned virtual address */
+    uint64_t size;
+    uint64_t stream;          /**< For MALLOC_ASYNC_VADDR; 0 for sync */
+    uint32_t flags;
+} HipRemoteMallocVaddrRequest;
 
 /* HIP_OP_MEMCPY / HIP_OP_MEMCPY_ASYNC */
 typedef struct HIP_PACKED_ATTR {
@@ -1374,6 +1388,7 @@ typedef struct HIP_PACKED_ATTR {
 typedef struct HIP_PACKED_ATTR {
     uint32_t flags;
     int32_t priority;         /**< For HIP_OP_STREAM_CREATE_WITH_PRIORITY */
+    uint64_t vhandle;         /**< Client-assigned virtual stream handle (0 = legacy) */
 } HipRemoteStreamCreateRequest;
 
 typedef struct HIP_PACKED_ATTR {
@@ -2013,6 +2028,8 @@ static inline const char* hip_remote_op_name(HipRemoteOpCode op_code) {
         case HIP_OP_FREE_HOST: return "hipFreeHost";
         case HIP_OP_MALLOC_MANAGED: return "hipMallocManaged";
         case HIP_OP_MALLOC_ASYNC: return "hipMallocAsync";
+        case HIP_OP_MALLOC_VADDR: return "hipMalloc(vaddr)";
+        case HIP_OP_MALLOC_ASYNC_VADDR: return "hipMallocAsync(vaddr)";
         case HIP_OP_FREE_ASYNC: return "hipFreeAsync";
 
         case HIP_OP_MEMCPY: return "hipMemcpy";

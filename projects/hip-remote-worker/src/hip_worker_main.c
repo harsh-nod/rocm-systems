@@ -61,6 +61,188 @@ static volatile bool g_running = true;
 static int g_server_fd = -1;
 
 /* ============================================================================
+ * Virtual Address Translation
+ *
+ * The client assigns opaque virtual addresses (vaddrs) for GPU pointers and
+ * stream handles.  The worker maintains a hash map from vaddr to the real
+ * pointer/handle returned by the HIP runtime.  Every handler translates
+ * incoming vaddrs before calling the real HIP API.
+ * ============================================================================ */
+
+#define VADDR_MAP_SIZE (1 << 20)  /* 1M slots, ~16MB */
+#define VADDR_MAP_MASK (VADDR_MAP_SIZE - 1)
+#define VADDR_BASE     0x7F0000000000ULL
+#define VSTREAM_BASE   0x5F0000000000ULL
+#define VADDR_EMPTY    0ULL
+#define VADDR_TOMBSTONE 1ULL  /* deleted slot, continue probing */
+#define VADDR_ERROR    2ULL   /* sentinel: allocation failed */
+
+typedef struct {
+    uint64_t vaddr;
+    uint64_t real_ptr;
+    uint64_t size;         /* allocation size, for offset lookups */
+} VaddrEntry;
+
+static VaddrEntry g_vaddr_map[VADDR_MAP_SIZE];
+static hipError_t g_deferred_alloc_error = hipSuccess;
+
+#define VADDR_ALLOC_MAX 65536
+typedef struct { uint64_t base; uint64_t real; uint64_t size; } VaddrAlloc;
+static VaddrAlloc g_vaddr_allocs[VADDR_ALLOC_MAX];
+static int g_vaddr_alloc_count = 0;
+static int g_vaddr_allocs_sorted = 1;
+
+/* Last-hit cache: most kernel launches re-use the same few allocations */
+static uint64_t g_vaddr_cache_vbase = 0;
+static uint64_t g_vaddr_cache_rbase = 0;
+static uint64_t g_vaddr_cache_size  = 0;
+
+static int vaddr_alloc_cmp(const void* a, const void* b) {
+    uint64_t ba = ((const VaddrAlloc*)a)->base;
+    uint64_t bb = ((const VaddrAlloc*)b)->base;
+    return (ba > bb) - (ba < bb);
+}
+
+static void vaddr_allocs_ensure_sorted(void) {
+    if (!g_vaddr_allocs_sorted && g_vaddr_alloc_count > 1) {
+        qsort(g_vaddr_allocs, g_vaddr_alloc_count, sizeof(VaddrAlloc), vaddr_alloc_cmp);
+        g_vaddr_allocs_sorted = 1;
+    }
+}
+
+static const VaddrAlloc* vaddr_allocs_bsearch(uint64_t vaddr) {
+    vaddr_allocs_ensure_sorted();
+    int lo = 0, hi = g_vaddr_alloc_count - 1;
+    while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (vaddr < g_vaddr_allocs[mid].base) {
+            hi = mid - 1;
+        } else if (vaddr >= g_vaddr_allocs[mid].base + g_vaddr_allocs[mid].size) {
+            lo = mid + 1;
+        } else {
+            return &g_vaddr_allocs[mid];
+        }
+    }
+    return NULL;
+}
+
+static void vaddr_map_put(uint64_t vaddr, uint64_t real_ptr, uint64_t size) {
+    /* Insert into hash map for O(1) exact lookup */
+    uint32_t idx = (uint32_t)(vaddr >> 12) & VADDR_MAP_MASK;
+    uint32_t first_tombstone = UINT32_MAX;
+    for (uint32_t i = 0; i < VADDR_MAP_SIZE; i++) {
+        uint32_t slot = (idx + i) & VADDR_MAP_MASK;
+        if (g_vaddr_map[slot].vaddr == vaddr) {
+            g_vaddr_map[slot].real_ptr = real_ptr;
+            g_vaddr_map[slot].size = size;
+            goto update_alloc_list;
+        }
+        if (g_vaddr_map[slot].vaddr == VADDR_TOMBSTONE && first_tombstone == UINT32_MAX) {
+            first_tombstone = slot;
+        }
+        if (g_vaddr_map[slot].vaddr == VADDR_EMPTY) {
+            uint32_t target = (first_tombstone != UINT32_MAX) ? first_tombstone : slot;
+            g_vaddr_map[target].vaddr = vaddr;
+            g_vaddr_map[target].real_ptr = real_ptr;
+            g_vaddr_map[target].size = size;
+            goto update_alloc_list;
+        }
+    }
+    if (first_tombstone != UINT32_MAX) {
+        g_vaddr_map[first_tombstone].vaddr = vaddr;
+        g_vaddr_map[first_tombstone].real_ptr = real_ptr;
+        g_vaddr_map[first_tombstone].size = size;
+    }
+
+update_alloc_list:
+    /* Also record in compact alloc list for fast range lookups */
+    if (size > 0 && real_ptr != VADDR_ERROR) {
+        for (int i = 0; i < g_vaddr_alloc_count; i++) {
+            if (g_vaddr_allocs[i].base == vaddr) {
+                g_vaddr_allocs[i].real = real_ptr;
+                g_vaddr_allocs[i].size = size;
+                return;
+            }
+        }
+        if (g_vaddr_alloc_count < VADDR_ALLOC_MAX) {
+            g_vaddr_allocs[g_vaddr_alloc_count].base = vaddr;
+            g_vaddr_allocs[g_vaddr_alloc_count].real = real_ptr;
+            g_vaddr_allocs[g_vaddr_alloc_count].size = size;
+            g_vaddr_alloc_count++;
+            g_vaddr_allocs_sorted = 0;
+        }
+    }
+}
+
+static uint64_t vaddr_map_get(uint64_t vaddr) {
+    if (vaddr == 0) return 0;
+    if (vaddr < VSTREAM_BASE) return vaddr;
+
+    /* Hot path: last-hit cache (same allocation block as previous lookup) */
+    if (g_vaddr_cache_size &&
+        vaddr >= g_vaddr_cache_vbase &&
+        vaddr <  g_vaddr_cache_vbase + g_vaddr_cache_size) {
+        return g_vaddr_cache_rbase + (vaddr - g_vaddr_cache_vbase);
+    }
+
+    /* Fast path: exact match via hash */
+    uint32_t idx = (uint32_t)(vaddr >> 12) & VADDR_MAP_MASK;
+    for (uint32_t i = 0; i < VADDR_MAP_SIZE; i++) {
+        uint32_t slot = (idx + i) & VADDR_MAP_MASK;
+        if (g_vaddr_map[slot].vaddr == vaddr) {
+            if (g_vaddr_map[slot].size > 0) {
+                g_vaddr_cache_vbase = vaddr;
+                g_vaddr_cache_rbase = g_vaddr_map[slot].real_ptr;
+                g_vaddr_cache_size  = g_vaddr_map[slot].size;
+            }
+            return g_vaddr_map[slot].real_ptr;
+        }
+        if (g_vaddr_map[slot].vaddr == VADDR_EMPTY)
+            break;
+    }
+
+    /* Range lookup via sorted array + binary search (O(log N)) */
+    const VaddrAlloc* hit = vaddr_allocs_bsearch(vaddr);
+    if (hit) {
+        g_vaddr_cache_vbase = hit->base;
+        g_vaddr_cache_rbase = hit->real;
+        g_vaddr_cache_size  = hit->size;
+        return hit->real + (vaddr - hit->base);
+    }
+
+    return vaddr;
+}
+
+static void vaddr_map_remove(uint64_t vaddr) {
+    if (vaddr == 0) return;
+    uint32_t idx = (uint32_t)(vaddr >> 12) & VADDR_MAP_MASK;
+    for (uint32_t i = 0; i < VADDR_MAP_SIZE; i++) {
+        uint32_t slot = (idx + i) & VADDR_MAP_MASK;
+        if (g_vaddr_map[slot].vaddr == vaddr) {
+            g_vaddr_map[slot].vaddr = VADDR_TOMBSTONE;
+            g_vaddr_map[slot].real_ptr = 0;
+            g_vaddr_map[slot].size = 0;
+            break;
+        }
+        if (g_vaddr_map[slot].vaddr == VADDR_EMPTY) break;
+    }
+    /* Invalidate cache if removing the cached block */
+    if (g_vaddr_cache_vbase == vaddr) g_vaddr_cache_size = 0;
+    /* Remove from alloc list */
+    for (int i = 0; i < g_vaddr_alloc_count; i++) {
+        if (g_vaddr_allocs[i].base == vaddr) {
+            g_vaddr_allocs[i] = g_vaddr_allocs[--g_vaddr_alloc_count];
+            g_vaddr_allocs_sorted = 0;
+            return;
+        }
+    }
+}
+
+static void* vaddr_translate(uint64_t v) {
+    return (void*)(uintptr_t)vaddr_map_get(v);
+}
+
+/* ============================================================================
  * Code Object Storage (for COMGR metadata extraction)
  * ============================================================================ */
 
@@ -717,6 +899,10 @@ static void handle_get_device(int fd, uint32_t request_id) {
 
 static void handle_device_synchronize(int fd, uint32_t request_id) {
     hipError_t err = hipDeviceSynchronize();
+    if (err == hipSuccess && g_deferred_alloc_error != hipSuccess) {
+        err = g_deferred_alloc_error;
+        g_deferred_alloc_error = hipSuccess;
+    }
     LOG_DEBUG("DeviceSynchronize: err=%d", err);
     send_simple_response(fd, HIP_OP_DEVICE_SYNCHRONIZE, request_id, err);
 }
@@ -854,9 +1040,16 @@ static void handle_free(int fd, uint32_t request_id,
     }
 
     const HipRemoteFreeRequest* req = (const HipRemoteFreeRequest*)payload;
-    void* ptr = (void*)(uintptr_t)req->device_ptr;
+    uint64_t real = vaddr_map_get(req->device_ptr);
+    if (real == VADDR_ERROR) {
+        vaddr_map_remove(req->device_ptr);
+        send_simple_response(fd, HIP_OP_FREE, request_id, hipSuccess);
+        return;
+    }
+    void* ptr = (void*)(uintptr_t)real;
     hipError_t err = hipFree(ptr);
-    LOG_DEBUG("Free: ptr=%p, err=%d", ptr, err);
+    vaddr_map_remove(req->device_ptr);
+    LOG_DEBUG("Free: vaddr=0x%lx ptr=%p, err=%d", (unsigned long)req->device_ptr, ptr, err);
     send_simple_response(fd, HIP_OP_FREE, request_id, err);
 }
 
@@ -902,7 +1095,7 @@ static void handle_malloc_async(int fd, uint32_t request_id,
 
     const HipRemoteMallocAsyncRequest* req = (const HipRemoteMallocAsyncRequest*)payload;
     void* ptr = NULL;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     hipError_t err = hipMallocAsync(&ptr, req->size, stream);
     LOG_DEBUG("MallocAsync: size=%lu, stream=%p, ptr=%p, err=%d",
               (unsigned long)req->size, stream, ptr, err);
@@ -914,6 +1107,40 @@ static void handle_malloc_async(int fd, uint32_t request_id,
     send_response(fd, HIP_OP_MALLOC_ASYNC, request_id, &resp, sizeof(resp));
 }
 
+static void handle_malloc_vaddr(int fd, uint32_t request_id,
+                                const void* payload, size_t payload_size,
+                                int is_async) {
+    if (!payload || payload_size < sizeof(HipRemoteMallocVaddrRequest)) {
+        send_simple_response(fd, is_async ? HIP_OP_MALLOC_ASYNC_VADDR : HIP_OP_MALLOC_VADDR,
+                             request_id, hipErrorInvalidValue);
+        return;
+    }
+
+    const HipRemoteMallocVaddrRequest* req = (const HipRemoteMallocVaddrRequest*)payload;
+    void* ptr = NULL;
+    hipError_t err;
+
+    if (is_async && req->stream) {
+        hipStream_t stream = vaddr_translate(req->stream);
+        err = hipMallocAsync(&ptr, req->size, stream);
+    } else {
+        err = hipMalloc(&ptr, req->size);
+    }
+
+    if (err == hipSuccess && ptr) {
+        vaddr_map_put(req->vaddr, (uint64_t)(uintptr_t)ptr, req->size);
+        LOG_DEBUG("MallocVaddr: vaddr=0x%lx size=%lu -> real=%p",
+                  (unsigned long)req->vaddr, (unsigned long)req->size, ptr);
+    } else {
+        vaddr_map_put(req->vaddr, VADDR_ERROR, 0);
+        g_deferred_alloc_error = err;
+        LOG_ERROR("MallocVaddr: vaddr=0x%lx size=%lu FAILED err=%d",
+                  (unsigned long)req->vaddr, (unsigned long)req->size, err);
+    }
+    send_simple_response(fd, is_async ? HIP_OP_MALLOC_ASYNC_VADDR : HIP_OP_MALLOC_VADDR,
+                         request_id, err);
+}
+
 static void handle_free_async(int fd, uint32_t request_id,
                               const void* payload, size_t payload_size) {
     if (!payload || payload_size < sizeof(HipRemoteFreeAsyncRequest)) {
@@ -922,9 +1149,10 @@ static void handle_free_async(int fd, uint32_t request_id,
     }
 
     const HipRemoteFreeAsyncRequest* req = (const HipRemoteFreeAsyncRequest*)payload;
-    void* ptr = (void*)(uintptr_t)req->device_ptr;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    void* ptr = vaddr_translate(req->device_ptr);
+    hipStream_t stream = vaddr_translate(req->stream);
     hipError_t err = hipFreeAsync(ptr, stream);
+    vaddr_map_remove(req->device_ptr);
     LOG_DEBUG("FreeAsync: ptr=%p, stream=%p, err=%d", ptr, stream, err);
     send_simple_response(fd, HIP_OP_FREE_ASYNC, request_id, err);
 }
@@ -940,44 +1168,42 @@ static void handle_memcpy(int fd, uint32_t request_id,
     const HipRemoteMemcpyRequest* req = (const HipRemoteMemcpyRequest*)payload;
     hipError_t err = hipSuccess;
 
-    LOG_DEBUG("Memcpy: dst=%p, src=%p, size=%lu, kind=%d",
-              (void*)(uintptr_t)req->dst, (void*)(uintptr_t)req->src,
+    void* dst_real = vaddr_translate(req->dst);
+    void* src_real = vaddr_translate(req->src);
+    hipStream_t stream_real = vaddr_translate(req->stream);
+
+    LOG_DEBUG("Memcpy: dst=%p(v=0x%lx), src=%p(v=0x%lx), size=%lu, kind=%d",
+              dst_real, (unsigned long)req->dst, src_real, (unsigned long)req->src,
               (unsigned long)req->size, req->kind);
 
     if (req->kind == hipMemcpyHostToDevice && has_inline_data) {
-        /* Inline data follows request struct */
         const uint8_t* data = (const uint8_t*)payload + sizeof(HipRemoteMemcpyRequest);
         size_t data_available = payload_size - sizeof(HipRemoteMemcpyRequest);
 
         if (data_available >= req->size) {
-            err = hipMemcpy((void*)(uintptr_t)req->dst, data, req->size,
-                            hipMemcpyHostToDevice);
+            err = hipMemcpy(dst_real, data, req->size, hipMemcpyHostToDevice);
         } else {
             err = hipErrorInvalidValue;
         }
         send_simple_response(fd, HIP_OP_MEMCPY, request_id, err);
 
     } else if (req->kind == hipMemcpyDeviceToHost) {
-        /* Need to send data back */
         void* buffer = malloc(req->size);
         if (!buffer) {
             send_simple_response(fd, HIP_OP_MEMCPY, request_id, hipErrorOutOfMemory);
             return;
         }
 
-        hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
-        if (stream) {
-            err = hipMemcpyAsync(buffer, (void*)(uintptr_t)req->src, req->size,
-                                 hipMemcpyDeviceToHost, stream);
+        if (stream_real) {
+            err = hipMemcpyAsync(buffer, src_real, req->size,
+                                 hipMemcpyDeviceToHost, stream_real);
             if (err == hipSuccess)
-                err = hipStreamSynchronize(stream);
+                err = hipStreamSynchronize(stream_real);
         } else {
-            err = hipMemcpy(buffer, (void*)(uintptr_t)req->src, req->size,
-                            hipMemcpyDeviceToHost);
+            err = hipMemcpy(buffer, src_real, req->size, hipMemcpyDeviceToHost);
         }
 
         if (err == hipSuccess) {
-            /* Send response header + data */
             HipRemoteHeader header;
             hip_remote_init_header(&header, HIP_OP_MEMCPY, request_id,
                                    sizeof(HipRemoteMemcpyResponse) + req->size);
@@ -997,8 +1223,7 @@ static void handle_memcpy(int fd, uint32_t request_id,
         free(buffer);
 
     } else if (req->kind == hipMemcpyDeviceToDevice) {
-        err = hipMemcpy((void*)(uintptr_t)req->dst, (void*)(uintptr_t)req->src,
-                        req->size, hipMemcpyDeviceToDevice);
+        err = hipMemcpy(dst_real, src_real, req->size, hipMemcpyDeviceToDevice);
         send_simple_response(fd, HIP_OP_MEMCPY, request_id, err);
 
     } else {
@@ -1016,11 +1241,13 @@ static void handle_memcpy2d(int fd, uint32_t request_id,
 
     const HipRemoteMemcpy2DRequest* req = (const HipRemoteMemcpy2DRequest*)payload;
     hipError_t err = hipSuccess;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
+    void* dst_real = vaddr_translate(req->dst);
+    void* src_real = vaddr_translate(req->src);
 
     LOG_DEBUG("Memcpy2D: dst=%p, dpitch=%lu, src=%p, spitch=%lu, width=%lu, height=%lu, kind=%d, stream=%p",
-              (void*)(uintptr_t)req->dst, (unsigned long)req->dpitch,
-              (void*)(uintptr_t)req->src, (unsigned long)req->spitch,
+              dst_real, (unsigned long)req->dpitch,
+              src_real, (unsigned long)req->spitch,
               (unsigned long)req->width, (unsigned long)req->height,
               req->kind, stream);
 
@@ -1032,11 +1259,11 @@ static void handle_memcpy2d(int fd, uint32_t request_id,
 
         if (data_available >= expected_size) {
             if (is_async) {
-                err = hipMemcpy2DAsync((void*)(uintptr_t)req->dst, req->dpitch,
+                err = hipMemcpy2DAsync(dst_real, req->dpitch,
                                        data, req->spitch, req->width, req->height,
                                        hipMemcpyHostToDevice, stream);
             } else {
-                err = hipMemcpy2D((void*)(uintptr_t)req->dst, req->dpitch,
+                err = hipMemcpy2D(dst_real, req->dpitch,
                                   data, req->spitch, req->width, req->height,
                                   hipMemcpyHostToDevice);
             }
@@ -1057,15 +1284,14 @@ static void handle_memcpy2d(int fd, uint32_t request_id,
 
         if (is_async) {
             err = hipMemcpy2DAsync(buffer, req->dpitch,
-                                   (void*)(uintptr_t)req->src, req->spitch,
+                                   src_real, req->spitch,
                                    req->width, req->height, hipMemcpyDeviceToHost, stream);
-            /* For async D2H, we need to synchronize before sending */
             if (err == hipSuccess) {
                 hipStreamSynchronize(stream);
             }
         } else {
             err = hipMemcpy2D(buffer, req->dpitch,
-                              (void*)(uintptr_t)req->src, req->spitch,
+                              src_real, req->spitch,
                               req->width, req->height, hipMemcpyDeviceToHost);
         }
 
@@ -1091,12 +1317,12 @@ static void handle_memcpy2d(int fd, uint32_t request_id,
 
     } else if (req->kind == hipMemcpyDeviceToDevice) {
         if (is_async) {
-            err = hipMemcpy2DAsync((void*)(uintptr_t)req->dst, req->dpitch,
-                                   (void*)(uintptr_t)req->src, req->spitch,
+            err = hipMemcpy2DAsync(dst_real, req->dpitch,
+                                   src_real, req->spitch,
                                    req->width, req->height, hipMemcpyDeviceToDevice, stream);
         } else {
-            err = hipMemcpy2D((void*)(uintptr_t)req->dst, req->dpitch,
-                              (void*)(uintptr_t)req->src, req->spitch,
+            err = hipMemcpy2D(dst_real, req->dpitch,
+                              src_real, req->spitch,
                               req->width, req->height, hipMemcpyDeviceToDevice);
         }
         send_simple_response(fd, is_async ? HIP_OP_MEMCPY_2D_ASYNC : HIP_OP_MEMCPY_2D, request_id, err);
@@ -1115,9 +1341,10 @@ static void handle_memset(int fd, uint32_t request_id,
     }
 
     const HipRemoteMemsetRequest* req = (const HipRemoteMemsetRequest*)payload;
-    hipError_t err = hipMemset((void*)(uintptr_t)req->dst, req->value, req->size);
+    void* dst = vaddr_translate(req->dst);
+    hipError_t err = hipMemset(dst, req->value, req->size);
     LOG_DEBUG("Memset: dst=%p, value=%d, size=%lu, err=%d",
-              (void*)(uintptr_t)req->dst, req->value, (unsigned long)req->size, err);
+              dst, req->value, (unsigned long)req->size, err);
     send_simple_response(fd, HIP_OP_MEMSET, request_id, err);
 }
 
@@ -1143,7 +1370,7 @@ static void handle_pointer_get_attributes(int fd, uint32_t request_id,
     }
 
     const HipRemotePointerGetAttributesRequest* req = (const HipRemotePointerGetAttributesRequest*)payload;
-    void* ptr = (void*)(uintptr_t)req->ptr;
+    void* ptr = vaddr_translate(req->ptr);
     hipPointerAttribute_t attrs = {0};
     hipError_t err = hipPointerGetAttributes(&attrs, ptr);
     LOG_DEBUG("PointerGetAttributes: ptr=%p, type=%d, device=%d, err=%d",
@@ -1369,7 +1596,7 @@ static void handle_malloc_from_pool_async(int fd, uint32_t request_id,
 
     const HipRemoteMallocFromPoolAsyncRequest* req = (const HipRemoteMallocFromPoolAsyncRequest*)payload;
     hipMemPool_t memPool = (hipMemPool_t)(uintptr_t)req->mem_pool;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
 
     void* devPtr = NULL;
     hipError_t err = hipMallocFromPoolAsync(&devPtr, req->size, memPool, stream);
@@ -1618,7 +1845,7 @@ static void handle_mem_prefetch_async(int fd, uint32_t request_id,
 
     const HipRemoteMemPrefetchAsyncRequest* req = (const HipRemoteMemPrefetchAsyncRequest*)payload;
     const void* devPtr = (const void*)(uintptr_t)req->dev_ptr;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     hipError_t err = hipMemPrefetchAsync(devPtr, req->count, req->device, stream);
     LOG_DEBUG("MemPrefetchAsync: ptr=%p, count=%lu, device=%d, stream=%p, err=%d",
               devPtr, req->count, req->device, stream, err);
@@ -2040,14 +2267,30 @@ static void handle_graph_destroy_node(int fd, uint32_t request_id,
 static void handle_stream_create(int fd, uint32_t request_id,
                                  const void* payload, size_t payload_size) {
     unsigned int flags = 0;
+    int32_t priority = 0;
+    uint64_t vhandle = 0;
     if (payload && payload_size >= sizeof(HipRemoteStreamCreateRequest)) {
         const HipRemoteStreamCreateRequest* req = (const HipRemoteStreamCreateRequest*)payload;
         flags = req->flags;
+        priority = req->priority;
+        vhandle = req->vhandle;
     }
 
     hipStream_t stream = NULL;
-    hipError_t err = hipStreamCreateWithFlags(&stream, flags);
-    LOG_DEBUG("StreamCreate: flags=%u, stream=%p, err=%d", flags, stream, err);
+    hipError_t err;
+    if (priority != 0) {
+        err = hipStreamCreateWithPriority(&stream, flags, priority);
+    } else {
+        err = hipStreamCreateWithFlags(&stream, flags);
+    }
+
+    if (vhandle && err == hipSuccess) {
+        vaddr_map_put(vhandle, (uint64_t)(uintptr_t)stream, 0);
+        LOG_DEBUG("StreamCreate: vhandle=0x%lx flags=%u -> real=%p",
+                  (unsigned long)vhandle, flags, stream);
+    } else {
+        LOG_DEBUG("StreamCreate: flags=%u, stream=%p, err=%d", flags, stream, err);
+    }
 
     HipRemoteStreamCreateResponse resp = {
         .header = { .error_code = (int32_t)err },
@@ -2064,8 +2307,9 @@ static void handle_stream_destroy(int fd, uint32_t request_id,
     }
 
     const HipRemoteStreamRequest* req = (const HipRemoteStreamRequest*)payload;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     hipError_t err = hipStreamDestroy(stream);
+    vaddr_map_remove(req->stream);
     LOG_DEBUG("StreamDestroy: stream=%p, err=%d", stream, err);
     send_simple_response(fd, HIP_OP_STREAM_DESTROY, request_id, err);
 }
@@ -2078,7 +2322,7 @@ static void handle_stream_synchronize(int fd, uint32_t request_id,
     }
 
     const HipRemoteStreamRequest* req = (const HipRemoteStreamRequest*)payload;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     hipError_t err = hipStreamSynchronize(stream);
     LOG_DEBUG("StreamSynchronize: stream=%p, err=%d", stream, err);
     send_simple_response(fd, HIP_OP_STREAM_SYNCHRONIZE, request_id, err);
@@ -2092,7 +2336,7 @@ static void handle_stream_get_flags(int fd, uint32_t request_id,
     }
 
     const HipRemoteStreamRequest* req = (const HipRemoteStreamRequest*)payload;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     unsigned int flags = 0;
     hipError_t err = hipStreamGetFlags(stream, &flags);
     LOG_DEBUG("StreamGetFlags: stream=%p, flags=%u, err=%d", stream, flags, err);
@@ -2112,7 +2356,7 @@ static void handle_stream_get_priority(int fd, uint32_t request_id,
     }
 
     const HipRemoteStreamRequest* req = (const HipRemoteStreamRequest*)payload;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     int priority = 0;
     hipError_t err = hipStreamGetPriority(stream, &priority);
     LOG_DEBUG("StreamGetPriority: stream=%p, priority=%d, err=%d", stream, priority, err);
@@ -2132,7 +2376,7 @@ static void handle_stream_wait_event(int fd, uint32_t request_id,
     }
 
     const HipRemoteStreamWaitEventRequest* req = (const HipRemoteStreamWaitEventRequest*)payload;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     hipEvent_t event = (hipEvent_t)(uintptr_t)req->event;
     hipError_t err = hipStreamWaitEvent(stream, event, req->flags);
     LOG_DEBUG("StreamWaitEvent: stream=%p, event=%p, flags=%u, err=%d",
@@ -2248,7 +2492,7 @@ static void handle_event_record(int fd, uint32_t request_id,
 
     const HipRemoteEventRecordRequest* req = (const HipRemoteEventRecordRequest*)payload;
     hipEvent_t event = (hipEvent_t)(uintptr_t)req->event;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     hipError_t err = hipEventRecord(event, stream);
     LOG_DEBUG("EventRecord: event=%p, stream=%p, err=%d", event, stream, err);
     send_simple_response(fd, HIP_OP_EVENT_RECORD, request_id, err);
@@ -2766,7 +3010,7 @@ static void handle_stream_get_capture_info(int fd, uint32_t request_id,
     }
 
     const HipRemoteStreamGetCaptureInfoRequest* req = (const HipRemoteStreamGetCaptureInfoRequest*)payload;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
 
     hipStreamCaptureStatus capture_status;
     unsigned long long id = 0;
@@ -2799,7 +3043,7 @@ static void handle_stream_update_capture_dependencies(int fd, uint32_t request_i
         return;
     }
 
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     const uint64_t* node_handles = (const uint64_t*)((const uint8_t*)payload +
                                    sizeof(HipRemoteStreamUpdateCaptureDependenciesRequest));
 
@@ -2859,7 +3103,7 @@ static void handle_memcpy3d(int fd, uint32_t request_id,
     }
 
     const HipRemoteMemcpy3DRequest* req = (const HipRemoteMemcpy3DRequest*)payload;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
 
     LOG_DEBUG("Memcpy3D: extent=(%lu,%lu,%lu), kind=%d, stream=%p",
               (unsigned long)req->width, (unsigned long)req->height,
@@ -2897,7 +3141,7 @@ static void handle_memcpy_peer(int fd, uint32_t request_id,
     }
 
     const HipRemoteMemcpyPeerRequest* req = (const HipRemoteMemcpyPeerRequest*)payload;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
 
     LOG_DEBUG("MemcpyPeer: dst=%p (dev %d), src=%p (dev %d), size=%lu, stream=%p",
               (void*)(uintptr_t)req->dst, req->dst_device,
@@ -3109,7 +3353,7 @@ static void handle_graph_launch(int fd, uint32_t request_id,
 
     const HipRemoteGraphLaunchRequest* req = (const HipRemoteGraphLaunchRequest*)payload;
     hipGraphExec_t graphExec = (hipGraphExec_t)(uintptr_t)req->graph_exec;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     hipError_t err = hipGraphLaunch(graphExec, stream);
     LOG_DEBUG("GraphLaunch: graphExec=%p, stream=%p, err=%d",
               (void*)graphExec, (void*)stream, err);
@@ -3334,7 +3578,7 @@ static void handle_stream_begin_capture(int fd, uint32_t request_id,
     }
 
     const HipRemoteStreamBeginCaptureRequest* req = (const HipRemoteStreamBeginCaptureRequest*)payload;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     hipError_t err = hipStreamBeginCapture(stream, (hipStreamCaptureMode)req->mode);
     LOG_DEBUG("StreamBeginCapture: stream=%p, mode=%d, err=%d",
               (void*)stream, req->mode, err);
@@ -3349,7 +3593,7 @@ static void handle_stream_end_capture(int fd, uint32_t request_id,
     }
 
     const HipRemoteStreamEndCaptureRequest* req = (const HipRemoteStreamEndCaptureRequest*)payload;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     hipGraph_t graph = NULL;
     hipError_t err = hipStreamEndCapture(stream, &graph);
     LOG_DEBUG("StreamEndCapture: stream=%p, graph=%p, err=%d",
@@ -3370,7 +3614,7 @@ static void handle_stream_is_capturing(int fd, uint32_t request_id,
     }
 
     const HipRemoteStreamIsCapturingRequest* req = (const HipRemoteStreamIsCapturingRequest*)payload;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     hipStreamCaptureStatus captureStatus = hipStreamCaptureStatusNone;
     hipError_t err = hipStreamIsCapturing(stream, &captureStatus);
     LOG_DEBUG("StreamIsCapturing: stream=%p, status=%d, err=%d",
@@ -3663,7 +3907,7 @@ static void handle_launch_kernel(int fd, uint32_t request_id,
     }
 
     hipFunction_t function = (hipFunction_t)(uintptr_t)req->function;
-    hipStream_t stream = (hipStream_t)(uintptr_t)req->stream;
+    hipStream_t stream = vaddr_translate(req->stream);
     hipEvent_t start_event = (hipEvent_t)(uintptr_t)req->start_event;
     hipEvent_t stop_event  = (hipEvent_t)(uintptr_t)req->stop_event;
     unsigned int ext_flags = req->ext_flags;
@@ -3725,6 +3969,45 @@ static void handle_launch_kernel(int fd, uint32_t request_id,
         }
         memcpy(arg_copy, arg_data, total_arg_size);
 
+        /* Translate virtual GPU addresses in the flat kernarg buffer.
+         * Use COMGR metadata when available; fall back to scanning
+         * 8-byte-aligned positions that are known vaddrs. */
+        LOG_DEBUG("Vaddr translation: fi=%p num_params=%u total_arg_size=%zu",
+                  (void*)fi, fi ? fi->num_params : 0, total_arg_size);
+        if (fi && g_debug_enabled) {
+            for (uint32_t pi = 0; pi < fi->num_params; pi++) {
+                uint64_t val = 0;
+                if (fi->params[pi].offset + fi->params[pi].size <= buf_size)
+                    memcpy(&val, (uint8_t*)arg_copy + fi->params[pi].offset,
+                           fi->params[pi].size < 8 ? fi->params[pi].size : 8);
+                fprintf(stderr, "[HIP-Worker]   param[%u]: off=%u size=%u val=0x%lx\n",
+                        pi, fi->params[pi].offset, fi->params[pi].size, (unsigned long)val);
+            }
+        }
+        /* Translate vaddrs in kernel args. For each param, scan all 8-byte-
+         * aligned positions within it (structs may embed pointers). */
+        if (fi && fi->num_params > 0) {
+            for (uint32_t pi = 0; pi < fi->num_params; pi++) {
+                uint32_t poff = fi->params[pi].offset;
+                uint32_t psize = fi->params[pi].size;
+                for (uint32_t j = 0; j + 8 <= psize && poff + j + 8 <= buf_size; j += 8) {
+                    uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + poff + j);
+                    if (*slot >= VADDR_BASE) {
+                        uint64_t translated = vaddr_map_get(*slot);
+                        if (translated != *slot) *slot = translated;
+                    }
+                }
+            }
+        } else {
+            for (size_t off = 0; off + 8 <= total_arg_size; off += 8) {
+                uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + off);
+                if (*slot >= VADDR_BASE) {
+                    uint64_t translated = vaddr_map_get(*slot);
+                    if (translated != *slot) *slot = translated;
+                }
+            }
+        }
+
         void* config[] = {
             (void*)0x01, /* HIP_LAUNCH_PARAM_BUFFER_POINTER */
             arg_copy,
@@ -3753,9 +4036,22 @@ static void handle_launch_kernel(int fd, uint32_t request_id,
         /* Client sent individual kernelParams values. Reconstruct the
          * kernel_params array so the HIP runtime can use kernel metadata
          * to map each value to the correct kernarg offset. */
+        uint8_t arg_data_copy[4096];
+        size_t copy_size = total_arg_size < sizeof(arg_data_copy) ? total_arg_size : sizeof(arg_data_copy);
+        memcpy(arg_data_copy, arg_data, copy_size);
+        for (uint32_t i = 0; i < req->num_args; i++) {
+            if (arg_descs[i].size == 8 && arg_descs[i].offset + 8 <= copy_size) {
+                uint64_t* slot = (uint64_t*)(arg_data_copy + arg_descs[i].offset);
+                if (*slot >= VADDR_BASE) {
+                    uint64_t translated = vaddr_map_get(*slot);
+                    if (translated != *slot) *slot = translated;
+                }
+            }
+        }
+
         void* kernel_params[HIP_REMOTE_MAX_KERNEL_ARGS];
         for (uint32_t i = 0; i < req->num_args && i < HIP_REMOTE_MAX_KERNEL_ARGS; i++) {
-            kernel_params[i] = (void*)(arg_data + arg_descs[i].offset);
+            kernel_params[i] = (void*)(arg_data_copy + arg_descs[i].offset);
         }
 
         if (start_event || stop_event) {
@@ -3843,7 +4139,7 @@ static void handle_mem_ptr_get_info(int fd, uint32_t request_id,
     HipRemoteMemPtrGetInfoResponse resp;
     memset(&resp, 0, sizeof(resp));
     size_t sz = 0;
-    void* ptr = (void*)(uintptr_t)req->ptr;
+    void* ptr = vaddr_translate(req->ptr);
     hipError_t err = hipMemPtrGetInfo(ptr, &sz);
     resp.header.error_code = (int32_t)err;
     resp.size = (uint64_t)sz;
@@ -3939,6 +4235,12 @@ static void handle_client(int client_fd) {
                 break;
             case HIP_OP_MALLOC_ASYNC:
                 handle_malloc_async(client_fd, header.request_id, payload, header.payload_length);
+                break;
+            case HIP_OP_MALLOC_VADDR:
+                handle_malloc_vaddr(client_fd, header.request_id, payload, header.payload_length, 0);
+                break;
+            case HIP_OP_MALLOC_ASYNC_VADDR:
+                handle_malloc_vaddr(client_fd, header.request_id, payload, header.payload_length, 1);
                 break;
             case HIP_OP_FREE_ASYNC:
                 handle_free_async(client_fd, header.request_id, payload, header.payload_length);

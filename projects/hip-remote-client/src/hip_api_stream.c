@@ -60,28 +60,30 @@ static hipError_t refill_event_pool(unsigned int flags) {
  * Types (hipStream_t, hipEvent_t) are defined in hip_remote_client.h
  */
 
+/* Virtual stream handle allocator -- same principle as vaddr for hipMalloc.
+ * Client assigns an opaque handle locally (FnF), worker creates the real
+ * stream and stores the mapping. */
+#define VSTREAM_BASE 0x5F0000000000ULL
+static uint64_t g_next_vstream = VSTREAM_BASE;
+static uint64_t vstream_alloc(void) { return g_next_vstream++; }
+
 hipError_t hipStreamCreate(hipStream_t* stream) {
     if (!stream) {
         return hipErrorInvalidValue;
     }
 
+    uint64_t vs = vstream_alloc();
     HipRemoteStreamCreateRequest req = {
         .flags = 0,
-        .priority = 0
+        .priority = 0,
+        .vhandle = vs
     };
-    HipRemoteStreamCreateResponse resp;
 
-    hipError_t err = hip_remote_request(
-        HIP_OP_STREAM_CREATE,
-        &req, sizeof(req),
-        &resp, sizeof(resp)
+    hipError_t err = hip_remote_request_fire_and_forget(
+        HIP_OP_STREAM_CREATE, &req, sizeof(req)
     );
 
-    if (err == hipSuccess) {
-        *stream = (hipStream_t)(uintptr_t)resp.stream;
-    } else {
-        *stream = NULL;
-    }
+    *stream = (hipStream_t)(uintptr_t)vs;
     return err;
 }
 
@@ -90,23 +92,18 @@ hipError_t hipStreamCreateWithFlags(hipStream_t* stream, unsigned int flags) {
         return hipErrorInvalidValue;
     }
 
+    uint64_t vs = vstream_alloc();
     HipRemoteStreamCreateRequest req = {
         .flags = flags,
-        .priority = 0
+        .priority = 0,
+        .vhandle = vs
     };
-    HipRemoteStreamCreateResponse resp;
 
-    hipError_t err = hip_remote_request(
-        HIP_OP_STREAM_CREATE_WITH_FLAGS,
-        &req, sizeof(req),
-        &resp, sizeof(resp)
+    hipError_t err = hip_remote_request_fire_and_forget(
+        HIP_OP_STREAM_CREATE_WITH_FLAGS, &req, sizeof(req)
     );
 
-    if (err == hipSuccess) {
-        *stream = (hipStream_t)(uintptr_t)resp.stream;
-    } else {
-        *stream = NULL;
-    }
+    *stream = (hipStream_t)(uintptr_t)vs;
     return err;
 }
 
@@ -116,23 +113,18 @@ hipError_t hipStreamCreateWithPriority(hipStream_t* stream, unsigned int flags,
         return hipErrorInvalidValue;
     }
 
+    uint64_t vs = vstream_alloc();
     HipRemoteStreamCreateRequest req = {
         .flags = flags,
-        .priority = priority
+        .priority = priority,
+        .vhandle = vs
     };
-    HipRemoteStreamCreateResponse resp;
 
-    hipError_t err = hip_remote_request(
-        HIP_OP_STREAM_CREATE_WITH_PRIORITY,
-        &req, sizeof(req),
-        &resp, sizeof(resp)
+    hipError_t err = hip_remote_request_fire_and_forget(
+        HIP_OP_STREAM_CREATE_WITH_PRIORITY, &req, sizeof(req)
     );
 
-    if (err == hipSuccess) {
-        *stream = (hipStream_t)(uintptr_t)resp.stream;
-    } else {
-        *stream = NULL;
-    }
+    *stream = (hipStream_t)(uintptr_t)vs;
     return err;
 }
 
