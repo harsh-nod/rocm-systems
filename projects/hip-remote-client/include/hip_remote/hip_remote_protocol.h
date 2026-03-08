@@ -1507,6 +1507,8 @@ typedef struct HIP_PACKED_ATTR {
 typedef struct HIP_PACKED_ATTR {
     uint32_t offset;
     uint32_t size;
+    uint8_t  is_pointer;  /* 1 if value_kind == global_buffer */
+    uint8_t  _pad[3];
 } HipRemoteParamDesc;
 
 #define HIP_REMOTE_MAX_PARAM_DESCS 64

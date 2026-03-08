@@ -768,13 +768,22 @@ static uint32_t comgr_extract_kernel_params(const void* code_data, size_t code_s
                 continue;
             }
 
-            free(val_kind);
+            int is_ptr = (val_kind && strcmp(val_kind, "global_buffer") == 0);
 
             char* off_str = comgr_lookup_string(arg_node, ".offset");
             char* sz_str = comgr_lookup_string(arg_node, ".size");
 
             params[result].offset = off_str ? (uint32_t)atoi(off_str) : 0;
             params[result].size = sz_str ? (uint32_t)atoi(sz_str) : 0;
+            params[result].is_pointer = (uint8_t)is_ptr;
+            memset(params[result]._pad, 0, sizeof(params[result]._pad));
+
+            if (g_debug_enabled) {
+                fprintf(stderr, "[HIP-Worker] COMGR:   arg[%zu]: off=%u size=%u value_kind=%s is_ptr=%d\n",
+                        ai, params[result].offset, params[result].size,
+                        val_kind ? val_kind : "(null)", is_ptr);
+            }
+            free(val_kind);
             free(off_str);
             free(sz_str);
             result++;
@@ -3716,6 +3725,17 @@ static void handle_module_load_data(int fd, uint32_t request_id,
         return;
     }
 
+    /* Drain any pending async GPU errors before loading a module.
+     * Without this, a prior FnF kernel error can cause hipModuleLoadData
+     * to hang indefinitely or return hipErrorNotInitialized. */
+    hipError_t sync_err = hipDeviceSynchronize();
+    if (sync_err != hipSuccess) {
+        LOG_ERROR("ModuleLoadData: GPU sync error before load: %d (%s)",
+                  sync_err, hipGetErrorString(sync_err));
+        send_simple_response(fd, HIP_OP_MODULE_LOAD_DATA, request_id, sync_err);
+        return;
+    }
+
     hipModule_t module = NULL;
     hipError_t err = hipModuleLoadData(&module, code_data);
     LOG_DEBUG("ModuleLoadData: size=%lu, module=%p, err=%d", req->data_size, (void*)module, err);
@@ -3745,6 +3765,24 @@ static void handle_module_unload(int fd, uint32_t request_id,
 
     const HipRemoteModuleUnloadRequest* req = (const HipRemoteModuleUnloadRequest*)payload;
     hipModule_t module = (hipModule_t)(uintptr_t)req->module;
+
+    /* Invalidate cached kernel arg metadata for this module BEFORE unloading,
+     * since HIP may reuse the module handle for a future hipModuleLoadData.
+     * Without this, stale cached metadata (wrong is_pointer flags, wrong param
+     * sizes) would be returned for the new module's kernels. */
+    for (int i = 0; i < g_kernel_arg_cache_count; i++) {
+        if (g_kernel_arg_cache[i].valid && g_kernel_arg_cache[i].module == module) {
+            g_kernel_arg_cache[i].valid = 0;
+        }
+    }
+    for (int i = 0; i < g_loaded_module_count; i++) {
+        if (g_loaded_modules[i].module == module) {
+            free(g_loaded_modules[i].data);
+            g_loaded_modules[i].data = NULL;
+            g_loaded_modules[i].size = 0;
+            g_loaded_modules[i].module = NULL;
+        }
+    }
 
     hipError_t err = hipModuleUnload(module);
     LOG_DEBUG("ModuleUnload: module=%p, err=%d", (void*)module, err);
@@ -3871,6 +3909,18 @@ static void handle_module_load_and_get_function(int fd, uint32_t request_id,
         LOG_ERROR("ModuleLoadAndGetFunction: incomplete data (got %zu, expected %lu)", code_size, load_req->data_size);
         free(kernel_name);
         send_simple_response(fd, HIP_OP_MODULE_LOAD_AND_GET_FUNCTION, request_id, hipErrorInvalidValue);
+        return;
+    }
+
+    hipError_t sync_err = hipDeviceSynchronize();
+    if (sync_err != hipSuccess) {
+        LOG_ERROR("ModuleLoadAndGetFunction: GPU sync error before load: %d (%s)",
+                  sync_err, hipGetErrorString(sync_err));
+        HipRemoteModuleLoadAndGetFunctionResponse resp;
+        memset(&resp, 0, sizeof(resp));
+        resp.header.error_code = (int32_t)sync_err;
+        send_response(fd, HIP_OP_MODULE_LOAD_AND_GET_FUNCTION, request_id, &resp, sizeof(resp));
+        free(kernel_name);
         return;
     }
 
@@ -4048,24 +4098,40 @@ static void handle_launch_kernel(int fd, uint32_t request_id,
                 if (fi->params[pi].offset + fi->params[pi].size <= buf_size)
                     memcpy(&val, (uint8_t*)arg_copy + fi->params[pi].offset,
                            fi->params[pi].size < 8 ? fi->params[pi].size : 8);
-                fprintf(stderr, "[HIP-Worker]   param[%u]: off=%u size=%u val=0x%lx\n",
-                        pi, fi->params[pi].offset, fi->params[pi].size, (unsigned long)val);
+                fprintf(stderr, "[HIP-Worker]   param[%u]: off=%u size=%u ptr=%d val=0x%lx\n",
+                        pi, fi->params[pi].offset, fi->params[pi].size,
+                        fi->params[pi].is_pointer, (unsigned long)val);
             }
         }
-        /* Translate vaddrs in pointer-type kernel args (size == 8).
-         * For struct params (size > 8), only translate the first 8 bytes.
-         * Scanning deeper sub-fields risks corrupting non-pointer data
-         * (e.g., PhiloxState counters/seeds) that can't be distinguished
-         * from pointers without value_kind metadata. */
+        /* Translate vaddrs using COMGR metadata:
+         * - global_buffer (is_pointer=1): single 8-byte range lookup
+         * - by_value struct (size > 8, is_pointer=0): scan ALL 8-byte-aligned
+         *   sub-fields, since PyTorch packs multiple data pointers into structs
+         *   (e.g. TrivialOffsetCalculator with output+input ptrs)
+         * - by_value scalar (size <= 8, is_pointer=0): skip entirely to avoid
+         *   corrupting counters/seeds that happen to be >= VADDR_BASE */
         if (fi && fi->num_params > 0) {
             for (uint32_t pi = 0; pi < fi->num_params; pi++) {
                 uint32_t poff = fi->params[pi].offset;
                 uint32_t psize = fi->params[pi].size;
-                if (psize >= 8 && poff + 8 <= buf_size) {
-                    uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + poff);
-                    if (*slot >= VADDR_BASE) {
-                        uint64_t translated = vaddr_map_get(*slot);
-                        if (translated != *slot) *slot = translated;
+
+                if (fi->params[pi].is_pointer) {
+                    if (poff + 8 <= buf_size) {
+                        uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + poff);
+                        if (*slot >= VADDR_BASE) {
+                            uint64_t translated = vaddr_map_get(*slot);
+                            if (translated != *slot) *slot = translated;
+                        }
+                    }
+                } else if (psize > 8) {
+                    for (uint32_t soff = 0; soff + 8 <= psize; soff += 8) {
+                        if (poff + soff + 8 <= buf_size) {
+                            uint64_t* slot = (uint64_t*)((uint8_t*)arg_copy + poff + soff);
+                            if (*slot >= VADDR_BASE) {
+                                uint64_t translated = vaddr_map_get(*slot);
+                                if (translated != *slot) *slot = translated;
+                            }
+                        }
                     }
                 }
             }
