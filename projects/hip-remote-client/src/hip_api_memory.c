@@ -64,6 +64,23 @@ hipError_t hipMalloc(void** ptr, size_t size) {
         return hipSuccess;
     }
 
+    /* During graph capture, use synchronous allocation to avoid executing
+     * hipMalloc outside the capture context (which would invalidate it). */
+    if (hip_remote_is_capturing()) {
+        HipRemoteMallocRequest req = { .size = size, .flags = 0 };
+        HipRemoteMallocResponse resp;
+        hipError_t err = hip_remote_request(
+            HIP_OP_MALLOC, &req, sizeof(req),
+            &resp, sizeof(resp)
+        );
+        if (err == hipSuccess) {
+            *ptr = (void*)(uintptr_t)resp.device_ptr;
+        } else {
+            *ptr = NULL;
+        }
+        return err;
+    }
+
     uint64_t vaddr = vaddr_alloc(size);
     HipRemoteMallocVaddrRequest req = {
         .vaddr = vaddr,
@@ -199,6 +216,24 @@ hipError_t hipMallocAsync(void** ptr, size_t size, hipStream_t stream) {
     if (size == 0) {
         *ptr = NULL;
         return hipSuccess;
+    }
+
+    if (hip_remote_is_capturing()) {
+        HipRemoteMallocAsyncRequest req = {
+            .size = size,
+            .stream = (uint64_t)(uintptr_t)stream
+        };
+        HipRemoteMallocResponse resp;
+        hipError_t err = hip_remote_request(
+            HIP_OP_MALLOC_ASYNC, &req, sizeof(req),
+            &resp, sizeof(resp)
+        );
+        if (err == hipSuccess) {
+            *ptr = (void*)(uintptr_t)resp.device_ptr;
+        } else {
+            *ptr = NULL;
+        }
+        return err;
     }
 
     uint64_t vaddr = vaddr_alloc(size);

@@ -178,6 +178,13 @@ hipError_t hip_remote_request_with_data_fire_and_forget(
  */
 void hip_remote_flush(void);
 
+/**
+ * Returns non-zero if a CUDA graph capture is in progress.
+ * Used by hipMalloc to fall back to synchronous allocation during capture,
+ * since FnF MALLOC_VADDR would execute outside the capture context.
+ */
+int hip_remote_is_capturing(void);
+
 /* ============================================================================
  * Logging
  * ============================================================================ */

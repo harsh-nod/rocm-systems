@@ -488,6 +488,12 @@ hipError_t hipGraphExecDestroy(hipGraphExec_t graphExec) {
     );
 }
 
+static volatile int g_capture_depth = 0;
+
+int hip_remote_is_capturing(void) {
+    return g_capture_depth > 0;
+}
+
 hipError_t hipStreamBeginCapture(hipStream_t stream, hipStreamCaptureMode mode) {
     HipRemoteStreamBeginCaptureRequest req = {
         .stream = (uint64_t)(uintptr_t)stream,
@@ -495,10 +501,12 @@ hipError_t hipStreamBeginCapture(hipStream_t stream, hipStreamCaptureMode mode) 
     };
 
     HipRemoteResponseHeader resp;
-    return hip_remote_request(
+    hipError_t err = hip_remote_request(
         HIP_OP_STREAM_BEGIN_CAPTURE, &req, sizeof(req),
         &resp, sizeof(resp)
     );
+    if (err == hipSuccess) g_capture_depth++;
+    return err;
 }
 hipError_t hipStreamEndCapture(hipStream_t stream, hipGraph_t* pGraph) {
     if (!pGraph) {
@@ -516,6 +524,7 @@ hipError_t hipStreamEndCapture(hipStream_t stream, hipGraph_t* pGraph) {
         &resp, sizeof(resp)
     );
 
+    if (g_capture_depth > 0) g_capture_depth--;
     if (err == hipSuccess) {
         *pGraph = (hipGraph_t)(uintptr_t)resp.graph;
     } else {
