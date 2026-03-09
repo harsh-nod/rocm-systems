@@ -994,41 +994,17 @@ static void handle_get_device_properties(int fd, uint32_t request_id,
     LOG_DEBUG("GetDeviceProperties: device=%d, name=%s, err=%d",
               device, props.name, err);
 
-    HipRemoteDevicePropertiesResponse resp;
+    /* Send the raw hipDeviceProp_t directly -- both sides include the same
+     * hip_runtime_api.h, so the struct layout matches. No fields are lost. */
+    struct {
+        HipRemoteResponseHeader header;
+        hipDeviceProp_t props;
+    } resp;
     memset(&resp, 0, sizeof(resp));
     resp.header.error_code = (int32_t)err;
-
     if (err == hipSuccess) {
-        strncpy(resp.name, props.name, sizeof(resp.name) - 1);
-        resp.total_global_mem = props.totalGlobalMem;
-        resp.shared_mem_per_block = props.sharedMemPerBlock;
-        resp.regs_per_block = props.regsPerBlock;
-        resp.warp_size = props.warpSize;
-        resp.max_threads_per_block = props.maxThreadsPerBlock;
-        resp.max_threads_dim[0] = props.maxThreadsDim[0];
-        resp.max_threads_dim[1] = props.maxThreadsDim[1];
-        resp.max_threads_dim[2] = props.maxThreadsDim[2];
-        resp.max_grid_size[0] = props.maxGridSize[0];
-        resp.max_grid_size[1] = props.maxGridSize[1];
-        resp.max_grid_size[2] = props.maxGridSize[2];
-        resp.clock_rate = props.clockRate;
-        resp.memory_clock_rate = props.memoryClockRate;
-        resp.memory_bus_width = props.memoryBusWidth;
-        resp.major = props.major;
-        resp.minor = props.minor;
-        resp.multi_processor_count = props.multiProcessorCount;
-        resp.l2_cache_size = props.l2CacheSize;
-        resp.max_threads_per_multi_processor = props.maxThreadsPerMultiProcessor;
-        resp.compute_mode = props.computeMode;
-        resp.pci_bus_id = props.pciBusID;
-        resp.pci_device_id = props.pciDeviceID;
-        resp.pci_domain_id = props.pciDomainID;
-        resp.integrated = props.integrated;
-        resp.can_map_host_memory = props.canMapHostMemory;
-        resp.concurrent_kernels = props.concurrentKernels;
-        strncpy(resp.gcn_arch_name, props.gcnArchName, sizeof(resp.gcn_arch_name) - 1);
+        memcpy(&resp.props, &props, sizeof(hipDeviceProp_t));
     }
-
     send_response(fd, HIP_OP_GET_DEVICE_PROPERTIES, request_id, &resp, sizeof(resp));
 }
 

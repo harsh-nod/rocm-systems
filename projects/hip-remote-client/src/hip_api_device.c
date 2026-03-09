@@ -178,36 +178,7 @@ hipError_t hipDeviceGetAttribute(int* value, hipDeviceAttribute_t attr, int devi
  * client we only need to map the fields we care about.
  * ============================================================================ */
 
-typedef struct {
-    char name[256];
-    size_t totalGlobalMem;
-    size_t sharedMemPerBlock;
-    int regsPerBlock;
-    int warpSize;
-    int maxThreadsPerBlock;
-    int maxThreadsDim[3];
-    int maxGridSize[3];
-    int clockRate;
-    int memoryClockRate;
-    int memoryBusWidth;
-    int major;
-    int minor;
-    int multiProcessorCount;
-    int l2CacheSize;
-    int maxThreadsPerMultiProcessor;
-    int computeMode;
-    int pciBusId;
-    int pciDeviceId;
-    int pciDomainId;
-    int integrated;
-    int canMapHostMemory;
-    int concurrentKernels;
-    char gcnArchName[256];
-    /* ... additional fields would go here ... */
-} hipDeviceProp_t_Remote;
-
 #define MAX_CACHED_DEVICES 16
-static HipRemoteDevicePropertiesResponse g_cached_props[MAX_CACHED_DEVICES];
 static int g_props_cached[MAX_CACHED_DEVICES];
 
 #ifdef hipGetDeviceProperties
@@ -694,72 +665,45 @@ typedef struct {
 } hipDeviceProp_tR0600_Compat_;
 #endif
 
+/* The worker sends the raw hipDeviceProp_t struct preceded by a response
+ * header.  Since both sides include the same hip_runtime_api.h, the struct
+ * layout is identical -- no manual field-by-field copy needed. */
+
+typedef struct {
+    HipRemoteResponseHeader header;
+    hipDeviceProp_t props;
+} DevicePropsFullResponse;
+
+static hipDeviceProp_t g_cached_full_props[MAX_CACHED_DEVICES];
+
 hipError_t hipGetDevicePropertiesR0600(hipDeviceProp_t* prop, int deviceId) {
     if (!prop) return hipErrorInvalidValue;
 
-    /* Use cached response if available */
-    HipRemoteDevicePropertiesResponse resp;
     if (deviceId >= 0 && deviceId < MAX_CACHED_DEVICES && g_props_cached[deviceId]) {
-        resp = g_cached_props[deviceId];
-    } else {
-        HipRemoteDeviceRequest req;
-        memset(&req, 0, sizeof(req));
-        req.device_id = deviceId;
-
-        hipError_t err = hip_remote_request(
-            HIP_OP_GET_DEVICE_PROPERTIES,
-            &req, sizeof(req),
-            &resp, sizeof(resp)
-        );
-        if (err != hipSuccess) return err;
-
-        if (deviceId >= 0 && deviceId < MAX_CACHED_DEVICES) {
-            g_cached_props[deviceId] = resp;
-            g_props_cached[deviceId] = 1;
-        }
+        memcpy(prop, &g_cached_full_props[deviceId], sizeof(hipDeviceProp_t));
+        return hipSuccess;
     }
 
-    hipDeviceProp_t* p = (hipDeviceProp_t*)prop;
-    memset(p, 0, sizeof(*p));
+    HipRemoteDeviceRequest req;
+    memset(&req, 0, sizeof(req));
+    req.device_id = deviceId;
 
-    strncpy(p->name, resp.name, sizeof(p->name) - 1);
-    p->totalGlobalMem = resp.total_global_mem;
-    p->sharedMemPerBlock = resp.shared_mem_per_block;
-    p->regsPerBlock = resp.regs_per_block;
-    p->warpSize = resp.warp_size ? resp.warp_size : 64;
-    p->maxThreadsPerBlock = resp.max_threads_per_block ? resp.max_threads_per_block : 1024;
-    p->maxThreadsDim[0] = resp.max_threads_dim[0];
-    p->maxThreadsDim[1] = resp.max_threads_dim[1];
-    p->maxThreadsDim[2] = resp.max_threads_dim[2];
-    p->maxGridSize[0] = resp.max_grid_size[0];
-    p->maxGridSize[1] = resp.max_grid_size[1];
-    p->maxGridSize[2] = resp.max_grid_size[2];
-    p->clockRate = resp.clock_rate;
-    p->major = resp.major;
-    p->minor = resp.minor;
-    p->multiProcessorCount = resp.multi_processor_count;
-    p->integrated = resp.integrated;
-    p->canMapHostMemory = resp.can_map_host_memory;
-    p->computeMode = resp.compute_mode;
-    p->concurrentKernels = resp.concurrent_kernels;
-    p->pciBusID = resp.pci_bus_id;
-    p->pciDeviceID = resp.pci_device_id;
-    p->pciDomainID = resp.pci_domain_id;
-    p->memoryClockRate = resp.memory_clock_rate;
-    p->memoryBusWidth = resp.memory_bus_width;
-    p->l2CacheSize = resp.l2_cache_size;
-    p->maxThreadsPerMultiProcessor = resp.max_threads_per_multi_processor;
-    strncpy(p->gcnArchName, resp.gcn_arch_name, sizeof(p->gcnArchName) - 1);
+    DevicePropsFullResponse resp;
+    memset(&resp, 0, sizeof(resp));
 
-    p->memPitch = 2147483647;
-    p->textureAlignment = 512;
-    p->texturePitchAlignment = 32;
-    p->unifiedAddressing = 1;
-    p->asyncEngineCount = 2;
-    p->deviceOverlap = 1;
-    p->cooperativeLaunch = 1;
-    p->cooperativeMultiDeviceLaunch = 1;
-    p->regsPerMultiprocessor = resp.regs_per_block ? resp.regs_per_block : 65536;
+    hipError_t err = hip_remote_request(
+        HIP_OP_GET_DEVICE_PROPERTIES,
+        &req, sizeof(req),
+        &resp, sizeof(resp)
+    );
+    if (err != hipSuccess) return err;
+
+    memcpy(prop, &resp.props, sizeof(hipDeviceProp_t));
+
+    if (deviceId >= 0 && deviceId < MAX_CACHED_DEVICES) {
+        memcpy(&g_cached_full_props[deviceId], prop, sizeof(hipDeviceProp_t));
+        g_props_cached[deviceId] = 1;
+    }
 
     return hipSuccess;
 }
@@ -767,21 +711,10 @@ hipError_t hipGetDevicePropertiesR0600(hipDeviceProp_t* prop, int deviceId) {
 hipError_t hipDeviceGetGcnArchName(char* buf, int deviceId) {
     if (!buf) return hipErrorInvalidValue;
 
-    HipRemoteDevicePropertiesResponse resp;
-    if (deviceId >= 0 && deviceId < MAX_CACHED_DEVICES && g_props_cached[deviceId]) {
-        resp = g_cached_props[deviceId];
-    } else {
-        HipRemoteDeviceRequest req;
-        memset(&req, 0, sizeof(req));
-        req.device_id = deviceId;
-        hipError_t err = hip_remote_request(
-            HIP_OP_GET_DEVICE_PROPERTIES,
-            &req, sizeof(req),
-            &resp, sizeof(resp)
-        );
-        if (err != hipSuccess) return err;
-    }
-    strncpy(buf, resp.gcn_arch_name, 255);
+    hipDeviceProp_t prop;
+    hipError_t err = hipGetDevicePropertiesR0600(&prop, deviceId);
+    if (err != hipSuccess) return err;
+    strncpy(buf, prop.gcnArchName, 255);
     buf[255] = '\0';
     return hipSuccess;
 }
