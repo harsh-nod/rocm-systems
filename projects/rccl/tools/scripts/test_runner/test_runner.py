@@ -85,6 +85,11 @@ def main():
                     results = executor.run_test_suite(suite)
                     all_results.extend(results)
 
+            # Rerun failed tests if requested
+            if args.rerun_failed:
+                rerun_results = executor.rerun_failed_tests()
+                all_results.extend(rerun_results)
+
             # Print summary once at the end
             executor.print_summary()
 
@@ -99,24 +104,24 @@ def main():
             if failed > 0 or timeout > 0:
                 if args.verbose:
                     print(f"Exiting: Tests failed (failed={failed}, timeout={timeout})")
-                return
+                sys.exit(1)
 
         if args.verbose:
             print("Exiting: Test run completed successfully")
-        return
+        sys.exit(0)
 
     except KeyboardInterrupt:
         print("\n\nInterrupted by user")
         if args.verbose:
             print("Exiting: User interrupted execution")
-        return
+        sys.exit(130)  # Standard exit code for SIGINT
     except Exception as e:
         print(f"\nERROR: {e}")
         if args.verbose:
             import traceback
             traceback.print_exc()
             print("Exiting: Unhandled exception occurred")
-        return
+        sys.exit(1)
 
 
 if __name__ == "__main__":
