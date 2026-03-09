@@ -69,6 +69,9 @@ python test_runner.py --config test_config_sample.json --rerun-failed
 
 # Combine with verbose mode for detailed output
 python test_runner.py --config test_config_sample.json --rerun-failed --verbose
+
+# Stop immediately if a rerun also fails (fail-fast mode)
+python test_runner.py --config test_config_sample.json --rerun-failed --stop-on-rerun-failure
 ```
 
 ### Skip MPI Installation Check
@@ -426,20 +429,21 @@ To reduce repetition, you can specify default values at multiple levels with a c
 
 ```
 Required:
-  -c, --config CONFIG       Test configuration file (JSON format)
+  -c, --config CONFIG           Test configuration file (JSON format)
 
 Optional:
-  -v, --verbose             Enable verbose output (shows build paths, commands, etc.)
-  -o, --output DIR          Output directory for logs and reports
-  --test-name NAME          Run only specific test by name
-  --no-build                Skip build step and use existing build
-  --skip-tests              Skip test execution (useful with --coverage-report)
-  --coverage-report         Generate code coverage report (HTML + text)
-  --rerun-failed            Rerun failed tests with additional environment variables
-  --skip-mpi-check          Skip MPI installation check during environment validation
-  --overwrite               Overwrite previous workspace directories
-  --report-suffix SUFFIX    Suffix for report directory (default: blank)
-  -h, --help                Show help message and exit
+  -v, --verbose                 Enable verbose output (shows build paths, commands, etc.)
+  -o, --output DIR              Output directory for logs and reports
+  --test-name NAME              Run only specific test by name
+  --no-build                    Skip build step and use existing build
+  --skip-tests                  Skip test execution (useful with --coverage-report)
+  --coverage-report             Generate code coverage report (HTML + text)
+  --rerun-failed                Rerun failed tests with additional environment variables
+  --stop-on-rerun-failure       Stop testing immediately if a rerun also fails (requires --rerun-failed)
+  --skip-mpi-check              Skip MPI installation check during environment validation
+  --overwrite                   Overwrite previous workspace directories
+  --report-suffix SUFFIX        Suffix for report directory (default: blank)
+  -h, --help                    Show help message and exit
 ```
 
 ## Code Coverage Reports
@@ -530,6 +534,9 @@ python test_runner.py --config test_config_sample.json --rerun-failed --verbose
 
 # Combine with coverage report
 python test_runner.py --config test_config_sample.json --rerun-failed --coverage-report
+
+# Fail-fast mode: stop if rerun also fails
+python test_runner.py --config test_config_sample.json --rerun-failed --stop-on-rerun-failure
 ```
 
 ## Environment Variable Merging
@@ -668,9 +675,11 @@ Add `rerun_env_variables` at the configuration level or individual test level:
 # Run tests and automatically rerun failures with debug environment
 python test_runner.py --config my_tests.json --rerun-failed
 
-# Example output:
-# Original run: Test fails with NCCL_DEBUG=""
-# Rerun: Same test runs with NCCL_DEBUG="INFO" (merged environment)
+# Behavior:
+# 1. Test runs and fails
+# 2. Test is IMMEDIATELY rerun with rerun_env_variables
+# 3. Continue to next test (regardless of rerun result)
+# No need to wait for all tests to complete - reruns happen inline
 ```
 
 #### Environment Variable Merging
@@ -756,7 +765,30 @@ Individual tests can override rerun environment variables:
 
 #### Output Format
 
-When reruns are executed, a separate summary is displayed:
+When a test fails and `--rerun-failed` is set, it is immediately rerun:
+
+```
+Running test: MyTest
+  Result: FAILED (2.345 seconds)
+
+================================================================================
+RERUNNING FAILED TEST IMMEDIATELY
+================================================================================
+
+Rerunning test: MyTest
+  Original result: FAILED
+  Additional env variables:
+    NCCL_DEBUG=INFO
+
+Running test: MyTest (rerun)
+  Result: PASSED (2.456 seconds)
+  Rerun exit code: 0
+================================================================================
+
+# Next test continues...
+```
+
+At the end, both original and rerun results are summarized:
 
 ```
 Detailed Results:
@@ -766,15 +798,6 @@ Test Suite                               Test Name            Result     Duratio
 Unit Tests                               MyTest               FAILED     2.345 seconds
 --------------------------------------------------------------------------------
 
-RERUNNING FAILED TESTS
-================================================================================
-Found 1 failed test(s) to rerun
-
-Rerunning test: MyTest
-  Original result: FAILED
-  Additional env variables:
-    NCCL_DEBUG=INFO
-
 Rerun Results (with additional environment variables):
 --------------------------------------------------------------------------------
 Test Name                                                    Result     Duration
@@ -783,12 +806,44 @@ MyTest                                                       PASSED     2.456 se
 --------------------------------------------------------------------------------
 ```
 
+#### Execution Flow
+
+When `--rerun-failed` is set:
+
+1. **Test runs** → If it passes, continue to next test
+2. **Test fails** → Immediately rerun with `rerun_env_variables`
+3. **Rerun completes** → Continue to next test (regardless of rerun pass/fail)
+4. **All tests complete** → Summary shows both original and rerun results
+
+The test suite continues executing even if reruns fail, ensuring all tests get a chance to run.
+
+#### Fail-Fast Mode
+
+Add `--stop-on-rerun-failure` to stop immediately if a rerun fails:
+
+1. **Test runs** → If it passes, continue to next test
+2. **Test fails** → Immediately rerun with `rerun_env_variables`
+3. **Rerun passes** → Continue to next test
+4. **Rerun fails** → **STOP** - No more tests executed
+
+This is useful when:
+- You want to fail fast and investigate the first persistent failure
+- Running in CI/CD and want to save time if a test fails even after rerun
+- Debugging a specific issue and don't need to run all tests
+
+Example:
+```bash
+# Stop immediately if any test fails after rerun
+python test_runner.py --config test_config.json --rerun-failed --stop-on-rerun-failure
+```
+
 #### Use Cases
 
 - **Debugging flaky tests:** Add verbose logging only for failed tests
 - **Network issues:** Enable network subsystem debugging for NET transport failures
 - **Memory issues:** Add memory debugging flags for allocation failures
 - **CI/CD pipelines:** Automatically gather more information on failures without verbose output for all tests
+- **Immediate feedback:** See rerun results right after a failure instead of waiting for all tests
 
 ### Build Configuration (New!)
 
