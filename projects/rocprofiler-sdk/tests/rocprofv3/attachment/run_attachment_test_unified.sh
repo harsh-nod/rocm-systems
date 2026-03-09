@@ -179,8 +179,8 @@ if [ $ATTACH_TWICE -ne 0 ]; then
 fi
 
 # End the running application
-echo "Sending SIGINT to application..."
-kill -2 $APP_PID 2>/dev/null
+echo "Sending SIGUSR1 to application..."
+kill -10 $APP_PID 2>/dev/null
 wait $APP_PID
 APP_EXIT_CODE=$?
 

@@ -35,14 +35,14 @@
 // Signal handler - handles signal without affecting execution
 namespace
 {
-bool sigint_received   = false;
+bool sigusr1_received   = false;
 bool sigwinch_received = false;
 void
 signal_handler(int signum)
 {
-    if(signum == SIGINT)
+    if(signum == SIGUSR1)
     {
-        sigint_received = true;
+        sigusr1_received = true;
     }
     else if(signum == SIGWINCH)
     {
@@ -109,7 +109,7 @@ execute_kernels(const size_t tid, const size_t device_id)
     }
     size_t iter = 0;
 
-    while(!sigint_received)
+    while(!sigusr1_received)
     {
         // Add ROCTX markers for better profiling
         std::string range_name = "Iteration_" + std::to_string(iter + 1);
@@ -158,7 +158,7 @@ execute_kernels(const size_t tid, const size_t device_id)
 
         roctxRangePop();
 
-        if(sigint_received)
+        if(sigusr1_received)
         {
             break;
         }
@@ -185,8 +185,8 @@ execute_kernels(const size_t tid, const size_t device_id)
 int
 main(int argc, char** argv)
 {
-    // Install signal handler for SIGINT and SIGWINCH
-    std::signal(SIGINT, signal_handler);
+    // Install signal handler for SIGUSR1 and SIGWINCH
+    std::signal(SIGUSR1, signal_handler);
     std::signal(SIGWINCH, signal_handler);
 
     size_t nthreads{8};

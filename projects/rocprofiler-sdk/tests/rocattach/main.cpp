@@ -124,13 +124,13 @@ main(int argc, char** argv)
         ROCATTACH_CALL(rocattach_detach(pid1));
         ROCATTACH_CALL(rocattach_detach(pid2));
 
-        if(kill(pid1, SIGINT) == -1)
+        if(kill(pid1, SIGUSR1) == -1)
         {
-            std::cout << "error: Failed to send signal SIGINT to pid1\n";
+            std::cout << "error: Failed to send signal SIGUSR1 to pid1\n";
         }
-        if(kill(pid2, SIGINT) == -1)
+        if(kill(pid2, SIGUSR1) == -1)
         {
-            std::cout << "error: Failed to send signal SIGINT to pid2\n";
+            std::cout << "error: Failed to send signal SIGUSR1 to pid2\n";
         }
 
         int pid1status = 0;
