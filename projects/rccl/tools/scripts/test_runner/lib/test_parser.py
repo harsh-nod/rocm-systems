@@ -91,6 +91,11 @@ Examples:
             action='store_true',
             help="Rerun failed tests with additional environment variables from config (rerun_env_variables)"
         )
+        self.parser.add_argument(
+            '--skip-mpi-check',
+            action='store_true',
+            help="Skip MPI installation check during environment validation"
+        )
 
     def parse_arguments(self):
         """Parse command-line arguments"""
@@ -119,6 +124,7 @@ Examples:
             print(f"Overwrite:         {args.overwrite}")
             print(f"Report suffix:     {args.report_suffix}")
             print(f"Rerun failed:      {args.rerun_failed}")
+            print(f"Skip MPI check:    {args.skip_mpi_check}")
             print("="*80)
             print()
 
