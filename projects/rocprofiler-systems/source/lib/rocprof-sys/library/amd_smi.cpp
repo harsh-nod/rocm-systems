@@ -1272,13 +1272,13 @@ setup()
     }
     else if(!_no_devices)
     {
-        auto parsed_devices = utility::parse_numeric_range<uint32_t, std::set<uint32_t>>(
-            _devices_v, "GPU", 1);
+        auto parsed_devices = utility::parse_numeric_range<int64_t, std::set<int64_t>>(
+            _devices_v, "GPU", 1L);
         for(auto idx : parsed_devices)
         {
-            if(idx < data::device_count)
+            if(idx >= 0 && static_cast<uint32_t>(idx) < data::device_count)
             {
-                _devices.emplace(idx);
+                _devices.emplace(static_cast<uint32_t>(idx));
             }
             else
             {

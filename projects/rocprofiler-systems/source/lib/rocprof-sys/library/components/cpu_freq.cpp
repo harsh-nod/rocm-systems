@@ -98,13 +98,13 @@ cpu_freq::configure()
     }
     else if(!_no_cpus)
     {
-        auto parsed_cpus = utility::parse_numeric_range<uint64_t, std::set<uint64_t>>(
-            _enabled_val, "CPU", 1);
+        auto parsed_cpus = utility::parse_numeric_range<int64_t, std::set<int64_t>>(
+            _enabled_val, "CPU", 1L);
         for(auto idx : parsed_cpus)
         {
-            if(idx < _ncpu)
+            if(idx >= 0 && static_cast<uint64_t>(idx) < _ncpu)
             {
-                _enabled_freqs.emplace(idx);
+                _enabled_freqs.emplace(static_cast<uint64_t>(idx));
             }
             else
             {
