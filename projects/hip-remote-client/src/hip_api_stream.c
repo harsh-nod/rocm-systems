@@ -494,8 +494,10 @@ hipError_t hipStreamBeginCapture(hipStream_t stream, hipStreamCaptureMode mode) 
         .mode = mode
     };
 
-    return hip_remote_request_fire_and_forget(
-        HIP_OP_STREAM_BEGIN_CAPTURE, &req, sizeof(req)
+    HipRemoteResponseHeader resp;
+    return hip_remote_request(
+        HIP_OP_STREAM_BEGIN_CAPTURE, &req, sizeof(req),
+        &resp, sizeof(resp)
     );
 }
 hipError_t hipStreamEndCapture(hipStream_t stream, hipGraph_t* pGraph) {
@@ -589,16 +591,30 @@ int hipGetStreamDeviceId(hipStream_t stream) {
 }
 
 hipError_t hipStreamGetCaptureInfo(hipStream_t stream, hipStreamCaptureStatus* captureStatus, unsigned long long* id) {
-    hip_remote_log_debug("hipStreamGetCaptureInfo: stream=%p (not supported remotely)", (void*)stream);
-    if (captureStatus) *captureStatus = 0;
-    if (id) *id = 0;
-    return hipSuccess;
+    HipRemoteStreamIsCapturingRequest req;
+    memset(&req, 0, sizeof(req));
+    req.stream = (uint64_t)(uintptr_t)stream;
+    HipRemoteStreamIsCapturingResponse resp;
+
+    hipError_t err = hip_remote_request(
+        HIP_OP_STREAM_IS_CAPTURING,
+        &req, sizeof(req),
+        &resp, sizeof(resp)
+    );
+
+    if (err == hipSuccess) {
+        if (captureStatus) *captureStatus = (hipStreamCaptureStatus)resp.capture_status;
+        if (id) *id = 0;
+    } else {
+        if (captureStatus) *captureStatus = 0;
+        if (id) *id = 0;
+        err = hipSuccess;
+    }
+    return err;
 }
 
 hipError_t hipStreamGetCaptureInfo_v2(hipStream_t stream, hipStreamCaptureStatus* captureStatus, unsigned long long* id, hipGraph_t* graph, const hipGraphNode_t** dependencies, size_t* numDependencies) {
-    hip_remote_log_debug("hipStreamGetCaptureInfo_v2: stream=%p (not supported remotely)", (void*)stream);
-    if (captureStatus) *captureStatus = 0;
-    if (id) *id = 0;
+    hipError_t err = hipStreamGetCaptureInfo(stream, captureStatus, id);
     if (graph) *graph = NULL;
     if (dependencies) *dependencies = NULL;
     if (numDependencies) *numDependencies = 0;
