@@ -759,6 +759,7 @@ hipError_t hipGetDevicePropertiesR0600(hipDeviceProp_t* prop, int deviceId) {
     p->deviceOverlap = 1;
     p->cooperativeLaunch = 1;
     p->cooperativeMultiDeviceLaunch = 1;
+    p->regsPerMultiprocessor = resp.regs_per_block ? resp.regs_per_block : 65536;
 
     return hipSuccess;
 }
