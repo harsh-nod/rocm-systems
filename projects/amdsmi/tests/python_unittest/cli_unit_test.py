@@ -727,7 +727,9 @@ class TestAmdSmiCli(unittest.TestCase):
                 msg = 'Failure: Received PASS (  0), expected FAIL ( !0)'
             else:
                 msg = f'Failure: Received PASS (  0), returned FAIL ({error_code:>3s})'
-        elif rc != error_code:
+        elif rc == '0' and error_code != '0':
+            msg = f'Failure: Received rc = ({rc:>3s}), returned ec = ({error_code:>3s})'
+        elif rc != '0' and f'-{rc}' != error_code:
             msg = f'Failure: Received rc = ({rc:>3s}), returned ec = ({error_code:>3s})'
         else:
             passed = True
@@ -1325,6 +1327,11 @@ class TestAmdSmiCli(unittest.TestCase):
         return
 
     def test_partition(self):
+        '''
+        TODO: Can we add a test case for changing partitions while processes are accessing the GPUs. We can add the negative and the positive test case to show the behavior that processes need to be killed before partition changes.
+
+We need to make sure the messaging is correct, and extra credit idea would be to print out the PIDs that are currently testing.
+        '''
         self.common.print_func_name('')
         msg = f'{self.tab}### amd-smi partition'
         self.common.print(msg)
