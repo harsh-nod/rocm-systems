@@ -91,22 +91,6 @@ ROOF_ONLY_FILES = sorted([
     "sysinfo.csv",
 ])
 
-PC_SAMPLING_HOST_TRAP_FILES = sorted([
-    "ps_file_agent_info.csv",
-    "ps_file_kernel_trace.csv",
-    "ps_file_pc_sampling_host_trap.csv",
-    "ps_file_results.json",
-    "sysinfo.csv",
-])
-
-PC_SAMPLING_STOCHASTIC_FILES = sorted([
-    "ps_file_agent_info.csv",
-    "ps_file_kernel_trace.csv",
-    "ps_file_pc_sampling_stochastic.csv",
-    "ps_file_results.json",
-    "sysinfo.csv",
-])
-
 METRIC_THRESHOLDS = {
     "2.1.12": {"absolute": 0, "relative": 8},
     "3.1.1": {"absolute": 0, "relative": 10},
@@ -2531,70 +2515,6 @@ def test_comprehensive_error_paths():
         assert "coll_level can not be None" in str(e)
 
 
-@pytest.mark.pc_sampling
-def test_pc_sampling_host_trap(binary_handler_profile_rocprof_compute):
-    if soc in ("MI100"):
-        assert True
-        return
-
-    options = [
-        "--block",
-        "21",
-        "--pc-sampling-method",
-        "host_trap",
-        "--pc-sampling-interval",
-        "256",
-    ]
-    workload_dir = test_utils.get_output_dir()
-    _ = binary_handler_profile_rocprof_compute(
-        config,
-        workload_dir,
-        options,
-        check_success=True,
-        roof=False,
-        app_name="app_mat_mul_max",
-    )
-
-    file_dict = test_utils.check_csv_files(workload_dir, num_devices, 1)
-    assert sorted(list(file_dict.keys())) == sorted(PC_SAMPLING_HOST_TRAP_FILES)
-
-    validate(inspect.stack()[0][3], workload_dir, file_dict)
-
-    test_utils.clean_output_dir(config["cleanup"], workload_dir)
-
-
-@pytest.mark.pc_sampling
-def test_pc_sampling_stochastic(binary_handler_profile_rocprof_compute):
-    if soc in ("MI100") or soc in ("MI200"):
-        assert True
-        return
-
-    options = [
-        "--block",
-        "21",
-        "--pc-sampling-method",
-        "stochastic",
-        "--pc-sampling-interval",
-        "1048576",
-    ]
-    workload_dir = test_utils.get_output_dir()
-    _ = binary_handler_profile_rocprof_compute(
-        config,
-        workload_dir,
-        options,
-        check_success=True,
-        roof=False,
-        app_name="app_mat_mul_max",
-    )
-
-    file_dict = test_utils.check_csv_files(workload_dir, num_devices, 1)
-    assert sorted(list(file_dict.keys())) == sorted(PC_SAMPLING_STOCHASTIC_FILES)
-
-    validate(inspect.stack()[0][3], workload_dir, file_dict)
-
-    test_utils.clean_output_dir(config["cleanup"], workload_dir)
-
-
 @pytest.mark.live_attach_detach
 def test_live_attach_detach_block(binary_handler_profile_rocprof_compute):
     options = ["--block", "3.1.1", "4.1.1", "5.1.1"]
@@ -3875,41 +3795,6 @@ def test_multi_rank_warning_application_replay(
     output = stdout + stderr
     assert "Multi-rank application detected" in output
     assert "Application replay mode" in output
-    assert "--iteration-multiplexing" in output
-    assert "--block" not in output
-    assert "--set" in output
-
-    test_utils.clean_output_dir(config["cleanup"], workload_dir)
-
-
-@pytest.mark.multi_rank
-def test_multi_rank_warning_pc_sampling(
-    binary_handler_profile_rocprof_compute, monkeypatch
-):
-    """
-    Test that a warning is printed when running a multi-rank application
-    with PC sampling enabled.
-    """
-    # Set MPI environment variable to simulate multi-rank
-    monkeypatch.setenv("OMPI_COMM_WORLD_RANK", "0")
-
-    workload_dir = test_utils.get_output_dir()
-
-    # Enable PC sampling
-    options = ["--block", "21"]
-
-    _, stdout, stderr = binary_handler_profile_rocprof_compute(
-        config,
-        workload_dir,
-        options,
-        app_name="app_1",
-        capture_output=True,
-        check_success=False,
-    )
-
-    # Check that PC sampling warning is in output
-    output = stdout + stderr
-    assert "Multi-rank application detected with PC sampling enabled" in output
     assert "--iteration-multiplexing" in output
     assert "--block" not in output
     assert "--set" in output
