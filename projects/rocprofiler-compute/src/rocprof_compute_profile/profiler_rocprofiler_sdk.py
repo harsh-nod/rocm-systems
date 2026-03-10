@@ -31,7 +31,7 @@ from typing import Optional, Union
 from rocprof_compute_profile.profiler_base import RocProfCompute_Base
 from rocprof_compute_soc.soc_base import OmniSoC_Base
 from utils.logger import console_error, console_log, demarcate
-from utils.utils import resolve_rocm_library_path
+from utils.utils import is_only_pc_sampling, resolve_rocm_library_path
 
 
 class rocprofiler_sdk_profiler(RocProfCompute_Base):
@@ -160,8 +160,9 @@ class rocprofiler_sdk_profiler(RocProfCompute_Base):
     def post_processing(self) -> None:
         """Perform any post-processing steps prior to profiling."""
         if self.ready_to_profile:
-            # Manually join each pmc_perf*.csv output
-            self.join_prof()
+            if not is_only_pc_sampling(self.get_args().filter_blocks):
+                # Manually join each pmc_perf*.csv output
+                self.join_prof()
             # Run roofline microbenchmark
             super().post_processing()
         else:

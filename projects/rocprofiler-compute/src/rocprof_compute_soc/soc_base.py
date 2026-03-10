@@ -56,6 +56,7 @@ from utils.utils import (
     convert_metric_id_to_panel_info,
     get_panel_alias,
     impute_counters_iteration_multiplex,
+    is_only_pc_sampling,
     is_tcc_channel_counter,
     merge_counters_spatial_multiplex,
     parse_sets_yaml,
@@ -356,6 +357,13 @@ class OmniSoC_Base:
     def perfmon_filter(self) -> list[str]:
         """Filter default performance counter set based on user arguments"""
         counters, filter_blocks = self.detect_counters()
+
+        if is_only_pc_sampling(filter_blocks):
+            console_log(
+                "profiling",
+                "PC sampling only mode -- skipping counter collection setup",
+            )
+            return filter_blocks
 
         # SQ_ACCUM_PREV_HIRES will be injected for level counters later on
         counters = counters - {"SQ_ACCUM_PREV_HIRES"}
