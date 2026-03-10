@@ -26,12 +26,19 @@ def main():
     parser_interface = ArgumentParserInterface()
     args = parser_interface.process_arguments()
 
+    # Validate flag combinations
+    if args.stop_on_rerun_failure and not args.rerun_failed:
+        print("ERROR: --stop-on-rerun-failure requires --rerun-failed to be set")
+        if args.verbose:
+            print("Exiting: Invalid flag combination")
+        sys.exit(1)
+
     # Validate config file exists
     if not os.path.exists(args.config):
         print(f"ERROR: Configuration file not found: {args.config}")
         if args.verbose:
             print("Exiting: Missing configuration file")
-        return
+        sys.exit(1)
 
     try:
         # Load and validate configuration
@@ -47,7 +54,7 @@ def main():
         if not executor.check_environment():
             if args.verbose:
                 print("Exiting: Environment check failed")
-            return
+            sys.exit(1)
 
         # Build RCCL (if not --no-build)
         if not args.no_build:
@@ -55,7 +62,7 @@ def main():
                 print("ERROR: Build failed")
                 if args.verbose:
                     print("Exiting: RCCL build failed")
-                return
+                sys.exit(1)
 
         # Parse and run test suites
         if not args.skip_tests:
