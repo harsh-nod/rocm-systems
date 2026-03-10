@@ -92,7 +92,6 @@ ROOF_ONLY_FILES = sorted([
 ])
 
 PC_SAMPLING_HOST_TRAP_FILES = sorted([
-    "pmc_perf.csv",
     "ps_file_agent_info.csv",
     "ps_file_kernel_trace.csv",
     "ps_file_pc_sampling_host_trap.csv",
@@ -101,7 +100,6 @@ PC_SAMPLING_HOST_TRAP_FILES = sorted([
 ])
 
 PC_SAMPLING_STOCHASTIC_FILES = sorted([
-    "pmc_perf.csv",
     "ps_file_agent_info.csv",
     "ps_file_kernel_trace.csv",
     "ps_file_pc_sampling_stochastic.csv",
