@@ -21,6 +21,7 @@ THE SOFTWARE.
 
 #include "warp_common.hh"
 #include <hip/hip_runtime.h>
+#include <hip/cooperative_groups/hip_reduce.h>
 #include <hip/hip_fp16.h>
 #include <hip_test_common.hh>
 #include <performance_common.hh>
