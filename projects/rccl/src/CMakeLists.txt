@@ -4,6 +4,8 @@
 ## NOTE: This file intentionally keeps RCCL's current behavior (hipify flow,
 ## generated sources, options/flags, etc.). It's a refactor-only move.
 
+option(SPLIT_SPECIALIZED "Use split specialized kernel pipeline" OFF)
+
 # Collect list of all source files
 #==================================================================================================
 # E.g: find src -type f \( -name "*.cc" -o -name "*.h" -o -name "*.hpp" \) | sort
@@ -30,6 +32,7 @@ set(SRC_FILES
   src/device/all_reduce.h
   src/device/alltoall_pivot.h
   src/device/alltoall_gda.h
+  src/device/alltoallv_gda.h
   src/device/broadcast.h
   src/device/common.h
   src/device/common_kernel.h
@@ -424,6 +427,21 @@ if (gen_py_result)
   message(FATAL_ERROR "${PROJECT_SOURCE_DIR}/src/device/generate.py failed")
 endif()
 
+if (SPLIT_SPECIALIZED)
+  string(REPLACE ";" ";" GPU_TARGETS_STR "${GPU_TARGETS}")
+  execute_process(
+    COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/device/generate_specialized.py ${GEN_DIR}/specialized ${BUILD_LOCAL_GPU_TARGET_ONLY} "${ONLY_FUNCS}" "${GPU_TARGETS_STR}"
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    RESULT_VARIABLE gen_specialized_result
+    ERROR_VARIABLE gen_specialized_error
+  )
+  if (gen_specialized_result)
+    message(WARNING "Specialized kernel generation failed: ${gen_specialized_error}")
+  else()
+    file(GLOB SPECIALIZED_KERNEL_FILES "${GEN_DIR}/specialized/*.cpp")
+  endif()
+endif()
+
 if (GENERATE_SYM_KERNELS)
   # Execute the python script to generate required symmetric memory kernels
   execute_process(
@@ -438,13 +456,40 @@ if (GENERATE_SYM_KERNELS)
   endif()
 endif()
 
-# Find the generated files in the output directory
-file(GLOB_RECURSE GENERATED_FILES "${GEN_DIR}/*")
+# Find and add generated files
+if (SPLIT_SPECIALIZED)
+  # Only add host_table.cpp and device_table.cpp (not device function .cpp files)
+  list(APPEND HIP_SOURCES "${GEN_DIR}/host_table.cpp")
+  list(APPEND HIP_SOURCES "${GEN_DIR}/device_table.cpp")
+  if (NOT GENERATE_SYM_KERNELS)
+    file(WRITE "${PROJECT_BINARY_DIR}/sym_kernels_stub.cpp"
+"#include \"sym_kernels.h\"
+#include \"nccl.h\"
+#include \"comm.h\"
 
-# Append all found generated files to the list
-foreach(file ${GENERATED_FILES})
-  list(APPEND HIP_SOURCES ${file})
-endforeach()
+ncclResult_t ncclSymkInitOnce(struct ncclComm* /*comm*/) { return ncclSuccess; }
+ncclResult_t ncclSymkFinalize(struct ncclComm* /*comm*/) { return ncclSuccess; }
+bool ncclSymkAvailable(struct ncclComm* /*comm*/, ncclFunc_t /*coll*/, int /*red*/, ncclDataType_t /*ty*/, size_t /*count*/) { return false; }
+ncclResult_t ncclSymkPickKernel(struct ncclComm* /*comm*/, ncclFunc_t /*coll*/, int /*red*/, ncclDataType_t /*ty*/, size_t /*totalBytes*/, size_t /*count*/, int /*nRanks*/, float* /*time*/, ncclSymkKernelId* /*outKernel*/, int* /*outNThreads*/, int* /*outNChannels*/) { return ncclInternalError; }
+const char* ncclSymkKernelIdToString(int /*kernelId*/) { return \"<sym_kernels_disabled>\"; }
+void* ncclSymkGetKernelPtr(ncclSymkKernelId /*kernelId*/, int /*red*/, ncclDataType_t /*ty*/) { return nullptr; }
+ncclResult_t ncclSymkMakeDevWork(struct ncclComm* /*comm*/, struct ncclTaskColl* /*task*/, struct ncclSymkDevWork* /*outDevWork*/) { return ncclInternalError; }
+
+int const ncclSymkKernelCount = 0;
+void* const ncclSymkKernelList[] = { nullptr };
+")
+    list(FILTER HIP_SOURCES EXCLUDE REGEX "sym_kernels\\.cc$")
+    list(APPEND HIP_SOURCES "${PROJECT_BINARY_DIR}/sym_kernels_stub.cpp")
+  endif()
+
+  list(FILTER HIP_SOURCES EXCLUDE REGEX "common\\.cu\\.cpp$")
+else()
+  # Normal mode: add all generated files
+  file(GLOB_RECURSE GENERATED_FILES "${GEN_DIR}/*")
+  foreach(file ${GENERATED_FILES})
+    list(APPEND HIP_SOURCES ${file})
+  endforeach()
+endif()
 
 # Create an initial git_version.cpp file (that will be updated with latest git version)
 #==================================================================================================
@@ -749,7 +794,9 @@ target_compile_options(rccl PRIVATE -Wall)
 target_compile_options(rccl PRIVATE -Werror=deprecated-copy-with-user-provided-copy)
 target_compile_options(rccl PRIVATE -Wno-format-nonliteral)
 target_compile_options(rccl PRIVATE -Wno-unused-function)
-target_compile_options(rccl PRIVATE -fgpu-rdc)
+if (NOT SPLIT_SPECIALIZED)
+  target_compile_options(rccl PRIVATE -fgpu-rdc)
+endif()
 
 if(QUIET_WARNINGS)
   target_compile_options(rccl PRIVATE -Wno-invalid-offsetof)
@@ -835,6 +882,74 @@ if (FAULT_INJECTION)
   target_compile_definitions(rccl PRIVATE ENABLE_FAULT_INJECTION)
   message(STATUS "Fault injection enabled")
 endif()
+if (NOT DWORDX4_INTRINSICS)
+  message(STATUS "Force disable dwordx4 intrinsics")
+  target_compile_definitions(rccl PRIVATE DWORDX4_INTRINSICS_FORCE_OFF)
+endif()
+
+# Split specialized pipeline
+if (SPLIT_SPECIALIZED)
+  include(${PROJECT_SOURCE_DIR}/cmake/SplitSpecializedCompile.cmake)
+
+  set(SSC_DEFS NDEBUG USE_INDIRECT_FUNCTION_CALL)
+  if(FAULT_INJECTION)
+    list(APPEND SSC_DEFS ENABLE_FAULT_INJECTION)
+  endif()
+  if(LL128_ENABLED)
+    list(APPEND SSC_DEFS ENABLE_LL128)
+  endif()
+  if(ENABLE_WARP_SPEED)
+    list(APPEND SSC_DEFS ENABLE_WARP_SPEED)
+  endif()
+  if(COLLTRACE)
+    list(APPEND SSC_DEFS ENABLE_COLLTRACE)
+  endif()
+  if(DEBUG_PEER_POINTERS)
+    list(APPEND SSC_DEFS DEBUG_PEER_POINTERS)
+  endif()
+  if(NCCL_DEVICE_DEBUG_TRAP OR (DEFINED ENV{NCCL_DEVICE_DEBUG_TRAP} AND "$ENV{NCCL_DEVICE_DEBUG_TRAP}" STREQUAL "1"))
+    list(APPEND SSC_DEFS NCCL_DEVICE_DEBUG_TRAP)
+  endif()
+
+  get_target_property(RCCL_INCLUDES rccl INCLUDE_DIRECTORIES)
+
+  get_target_property(RCCL_OPTS rccl COMPILE_OPTIONS)
+  if(NOT RCCL_OPTS)
+    set(RCCL_OPTS "")
+  endif()
+
+  set(SSC_DISPATCHER "${HIPIFY_DIR}/src/device/common.cu.cpp")
+
+  set(SSC_BUNDLER_HOST "host-x86_64-unknown-linux-gnu")
+  set(SSC_BUNDLER_DEV_TARGETS "")
+  foreach(_arch ${GPU_TARGETS})
+    list(APPEND SSC_BUNDLER_DEV_TARGETS "hipv4-amdgcn-amd-amdhsa--${_arch}")
+  endforeach()
+
+  set(_ssc_compress_flag "")
+  if(ENABLE_COMPRESS)
+    set(_ssc_compress_flag "ENABLE_COMPRESS")
+  endif()
+
+  setup_split_specialized_compile(
+    TARGET                    rccl
+    GPU_ARCHS                 ${GPU_TARGETS}
+    ROCM_PATH                 ${ROCM_PATH}
+    OUTPUT_DIR                ${PROJECT_BINARY_DIR}
+    BUNDLER_DEVICE_TARGETS    ${SSC_BUNDLER_DEV_TARGETS}
+    BUNDLER_HOST_TARGET       ${SSC_BUNDLER_HOST}
+    SPECIALIZED_SOURCES       ${SPECIALIZED_KERNEL_FILES}
+    DISPATCHER_SOURCES        ${SSC_DISPATCHER}
+    INCLUDE_DIRS              ${RCCL_INCLUDES}
+    COMPILE_DEFS              ${SSC_DEFS}
+    COMPILE_OPTS              ${RCCL_OPTS}
+    ${_ssc_compress_flag}
+  )
+
+  target_link_options(rccl PRIVATE ${SPLIT_SPECIALIZED_FAT_OBJ})
+  add_dependencies(split_specialized_device hipify_all)
+  add_dependencies(rccl split_specialized_device)
+endif()
 
 ## Set RCCL linked library directories
 target_link_directories(rccl PRIVATE ${SMI_LIB_DIR})
@@ -864,10 +979,21 @@ endif()
 if (ROCTX_ENABLE)
   target_link_libraries(rccl PRIVATE ${ROCTX_LIB})
 endif()
-target_link_libraries(rccl PRIVATE   -fgpu-rdc)             # Required when linking relocatable device code
+if (NOT SPLIT_SPECIALIZED)
+  target_link_libraries(rccl PRIVATE   -fgpu-rdc)             # Required when linking relocatable device code
+  target_link_options(rccl PRIVATE --hip-link)
+endif()
 target_link_libraries(rccl PRIVATE   Threads::Threads)
 target_link_libraries(rccl INTERFACE hip::host)
-target_link_libraries(rccl PRIVATE   hip::device)
+if (NOT SPLIT_SPECIALIZED)
+  target_link_libraries(rccl PRIVATE   hip::device)
+else()
+  target_link_libraries(rccl PRIVATE   amdhip64)
+  target_compile_options(rccl PRIVATE -xhip)
+  foreach(target ${GPU_TARGETS})
+    target_compile_options(rccl PRIVATE --offload-arch=${target})
+  endforeach()
+endif()
 target_link_libraries(rccl PRIVATE   dl)
 target_link_libraries(rccl PRIVATE   ${SMI_LIBRARIES})
 target_link_libraries(rccl PRIVATE fmt::fmt-header-only)
@@ -886,24 +1012,35 @@ execute_process(
   COMMAND bash "-c" "cat /sys/fs/cgroup/memory.max"
   OUTPUT_VARIABLE memory_max_string)
 if (${memory_max_string} MATCHES "^[0-9]+")
-  math(EXPR memory_in_gb "${memory_max_string} / (1024 * 1024 * 1024)")
+  math(EXPR detected_memory_gb "${memory_max_string} / (1024 * 1024 * 1024)")
 else()
   execute_process(
     COMMAND bash "-c" "free | grep -o '[[:digit:]]*' | head -1"
     OUTPUT_VARIABLE memory_max_string)
   ## memory_max_string holds the free memory in KB
   if (${memory_max_string} MATCHES "^[0-9]+")
-    math(EXPR memory_in_gb "${memory_max_string} / (1024 * 1024)") ## KB to GB conversion
+    math(EXPR detected_memory_gb "${memory_max_string} / (1024 * 1024)") ## KB to GB conversion
   else()
     cmake_host_system_information(RESULT memory_max_string QUERY AVAILABLE_PHYSICAL_MEMORY )
-    math(EXPR memory_in_gb "${memory_max_string} / 1024")
+    math(EXPR detected_memory_gb "${memory_max_string} / 1024")
   endif()
 endif()
+set(RCCL_MAX_MEMORY ${detected_memory_gb} CACHE STRING "Maximum memory (in GB) during linking")
+set(RCCL_MEMORY_PER_LINK_JOB 32 CACHE STRING "Memory (in GB) reserved for each linker job")
+# Use the minimum of detected memory and user-specified memory
+if (RCCL_MAX_MEMORY LESS detected_memory_gb)
+  set(memory_in_gb ${RCCL_MAX_MEMORY})
+else()
+  set(memory_in_gb ${detected_memory_gb})
+endif()
+
 ## Reserve 16GB for each linker job. Limit max number of linker jobs to 16
 if (HAVE_PARALLEL_JOBS)
-  math(EXPR num_linker_jobs "(${memory_in_gb} + 15) / 16")
+  math(EXPR num_linker_jobs "(${memory_in_gb} + ${RCCL_MEMORY_PER_LINK_JOB} - 1) / ${RCCL_MEMORY_PER_LINK_JOB}")
   if (${num_linker_jobs} GREATER_EQUAL "16")
     set(num_linker_jobs "16")
+  elseif (${num_linker_jobs} LESS_EQUAL "0")
+    set(num_linker_jobs "1")
   endif()
   message(STATUS "Use ${num_linker_jobs} jobs for linking")
   target_link_options(rccl PRIVATE -parallel-jobs=${num_linker_jobs})       # Use multiple threads to link

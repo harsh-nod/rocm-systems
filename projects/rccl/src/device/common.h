@@ -12,7 +12,10 @@
 #include "device.h"
 #include "op128.h"
 #include "reduce_kernel.h"
+#if !defined(SPECIALIZED_KERNEL)
 #include "device_table.h"
+#endif
+
 #include "network/unpack/unpack_defs.h"
 #define NCCL_MAX_DEV_ARITY (NCCL_MAX_TREE_ARITY-1)  // Using balanced tree instead of split tree
 
@@ -186,12 +189,24 @@ struct ncclShmemData {
   uint64_t barrier_pat;
 };
 
-extern __shared__ ncclShmemData ncclShmem;
-#if __CUDA_ARCH__ >= 700
-  extern __shared__ ulong2 ncclShmemPerWarp[/*ncclShmemDynamicSize()/sizeof(ulong2)*/];
-#else
-  extern __shared__ ulong2 ncclShmemPerWarp[ncclShmemScratchWarpSize()*(NCCL_MAX_NTHREADS/WARP_SIZE)/sizeof(ulong2)];
-#endif
+
+__device__ __shared__  ncclShmemData ncclShmem;
+__device__ __shared__ __attribute__((aligned(16))) uint8_t
+ncclShmemPerWarp[ncclShmemScratchWarpSize()*(NCCL_MAX_NTHREADS/WARP_SIZE)];
+
+
+// shared
+template<typename T>
+using LDSPtr = __attribute__((address_space(3))) T *;
+
+template<typename T>
+__device__ __forceinline__
+LDSPtr<T> ncclScratchForWarp(int warp)
+{
+  auto* p = ncclShmemPerWarp + warp * ncclShmemScratchWarpSize();
+  return LDSPtr<T>(p);
+}
+
 
 #ifdef ENABLE_FAULT_INJECTION
 __device__ inline void insert_random_delay_per_warp() {
@@ -215,9 +230,6 @@ __device__ inline void insert_random_delay_per_warp() {
 }
 #endif
 
-__device__ inline void* ncclScratchForWarp(int warp) {
-  return (char*)ncclShmemPerWarp + warp*ncclShmemScratchWarpSize();
-}
 
 __device__ inline void barrier_sync(int name) {
   #if 0
@@ -296,7 +308,7 @@ __device__ __forceinline__ void loadWorkBatchToShmem(
     // PTX has instruction "fns" (find n-th set) but it expands to a lot of SASS,
     // since we know all lanes will be querying the same bitmask we can compute
     // much faster using shared memory.
-    uint8_t* fnsOfBitset = (uint8_t*)ncclScratchForWarp(threadIdx.x/WARP_SIZE);
+    LDSPtr<uint8_t> fnsOfBitset = ncclScratchForWarp<uint8_t>(threadIdx.x/WARP_SIZE);
     int nWorks = 0;
     __syncwarp();
 
@@ -507,7 +519,7 @@ __device__ __forceinline__ void profiler(int action) {
   }
 }
 
-template<int SpecializedFnId, typename SpecializedRunWorkBatch, bool COLLTRACE, int COLL_UNROLL>
+template<int SpecializedFnId, typename SpecializedRunWorkBatch, bool COLLTRACE, int COLL_UNROLL, void(*SpecializedDevFunc)() = nullptr>
 __device__ __forceinline__ void ncclKernelMain(struct ncclDevKernelArgs const* args) {
   const int tid = threadIdx.x;
   int tn = blockDim.x;
@@ -671,10 +683,13 @@ __device__ __forceinline__ void ncclKernelMain(struct ncclDevKernelArgs const* a
   while (ncclShmem.aborted == 0) {
     if (tid == 0) __insert_timestamp(__LINE__);
     profiler(START);
+#ifdef SPECIALIZED_KERNEL
+    SpecializedDevFunc();
+#else
     if (0 <= SpecializedFnId && ncclShmem.funcId == (unsigned)SpecializedFnId) {
       SpecializedRunWorkBatch().run();
     } else {
-#ifdef USE_INDIRECT_FUNCTION_CALL
+#if defined(USE_INDIRECT_FUNCTION_CALL)
       if (COLL_UNROLL == 1)
         ncclDevFuncTable_1[ncclShmem.funcId]();
       else if (COLL_UNROLL == 2)
@@ -690,6 +705,7 @@ __device__ __forceinline__ void ncclKernelMain(struct ncclDevKernelArgs const* a
         NCCL_CALL_FUNCTIONS_4(ncclShmem.funcId);
 #endif
     }
+#endif
 
     if (ncclShmem.nextBatchIx == -1) break;
     int batchIx = ncclShmem.nextBatchIx;
@@ -735,12 +751,12 @@ __global__ void ncclDevKernelDebug_Generic_4(ncclDevKernelArgsDefaultStorage NCC
 
 #ifdef USE_INDIRECT_FUNCTION_CALL
 #define DEFINE_ncclDevFunc(suffix, coll, redop, ty, algo, proto, acc, pipeline, unroll) \
-  __device__ void ncclDevFunc_##suffix() { \
+  __device__ __attribute__((noinline, used)) void ncclDevFunc_##suffix() { \
     RunWorkBatch<coll, ty, redop<ty>, algo, proto, acc, unroll, pipeline>().run(); \
   }
 #else
 #define DEFINE_ncclDevFunc(suffix, coll, redop, ty, algo, proto, acc, pipeline, unroll) \
-  __device__ __attribute__((noinline)) void ncclDevFunc_##suffix() { \
+  __device__ __attribute__((noinline, used)) void ncclDevFunc_##suffix() { \
     RunWorkBatch<coll, ty, redop<ty>, algo, proto, acc, unroll, pipeline>().run(); \
   }
 #endif
