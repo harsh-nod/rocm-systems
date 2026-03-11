@@ -53,6 +53,7 @@ class AMDSMICommands():
             self.helpers = helpers
         self.logger = AMDSMILogger(format=format, destination=destination, helpers=self.helpers)
         self.device_handles = []
+        self.device_handles_gpus = []
         self.cpu_handles = []
         self.core_handles = []
         self.node_handle = None
@@ -9515,7 +9516,6 @@ class AMDSMICommands():
             self.helpers.check_required_groups()
             self.group_check_printed = True
 
-        processors = amdsmi_interface.amdsmi_get_processor_handles()
         version_info = {"amd-smi": "N/A",
                         "amdgpu version": "N/A",
                         "kernel version": "N/A",
@@ -9524,6 +9524,12 @@ class AMDSMICommands():
                         "rocm version": (False, "N/A")}
         version_info['rocm version'] = amdsmi_interface.amdsmi_get_rocm_version()
         version_info['kernel version'] = os.uname().release
+
+        if not self.helpers.is_amdgpu_initialized():
+            # everything below requires amdgpu to be initialized, so if it's not, skip the rest of the default info and just return what we have so far
+            return
+
+        processors = amdsmi_interface.amdsmi_get_processor_handles()
         try:
             version_info["amdgpu version"] = amdsmi_interface.amdsmi_get_gpu_driver_info(processors[0])
         except amdsmi_exception.AmdSmiLibraryException as e:
