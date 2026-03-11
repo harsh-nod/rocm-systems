@@ -4,7 +4,38 @@
 **Objective**: Remove pandas dependency from profile code path by moving join_prof() to analyze
 **Dependencies**: None (independent PR, can develop in parallel with Phase 1)
 **Duration**: 2-3 days
-**Status**: Ready to implement
+**Status**: Ready to implement - Plan verified and corrected
+
+---
+
+## 🔑 Key Implementation Insight
+
+**CRITICAL**: `join_prof()` must run in `OmniAnalyze_Base.pre_processing()` **BEFORE** returning to child class!
+
+**Why**: The analyze flow loads `pmc_perf.csv` in child class pre_processing():
+```
+OmniAnalyze_Base.pre_processing() (line 473)
+  ├─> Initialize output file (lines 480-486)
+  ├─> initalize_runs() (line 489) - loads sysinfo.csv, roofline.csv (NOT pmc_perf.csv!)
+  ├─> Set filters (lines 491-509)
+  └─> [JOIN pmc_perf_*.csv HERE - at the END] ← Logical: workloads initialized, now prepare data
+  └─> Returns to child class
+
+cli_analysis.pre_processing() (line 38)
+  └─> super().pre_processing() [calls above]
+  └─> file_io.create_df_pmc() (line 50) ← NEEDS pmc_perf.csv to exist!
+       └─> Searches for "pmc_perf.csv" (file_io.py:256)
+       └─> pd.read_csv("pmc_perf.csv") (file_io.py:259)
+
+db_analysis.pre_processing() (line 72)
+  └─> super().pre_processing() [calls above]
+  └─> self.calc_pmc_df_data() (line 82) ← NEEDS pmc_perf.csv to exist!
+       └─> pd.read_csv("pmc_perf.csv") (analysis_db.py:312)
+```
+
+**Key Insight**: `initalize_runs()` does NOT need `pmc_perf.csv` - it only loads `sysinfo.csv` and `roofline.csv`. So `join_prof()` can (and should) run AFTER it.
+
+**Solution**: Add join logic at the **END** of `OmniAnalyze_Base.pre_processing()`, after `initalize_runs()` and filters, but before returning to child class. This is more logical: first initialize workload objects, then prepare their data.
 
 ---
 
@@ -89,10 +120,14 @@ ANALYZE MODE:
 - Document format handling
 
 ### Out of Scope
-- Refactoring join_prof() logic (keep as-is, just move it)
 - Simplifying concat/merge operations (future optimization)
 - Utils refactoring (Phase 4)
 - YAML elimination (Phase 3)
+
+### In Scope (CRITICAL MODIFICATION)
+- **MUST remove file deletion logic** from `join_prof()` when moving to analyze mode
+- Current implementation deletes source CSV files (lines 448-452)
+- This is BAD in analyze mode - analyze should be read-only on profile outputs!
 
 ---
 
@@ -111,64 +146,106 @@ def join_prof(self, workload_dir: Path, out: Optional[str] = None) -> Optional[p
 
     Moved from profiler_base.py to eliminate pandas from profile mode.
     This is fundamentally a data preparation step for analysis.
+
+    CRITICAL: Analyze mode is READ-ONLY on profile outputs.
+    Unlike the original implementation, this does NOT delete source files.
     """
-    # Copy entire join_prof() implementation from profiler_base.py (lines 222-455)
-    # Keep logic EXACTLY as-is - no refactoring
-    # ... (230 lines)
+    # Copy join_prof() implementation from profiler_base.py (lines 222-455)
+    # WITH these critical modifications:
+
+    # 1. Replace args.path with workload_dir parameter
+    # 2. REMOVE file deletion logic (lines 448-452) ← IMPORTANT!
+
+    # REMOVE this block from original (lines 448-452):
+    #   if not args.verbose:
+    #       for file in files:
+    #           if "SQ_" not in file.name or "SQC_" not in file.name:
+    #               file.unlink()  # ✂️ DELETE - analyze shouldn't delete profile data!
+
+    # Keep: All CSV joining, merging, validation, and saving logic
+    # Remove: File deletion (analyze is read-only on profile outputs)
+    # ... (~225 lines after removing deletion logic)
 
 def detect_missing_counters(self, df: pd.DataFrame, workload_dir: Path) -> None:
     """Detect missing counter values in joined dataframe"""
     # Copy from profiler_base.py (lines 190-219)
+    # Adapt to use workload_dir parameter instead of args.path
     # ... (30 lines)
 
 def test_df_column_equality(df: pd.DataFrame) -> bool:
     """Test if all columns in dataframe are equal"""
-    # Copy from profiler_base.py (lines 825-826)
+    # Copy from profiler_base.py (lines 825-826) - no changes needed
     return df.eq(df.iloc[:, 0], axis=0).all(1).all()
 ```
+
+**Why Remove File Deletion?**
+1. ✅ **Analyze is read-only** - shouldn't modify profile outputs
+2. ✅ **Debugging** - users may want to inspect separate CSV files
+3. ✅ **Re-runnable** - can run analyze multiple times without re-profiling
+4. ✅ **Ownership** - profile created the files, user deletes them (not analyze)
 
 ### Step 2: Update pre_processing() to Call join_prof()
 
 **File**: `src/rocprof_compute_analyze/analysis_base.py`
 
-**Modify `pre_processing()`**:
+**Modify `pre_processing()` at line 473** - add at the END, after filters:
 
 ```python
 def pre_processing(self) -> None:
-    """Load and prepare profiling data for analysis"""
-
+    """Perform initialization prior to analysis."""
+    console_debug("analysis", "prepping to do some analysis")
+    console_log("analysis", "deriving rocprofiler-compute metrics...")
     args = self.get_args()
 
-    # Handle multiple workload paths
-    for path_list in args.path:
-        for workload_path in path_list:
-            workload_dir = Path(workload_path)
+    # initalize output file (lines 480-486)
+    if args.output_format == "txt":
+        # ... existing code ...
 
-            # Check format: merged vs separate CSVs
-            pmc_perf = workload_dir / "pmc_perf.csv"
-            pmc_perf_files = list(workload_dir.glob("pmc_perf_*.csv"))
+    # initalize runs (line 489)
+    self._runs = self.initalize_runs()
 
-            if not pmc_perf.exists() and pmc_perf_files:
-                # New format: separate CSVs need joining
-                console_log(f"Joining PMC data for {workload_dir}...")
-                self.join_prof(workload_dir, out=str(pmc_perf))
-                console_log(f"✓ Created {pmc_perf}")
-            elif pmc_perf.exists():
-                # Old format or already joined
-                console_debug(f"Using existing {pmc_perf}")
-            else:
-                console_error(
-                    f"No PMC data found in {workload_dir}. "
-                    f"Expected pmc_perf.csv or pmc_perf_*.csv files."
-                )
+    # set filters (lines 491-509)
+    filter_configs = [...]
+    # ... existing filter code ...
 
-            # Continue with existing pre_processing logic...
-            # Load raw_pmc from pmc_perf.csv
-            # Apply multiplexing if needed
-            # etc.
+    # NEW: Join pmc_perf_*.csv or results_*.csv files (Phase 2)
+    # This runs AFTER initalize_runs() (which doesn't need pmc_perf.csv)
+    # But BEFORE child class pre_processing() (which does need it)
+    for path_info in args.path:
+        # Match existing pattern: each element in args.path is a list [path, ...]
+        workload_dir = Path(path_info[0])
+
+        # Check what format we have
+        pmc_perf = workload_dir / "pmc_perf.csv"
+        pmc_perf_files = list(workload_dir.glob("pmc_perf_*.csv"))
+        results_files = list(workload_dir.glob("results_*.csv"))  # rocpd format
+
+        if pmc_perf.exists():
+            # Already merged (old workload or re-running analyze)
+            console_debug(f"Using existing {pmc_perf}")
+        elif pmc_perf_files or results_files:
+            # New format: separate CSVs need joining
+            files_desc = "pmc_perf_*.csv" if pmc_perf_files else "results_*.csv"
+            console_log(f"Joining {files_desc} for {workload_dir}...")
+            self.join_prof(workload_dir, out=str(pmc_perf))
+            console_log(f"✓ Created {pmc_perf}")
+        else:
+            # No PMC data found - error out immediately with clear message
+            console_error(
+                f"No profiling data found in {workload_dir}.\n"
+                f"Expected: pmc_perf.csv or pmc_perf_*.csv or results_*.csv\n"
+                f"Please run 'rocprof-compute profile' first."
+            )
+
+    # End of base class pre_processing()
+    # Child class will now call file_io.create_df_pmc() which needs pmc_perf.csv
 ```
 
+**Logical Order**: First initialize workload objects (`initalize_runs()`), then prepare their data (`join_prof()`), then child class loads it.
+
 ### Step 3: Remove from Profile Mode
+
+#### Step 3a: Delete Method Definitions from Base Class
 
 **File**: `src/rocprof_compute_profile/profiler_base.py`
 
@@ -177,128 +254,295 @@ def pre_processing(self) -> None:
 - Lines 190-219: `detect_missing_counters()` method ✂️
 - Lines 222-455: `join_prof()` method ✂️
 - Lines 825-826: `test_df_column_equality()` function ✂️
-- Any calls to `join_prof()` in `post_processing()` ✂️
 
-**Total deletion**: ~270 lines
+**Total deletion**: ~270 lines from base class
 
-### Step 4: Remove Useless Check in soc_base.py
+#### Step 3b: Remove Method Calls from Child Classes
+
+**CRITICAL**: The child profiler classes call `self.join_prof()` in their `post_processing()` methods. These calls MUST be removed, otherwise we'll get `AttributeError`!
+
+**File 1**: `src/rocprof_compute_profile/profiler_rocprof_v3.py`
+
+**Modify `post_processing()` method** (line 130):
+
+```python
+# BEFORE:
+@demarcate
+def post_processing(self) -> None:
+    """Perform any post-processing steps prior to profiling."""
+    if self.ready_to_profile:
+        self.join_prof()  # ❌ DELETE THIS LINE
+        super().post_processing()
+    else:
+        console_log("roofline", "Detected existing pmc_perf.csv")
+
+# AFTER:
+@demarcate
+def post_processing(self) -> None:
+    """Perform any post-processing steps prior to profiling."""
+    if self.ready_to_profile:
+        # join_prof() moved to analyze mode (Phase 2)
+        super().post_processing()
+    else:
+        console_log("roofline", "Detected existing pmc_perf.csv")
+```
+
+**File 2**: `src/rocprof_compute_profile/profiler_rocprofiler_sdk.py`
+
+**Modify `post_processing()` method** (line 160):
+
+```python
+# BEFORE:
+@demarcate
+def post_processing(self) -> None:
+    """Perform any post-processing steps prior to profiling."""
+    if self.ready_to_profile:
+        self.join_prof()  # ❌ DELETE THIS LINE
+        super().post_processing()
+    else:
+        console_log("roofline", "Detected existing pmc_perf.csv")
+
+# AFTER:
+@demarcate
+def post_processing(self) -> None:
+    """Perform any post-processing steps prior to profiling."""
+    if self.ready_to_profile:
+        # join_prof() moved to analyze mode (Phase 2)
+        super().post_processing()
+    else:
+        console_log("roofline", "Detected existing pmc_perf.csv")
+```
+
+**Summary of Step 3**:
+- Delete method definition from base class (profiler_base.py)
+- Delete method calls from BOTH child classes (profiler_rocprof_v3.py and profiler_rocprofiler_sdk.py)
+- Total: 3 files modified
+
+### Step 4: Remove pmc_perf.csv Check in soc_base.py
 
 **File**: `src/rocprof_compute_soc/soc_base.py`
 
-**Current code** (lines ~710-718 or similar):
+**Current code** (lines 687-694 - CORRECTED LINE NUMBERS):
 ```python
 # Check if pmc_perf.csv exists before roofline post-processing
-if not (args.path / "pmc_perf.csv").exists():
-    console_error("roofline", "pmc_perf.csv not found", exit=False)
+pmc_path = Path(self.get_args().path) / "pmc_perf.csv"
+if not pmc_path.is_file():
+    console_error(
+        "roofline",
+        "Incomplete or missing profiling data. Skipping roofline.",
+        exit=False,
+    )
     return
 ```
 
-**Remove this check** - roofline post-processing only needs `roofline.csv`, not `pmc_perf.csv`
+**DELETE THIS ENTIRE BLOCK** - roofline post-processing only needs `roofline.csv`, not `pmc_perf.csv`
 
-After Phase 1, profile mode doesn't do roofline post-processing anyway, so this is dead code.
+**Rationale**:
+- After Phase 1, profile mode doesn't do roofline HTML generation anyway
+- After Phase 2, profile won't create pmc_perf.csv (only pmc_perf_*.csv)
+- This check creates false dependency and will break with new format
+- The actual roofline.csv check happens at line 698
 
-### Step 5: Update Tests - CRITICAL Changes Required
+### Step 5: Update Tests - Modify check_csv_files() Function
 
-**BREAKING CHANGE**: ALL tests expect `pmc_perf.csv` after profile mode. After Phase 2, profile creates `pmc_perf_*.csv` instead.
+**KEY INSIGHT**: `check_csv_files()` is ONLY called after profile tests, never after analyze tests. After Phase 2, profile creates `pmc_perf_*.csv` or `results_*.csv`, NOT `pmc_perf.csv`.
+
+**Strategy**:
+1. Update file list constants (remove `pmc_perf.csv`)
+2. Modify `check_csv_files()` to validate PMC files internally but NOT return them
+3. Tests stay unchanged - they compare against updated constants
 
 #### 5a. Update Expected File Lists in `test_profile_general.py`
 
 **File**: `tests/test_profile_general.py`
 
-**Lines 82-109** - Multiple file list constants expect `pmc_perf.csv`:
+**Lines 82-110** - Remove `pmc_perf.csv` from ALL constants:
+
 ```python
-# CURRENT (WRONG after Phase 2):
+# BEFORE:
 CSVS = sorted([
-    "pmc_perf.csv",  # ❌ No longer created by profile!
+    "pmc_perf.csv",  # ✂️ REMOVE
     "sysinfo.csv",
 ])
 
 ROOF_ONLY_FILES = sorted([
+    "empirRoof_gpu-0_FP32.html",
+    "pmc_perf.csv",  # ✂️ REMOVE
     "roofline.csv",
-    "pmc_perf.csv",  # ❌ Wrong!
     "sysinfo.csv",
 ])
 
 PC_SAMPLING_HOST_TRAP_FILES = sorted([
-    "pmc_perf.csv",  # ❌ Wrong!
+    "pmc_perf.csv",  # ✂️ REMOVE
     "ps_file_agent_info.csv",
-    ...
+    "ps_file_kernel_trace.csv",
+    "ps_file_pc_sampling_host_trap.csv",
+    "ps_file_results.json",
+    "sysinfo.csv",
 ])
 
-# UPDATED:
+PC_SAMPLING_STOCHASTIC_FILES = sorted([
+    "pmc_perf.csv",  # ✂️ REMOVE
+    "ps_file_agent_info.csv",
+    "ps_file_kernel_trace.csv",
+    "ps_file_pc_sampling_stochastic.csv",
+    "ps_file_results.json",
+    "sysinfo.csv",
+])
+
+# AFTER:
 CSVS = sorted([
     "sysinfo.csv",
-    # pmc_perf.csv no longer created by profile
-    # Instead: pmc_perf_*.csv files exist
+    # PMC data validated by check_csv_files(), not in this list
 ])
 
 ROOF_ONLY_FILES = sorted([
+    "empirRoof_gpu-0_FP32.html",
     "roofline.csv",
     "sysinfo.csv",
+    # PMC data validated by check_csv_files(), not in this list
 ])
 
 PC_SAMPLING_HOST_TRAP_FILES = sorted([
     "ps_file_agent_info.csv",
     "ps_file_kernel_trace.csv",
-    ...
+    "ps_file_pc_sampling_host_trap.csv",
+    "ps_file_results.json",
+    "sysinfo.csv",
+    # PMC data validated by check_csv_files(), not in this list
+])
+
+PC_SAMPLING_STOCHASTIC_FILES = sorted([
+    "ps_file_agent_info.csv",
+    "ps_file_kernel_trace.csv",
+    "ps_file_pc_sampling_stochastic.csv",
+    "ps_file_results.json",
+    "sysinfo.csv",
+    # PMC data validated by check_csv_files(), not in this list
 ])
 ```
 
-**Add new helper** to check for pmc_perf_*.csv pattern:
+#### 5b. Modify check_csv_files() in test_utils.py
+
+**File**: `tests/test_utils.py`
+
+**Function**: `check_csv_files()` (starts at line 201)
+
+**Modify to validate PMC files but NOT include them in returned dict**:
+
 ```python
-def check_pmc_perf_separate_files(workload_dir):
-    """Verify profile created separate pmc_perf_*.csv files"""
-    pmc_files = list(Path(workload_dir).glob("pmc_perf_*.csv"))
-    assert len(pmc_files) > 0, "Profile should create pmc_perf_*.csv files"
-    return pmc_files
+def check_csv_files(output_dir, num_devices, num_kernels):
+    """Check profiling output csv files for expected
+    number of entries (based on kernel invocations)
+
+    Args:
+        output_dir (string): output directory containing csv files
+        num_kernels (int): number of kernels expected to have been profiled
+
+    Returns:
+        dict: dictionary housing file contents as pandas dataframe
+                (excludes PMC files - those are validated internally)
+    """
+
+    file_dict = {}
+    files_in_workload = os.listdir(output_dir)
+
+    # NEW: Validate PMC data exists (profile creates pmc_perf_*.csv or results_*.csv)
+    has_separate = any(f.startswith("pmc_perf_") and f.endswith(".csv") for f in files_in_workload)
+    has_results = any(f.startswith("results_") and f.endswith(".csv") for f in files_in_workload)
+
+    assert has_separate or has_results, \
+        "Expected pmc_perf_*.csv or results_*.csv from profile mode"
+
+    # NEW: Validate row counts for PMC files (but don't add to return dict)
+    for file in files_in_workload:
+        if (file.startswith("pmc_perf_") or file.startswith("results_")) and file.endswith(".csv"):
+            df = pd.read_csv(output_dir + "/" + file)
+            assert len(df.index) >= num_kernels, \
+                f"PMC file {file} has insufficient rows: {len(df.index)} < {num_kernels}"
+            # Don't add to file_dict - we only return non-PMC files!
+
+    # EXISTING: Load non-PMC CSV files into return dict
+    for file in files_in_workload:
+        if file.endswith(".csv"):
+            # MODIFIED: Skip PMC files (already validated above)
+            if file.startswith("pmc_perf") or file.startswith("results_"):
+                continue
+
+            # Existing logic for other files
+            file_dict[file] = pd.read_csv(output_dir + "/" + file)
+            if "roofline" in file:
+                assert len(file_dict[file].index) >= num_devices
+            elif "sysinfo" not in file and "ps_file" not in file:
+                assert len(file_dict[file].index) >= num_kernels
+        elif file.endswith(".html"):
+            file_dict[file] = "html"
+        elif file.endswith(".json"):
+            file_dict[file] = "json"
+
+    return file_dict  # Only non-PMC files returned!
 ```
 
-#### 5b. Update ALL Profile Tests That Check pmc_perf.csv (30+ occurrences!)
+**Key Changes**:
+- ✅ Validates `pmc_perf_*.csv` or `results_*.csv` exist
+- ✅ Validates row counts for PMC files
+- ✅ Does NOT include PMC files in returned dict
+- ✅ Backward compatible structure (returns dict of files)
 
-**Search all occurrences**:
-```bash
-grep -n "pmc_perf\.csv" tests/test_profile_general.py
-# Returns 30+ lines!
-```
+#### 5c. Tests Remain Unchanged!
 
-**Pattern for updates**:
+**All existing test patterns continue to work**:
+
 ```python
-# BEFORE (BROKEN after Phase 2):
-def test_something(binary_handler_profile_rocprof_compute):
-    returncode = binary_handler_profile_rocprof_compute(...)
-    assert (Path(workload_dir) / "pmc_perf.csv").exists()  # ❌ FAILS!
+# Pattern 1: File list comparison (most common - ~30 occurrences)
+file_dict = test_utils.check_csv_files(workload_dir, num_devices, num_kernels)
+# PMC files already validated internally ✅
+assert sorted(list(file_dict.keys())) == CSVS  # Works with updated constants!
 
-# AFTER (CORRECT):
-def test_something(binary_handler_profile_rocprof_compute):
-    returncode = binary_handler_profile_rocprof_compute(...)
-    # Profile creates separate files
-    pmc_files = list(Path(workload_dir).glob("pmc_perf_*.csv"))
-    assert len(pmc_files) > 0, "pmc_perf_*.csv files should exist"
+# Pattern 2: Direct file access
+file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
+# No change needed - just use updated CSVS/ROOF_ONLY_FILES constants
+
+# Pattern 3: Content validation
+file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
+# PMC row counts already validated by check_csv_files()
 ```
 
-**Specific lines to fix in `test_profile_general.py`**:
-- Line 723: `assert (Path(workload_dir) / "pmc_perf.csv").exists()`
-- Line 727: `test_utils.check_file_pattern("Counter_Name", f"{workload_dir}/pmc_perf.csv")`
-- Line 1209: `assert os.path.exists(f"{workload_dir}/pmc_perf.csv")`
-- And ~27 more occurrences in file list checks
+**Direct pmc_perf.csv existence checks** (lines 723, 1209, 1287, etc.) need updating:
 
-#### 5c. Update test_utils.py File Checking Logic
-
-**File**: `tests/test_utils.py` (264KB file)
-
-**Search for pmc_perf.csv checks**:
 ```python
-# Likely in check_csv_files() or similar helpers
-def check_csv_files(workload_dir, num_devices, num_kernels):
-    # BEFORE:
-    expected_files = ["pmc_perf.csv", "sysinfo.csv", ...]  # ❌
+# BEFORE:
+assert (Path(workload_dir) / "pmc_perf.csv").exists()
 
-    # AFTER:
-    # Check for separate pmc_perf files
-    pmc_files = list(Path(workload_dir).glob("pmc_perf_*.csv"))
-    assert len(pmc_files) > 0
-    expected_files = ["sysinfo.csv", ...]  # ✅
+# AFTER (if check not covered by check_csv_files call):
+# Just remove - check_csv_files() already validated PMC data
+# OR keep for extra validation:
+assert len(list(Path(workload_dir).glob("pmc_perf_*.csv"))) > 0
 ```
+
+**Content checks** (lines 727, 1292, 2341, etc.) need file name updates:
+
+```python
+# BEFORE:
+test_utils.check_file_pattern("Counter_Name", f"{workload_dir}/pmc_perf.csv")
+
+# AFTER:
+# Get first pmc_perf file for content validation
+pmc_file = list(Path(workload_dir).glob("pmc_perf_*.csv"))[0]
+test_utils.check_file_pattern("Counter_Name", str(pmc_file))
+```
+
+#### 5d. Summary of Test Changes
+
+**Total changes needed**:
+1. Update 4 constants in test_profile_general.py (remove pmc_perf.csv)
+2. Modify check_csv_files() in test_utils.py (~15 lines changed)
+3. Remove/update direct pmc_perf.csv existence checks (~5 occurrences)
+4. Update pmc_perf.csv content checks to use pmc_perf_*.csv (~8 occurrences)
+
+**Total**: ~30 line changes across tests (vs 37 occurrences of pmc_perf.csv)
+
+**Most tests unchanged** because they use check_csv_files() + constant comparison pattern!
 
 #### 5d. Add Backward Compatibility Tests (Old vs New Format)
 
@@ -648,6 +892,37 @@ If issues arise:
 
 ---
 
+## Corrections and Enhancements to Original Plan
+
+### Line Number Corrections
+- ✅ `detect_missing_counters()`: lines 190-219 (verified correct)
+- ✅ `join_prof()`: lines 222-455 (verified correct)
+- ✅ `test_df_column_equality()`: lines 825-826 (verified correct)
+- ✅ soc_base.py pmc_perf.csv check: **lines 687-694** (was incorrectly stated as ~710-718)
+- ✅ Test file occurrences: **37** (was stated as "30+")
+
+### Enhanced Error Handling
+- ✅ Error out immediately when no profiling data found (neither pmc_perf.csv, pmc_perf_*.csv, nor results_*.csv)
+- ✅ Clear error message guides user on expected formats
+- ✅ Support both standard (pmc_perf_*.csv) AND rocpd (results_*.csv) formats
+
+### Critical Implementation Details
+- ✅ `join_prof()` must be called in `pre_processing()` BEFORE `initalize_runs()` (line 489)
+- ✅ Reason: `analysis_db.py:312` loads `pmc_perf.csv` during initialization
+- ✅ Handle both old format (pre-merged pmc_perf.csv) and new formats (separate files)
+- ✅ Test helper function supports both pmc_perf_*.csv and results_*.csv
+
+### Test Update Strategy
+- ✅ Update ALL 37 occurrences systematically (not just critical ones)
+- ✅ Use helper function for consistency
+- ✅ Verify pmc_perf.csv does NOT exist after profile (only after analyze)
+
+### Code Pattern Decisions
+- ✅ Use existing `args.path` access pattern: `for path_info in args.path: workload_dir = Path(path_info[0])`
+- ✅ Rationale: Matches all existing analyze code which treats `args.path` as list of lists
+- ✅ Each element in `args.path` is a list where `[0]` is the path string
+- ✅ This pattern is used consistently across analysis_base.py, analysis_cli.py, etc.
+
 ## Notes
 
 - ✅ Clean architectural separation (collect vs process)
@@ -657,3 +932,4 @@ If issues arise:
 - ✅ Backward compatible
 - ✅ Can develop in parallel with Phase 1
 - ✅ Independent PR - no dependencies
+- ✅ Supports both standard and rocpd output formats
