@@ -149,6 +149,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 self.raise_exception = e
 
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
             msg = f'\t### amdsmi_get_gpu_device_bdf(gpu={i}):'
             try:
                 bdf = amdsmi.amdsmi_get_gpu_device_bdf(gpu)
@@ -324,6 +325,7 @@ class TestAmdSmiPython(unittest.TestCase):
         ]
 
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
             msg = f'\t### amdsmi.amdsmi_get_utilization_count(gpu={i}, utilization_counter_types={util_good_counter_types}):'
             try:
                 util_count = amdsmi.amdsmi_get_utilization_count(gpu, util_good_counter_types)
@@ -353,6 +355,7 @@ class TestAmdSmiPython(unittest.TestCase):
 
         results = {}
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
             results[i] = {}
             for event_group_name, event_group, event_group_cond in self.common.event_groups:
 
@@ -487,6 +490,7 @@ class TestAmdSmiPython(unittest.TestCase):
         timeout_ms = 1000
 
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
             msg = f'\t### amdsmi_init_gpu_event_notification(gpu={i}):'
 
             # Init
@@ -543,6 +547,7 @@ class TestAmdSmiPython(unittest.TestCase):
             self.skipTest(msg)
 
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
             for clk_type_name, clk_type, clk_cond in self.common.clk_types:
 
                 # Set invalid clock frequency
@@ -749,6 +754,7 @@ class TestAmdSmiPython(unittest.TestCase):
             self.skipTest(msg)
 
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
             default_compute_partition_type = self.common.compute_partition_types[0][1]
             msg = f'\t### amdsmi_get_gpu_compute_partition(gpu={i}):'
             try:
@@ -791,6 +797,7 @@ class TestAmdSmiPython(unittest.TestCase):
         self.common.print_func_name('')
 
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
 
             found_error = False
 
@@ -864,6 +871,7 @@ class TestAmdSmiPython(unittest.TestCase):
         self.common.print_func_name('')
 
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
             # Find current overdrive value
             msg = f'\t### amdsmi_get_gpu_overdrive_level(gpu={i}):'
             try:
@@ -913,6 +921,7 @@ class TestAmdSmiPython(unittest.TestCase):
             self.common.print(msg)
             self.skipTest(msg)
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
             # Get current PCI bandwidth info
             msg = f'\t### amdsmi_get_gpu_pci_bandwidth(gpu={i}):'
             try:
@@ -962,6 +971,7 @@ class TestAmdSmiPython(unittest.TestCase):
 
         dev_perf_level_current = self.common.dev_perf_levels[0][1]
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
             msg = f'\t### amdsmi_get_gpu_perf_level(gpu={i}):'
             try:
                 dev_perf_level_name_current = amdsmi.amdsmi_get_gpu_perf_level(gpu)
@@ -1004,6 +1014,7 @@ class TestAmdSmiPython(unittest.TestCase):
         self.common.print_func_name('')
 
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
 
             # Get Power Cap Info
             try:
@@ -1058,6 +1069,7 @@ class TestAmdSmiPython(unittest.TestCase):
         self.common.print_func_name('')
 
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
             # Get current policy info
             msg = f'\t### amdsmi_get_soc_pstate(gpu={i}):'
             try:
@@ -1123,6 +1135,7 @@ class TestAmdSmiPython(unittest.TestCase):
             self.skipTest(msg)
 
         for i, gpu in enumerate(self.common.processors):
+            self.common.print_device_header(i)
             msg = f'gpu({i}):'
 
             # Get current policy info
@@ -1278,6 +1291,7 @@ class TestAmdSmiPython(unittest.TestCase):
         self.assertLessEqual(len(processors), self.common.max_num_physical_devices)
 
         for i in range(0, len(processors)):
+            self.common.print_device_header(i)
             bdf = amdsmi.amdsmi_get_gpu_device_bdf(processors[i])
             self.common.print(f'\n\n###Test Processor {i}, bdf: {bdf}')
 
@@ -1328,6 +1342,7 @@ class TestAmdSmiPython(unittest.TestCase):
         self.addCleanup(os.environ.pop, 'AMDSMI_DRY_RUN', None)
 
         for i in range(0, len(processors)):
+            self.common.print_device_header(i)
             bdf = amdsmi.amdsmi_get_gpu_device_bdf(processors[i])
             self.common.print(f'\n\n###Test Processor {i}, bdf: {bdf}')
 
@@ -1456,14 +1471,6 @@ class TestAmdSmiPython(unittest.TestCase):
         return
 
 
-def print_test_ids(suite):
-    for test in suite:
-        if isinstance(test, unittest.TestSuite):
-            print_test_ids(test)
-        else:
-            print(" -", test.id())
-
-
 if __name__ == '__main__':
     verbose = common.VERBOSITY_NORMAL
     # Parse verbosity from command line.
@@ -1473,10 +1480,17 @@ if __name__ == '__main__':
     elif any(a in ('-v', '-vv', '--verbose') for a in sys.argv):
         verbose = common.VERBOSITY_VERBOSE
 
-    # If no -k or --keyword argument is given, print all available tests
+    # If no -k or --keyword argument is given, print all available tests.
+    # Do this before the -h check so the test list appears above unittest's help output.
     if not ('-k' in sys.argv or '--keyword' in sys.argv):
         if verbose > common.VERBOSITY_QUIET:
             common.print_tests(__name__)
+
+    # Skip legend/title/"Running" preamble when the user just wants help text.
+    if '-h' in sys.argv or '--help' in sys.argv:
+        unittest.main()
+        sys.exit(0)
+
     # Only show the dot-character legend when not in verbose mode; in verbose
     # mode each test prints its own result line so the dot legend is irrelevant.
     if verbose < common.VERBOSITY_VERBOSE:
