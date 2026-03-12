@@ -132,7 +132,7 @@ class TestAmdSmiPython(unittest.TestCase):
         try:
             bdf = amdsmi.amdsmi_get_gpu_device_bdf(gpu)
             self.common.print(msg, bdf)
-            self.common.check_ret('', '', self.common.PASS)
+            self.common.check_ret('', '', self.common.FAIL)
         except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
             if self.common.check_ret(msg, e, self.common.FAIL):
                 self.raise_exception = e
@@ -143,7 +143,7 @@ class TestAmdSmiPython(unittest.TestCase):
         try:
             ret = amdsmi.amdsmi_get_processor_handle_from_bdf(bdf)
             self.common.print(msg, ret.value)
-            self.common.check_ret('', '', self.common.PASS)
+            self.common.check_ret('', '', self.common.FAIL)
         except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException, amdsmi.amdsmi_exception.AmdSmiBdfFormatException) as e:
             if self.common.check_ret(msg, e, self.common.FAIL):
                 self.raise_exception = e
@@ -156,7 +156,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 self.common.print(msg, bdf)
                 self.common.print(f'gpu.value={gpu.value}')
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 continue
@@ -166,7 +166,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_get_processor_handle_from_bdf(bdf)
                 self.common.print(msg, ret.value)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 continue
@@ -199,7 +199,7 @@ class TestAmdSmiPython(unittest.TestCase):
             processor = amdsmi.amdsmi_get_processor_handle_from_bdf(bdf)
             print('\n###Test amdsmi_get_nic_device_uuid\n')
             uuid = amdsmi.amdsmi_get_nic_device_uuid(processor)
-            print('  uuid is: {}'.format(uuid))
+            print(f'  uuid is: {uuid}')
         print()
         return
 
@@ -241,7 +241,7 @@ class TestAmdSmiPython(unittest.TestCase):
             sockets = amdsmi.amdsmi_get_socket_handles()
             self.common.print(msg, [id(addr) for addr in sockets])
             self.common.check_ret('', '', self.common.PASS)
-        except amdsmi.AmdSmiLibraryException as e:
+        except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
             if self.common.check_ret(msg, e, self.common.PASS):
                 raise e
 
@@ -254,7 +254,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_get_socket_info(socket)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                     continue
@@ -297,7 +297,7 @@ class TestAmdSmiPython(unittest.TestCase):
                     ret = amdsmi.amdsmi_get_processor_handles_by_type(socket, processor_type)
                     self.common.print(msg, ret)
                     self.common.check_ret('', '', self.common.PASS)
-                except amdsmi.AmdSmiLibraryException as e:
+                except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                     if self.common.check_ret(msg, e, processor_cond):
                         self.raise_exception = e
 
@@ -331,7 +331,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 util_count = amdsmi.amdsmi_get_utilization_count(gpu, util_good_counter_types)
                 self.common.print(msg, util_count)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -341,7 +341,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 util_count = amdsmi.amdsmi_get_utilization_count(gpu, util_bad_counter_types)
                 self.common.print(msg, util_count)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.ANY_FAIL):
                     self.raise_exception = e
 
@@ -370,7 +370,7 @@ class TestAmdSmiPython(unittest.TestCase):
                     self.common.print(msg, event_handle)
                     results[i][event_group_name]['supported'] = True
                     self.common.check_ret('', '', self.common.PASS)
-                except amdsmi.AmdSmiLibraryException as e:
+                except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                     if self.common.check_ret(msg, e, event_group_cond):
                         self.raise_exception = e
 
@@ -381,7 +381,7 @@ class TestAmdSmiPython(unittest.TestCase):
                     self.common.print(msg, counters)
                     results[i][event_group_name]['counters'] = counters
                     self.common.check_ret('', '', self.common.PASS)
-                except amdsmi.AmdSmiLibraryException as e:
+                except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                     if self.common.check_ret(msg, e, event_group_cond):
                         self.raise_exception = e
 
@@ -411,7 +411,7 @@ class TestAmdSmiPython(unittest.TestCase):
                         self.common.print(msg, id(event_handle))
                         self.common.check_ret('', '', self.common.PASS)
                         results[i][event_group_name][event_type_name]['handle'] = id(event_handle)
-                    except amdsmi.AmdSmiLibraryException as e:
+                    except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                         if self.common.check_ret(msg, e, event_type_cond):
                             self.raise_exception = e
                         # Record that these would have been tested if supported
@@ -431,7 +431,7 @@ class TestAmdSmiPython(unittest.TestCase):
                         ret = amdsmi.amdsmi_gpu_control_counter(event_handle, counter_command)
                         self.common.print(msg, ret)
                         self.common.check_ret('', '', self.common.PASS)
-                    except amdsmi.AmdSmiLibraryException as e:
+                    except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                         if self.common.check_ret(msg, e, event_type_cond):
                             self.raise_exception = e
 
@@ -444,7 +444,7 @@ class TestAmdSmiPython(unittest.TestCase):
                         self.common.print(msg, ret)
                         self.common.check_ret('', '', self.common.PASS)
                         results[i][event_group_name][event_type_name]['num_counts'] = ret
-                    except amdsmi.AmdSmiLibraryException as e:
+                    except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                         if self.common.check_ret(msg, e, event_type_cond):
                             self.raise_exception = e
 
@@ -455,7 +455,7 @@ class TestAmdSmiPython(unittest.TestCase):
                         ret = amdsmi.amdsmi_gpu_control_counter(event_handle, counter_command)
                         self.common.print(msg, ret)
                         self.common.check_ret('', '', self.common.PASS)
-                    except amdsmi.AmdSmiLibraryException as e:
+                    except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                         if self.common.check_ret(msg, e, event_type_cond):
                             self.raise_exception = e
 
@@ -465,7 +465,7 @@ class TestAmdSmiPython(unittest.TestCase):
                         ret = amdsmi.amdsmi_gpu_destroy_counter(event_handle)
                         self.common.print(msg, ret)
                         self.common.check_ret('', '', self.common.PASS)
-                    except amdsmi.AmdSmiLibraryException as e:
+                    except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                         if self.common.check_ret(msg, e, event_type_cond):
                             self.raise_exception = e
 
@@ -498,7 +498,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_init_gpu_event_notification(gpu)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 # Skip remaining tests on any exception when initializing
@@ -510,7 +510,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_gpu_event_notification_mask(gpu, mask)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -520,7 +520,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_get_gpu_event_notification(timeout_ms)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -529,7 +529,7 @@ class TestAmdSmiPython(unittest.TestCase):
             try:
                 ret = amdsmi.amdsmi_stop_gpu_event_notification(gpu)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -556,15 +556,15 @@ class TestAmdSmiPython(unittest.TestCase):
                     msg = f'\t### amdsmi_set_clk_freq(gpu={i}, clk_type={clk_type_name}, freq_bitmask={freq_bitmask}):'
                     ret = amdsmi.amdsmi_set_clk_freq(gpu, clk_type_name, freq_bitmask)
                     self.common.print(msg, '')
-                    self.common.check_ret('', '', self.common.PASS)
-                except amdsmi.AmdSmiLibraryException as e:
+                    self.common.check_ret('', '', self.common.FAIL)
+                except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                     if self.common.check_ret(msg, e, self.common.FAIL):
                         self.raise_exception = e
 
                 # Get clock frequency info
                 msg = f'\t### amdsmi_get_clk_freq(gpu={i}, clk_type={clk_type_name}):'
                 try:
-                    clk_freq_info = amdsmi.amdsmi_get_clk_freq(gpu, clk_type_name)
+                    clk_freq_info = amdsmi.amdsmi_get_clk_freq(gpu, clk_type)
                     self.common.print(msg, clk_freq_info)
                     self.common.check_ret('', '', self.common.PASS)
 
@@ -573,7 +573,7 @@ class TestAmdSmiPython(unittest.TestCase):
                     frequencies = clk_freq_info['frequency']
                     if num_supported == 0:
                         self.common.print(f'No supported frequencies for clk_type={clk_type_name}')
-                except amdsmi.AmdSmiLibraryException as e:
+                except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                     if self.common.check_ret(msg, e, clk_cond):
                         self.raise_exception = e
                         continue
@@ -587,7 +587,7 @@ class TestAmdSmiPython(unittest.TestCase):
                         ret = amdsmi.amdsmi_set_clk_freq(gpu, clk_type_name, freq_bitmask)
                         self.common.print(msg, ret)
                         self.common.check_ret('', '', self.common.PASS)
-                    except amdsmi.AmdSmiLibraryException as e:
+                    except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                         if self.common.check_ret(msg, e, clk_cond):
                             self.raise_exception = e
                             continue
@@ -599,7 +599,7 @@ class TestAmdSmiPython(unittest.TestCase):
                     ret = amdsmi.amdsmi_set_clk_freq(gpu, clk_type_name, freq_bitmask)
                     self.common.print(msg, ret)
                     self.common.check_ret('', '', self.common.PASS)
-                except amdsmi.AmdSmiLibraryException as e:
+                except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                     if self.common.check_ret(msg, e, clk_cond):
                         self.raise_exception = e
 
@@ -631,7 +631,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_cpu_core_boostlimit(cpu, boost_limit)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.FAIL):
                     self.raise_exception = e
 
@@ -641,7 +641,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 boost_limit_orig = amdsmi.amdsmi_get_cpu_core_boostlimit(cpu)
                 self.common.print(msg, boost_limit_orig)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 found_error = True
@@ -655,7 +655,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_cpu_core_boostlimit(cpu, boost_limit_orig)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -687,7 +687,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_cpu_socket_power_cap(cpu, power_cap)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.FAIL):
                     self.raise_exception = e
 
@@ -697,7 +697,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 power_cap_orig = amdsmi.amdsmi_get_cpu_socket_power_cap(cpu)
                 self.common.print(msg, power_cap_orig)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                     found_error = True
@@ -712,7 +712,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 # Convert power_cap_max from string that has units to an integer
                 # Ex.  power_cap_max = "5000 mW"  to   power_cap_max = 5000
                 power_cap_max = int(power_cap_max.split()[0])
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 found_error = True
@@ -726,7 +726,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_cpu_socket_power_cap(cpu, power_cap_max)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -736,7 +736,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_cpu_socket_power_cap(cpu, power_cap_orig)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -761,7 +761,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 default_compute_partition_name = amdsmi.amdsmi_get_gpu_compute_partition(gpu)
                 self.common.print(msg, default_compute_partition_name)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 continue
@@ -774,7 +774,7 @@ class TestAmdSmiPython(unittest.TestCase):
                     ret = amdsmi.amdsmi_set_gpu_compute_partition(gpu, compute_partition_type)
                     self.common.print(msg, ret)
                     self.common.check_ret('', '', self.common.PASS)
-                except amdsmi.AmdSmiLibraryException as e:
+                except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                     if self.common.check_ret(msg, e, compute_partition_type_cond):
                         self.raise_exception = e
 
@@ -783,7 +783,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_gpu_compute_partition(gpu, default_compute_partition_type)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 continue
@@ -808,7 +808,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_gpu_fan_speed(gpu, 0, fan_speed)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.ANY_FAIL):
                     self.raise_exception = e
 
@@ -818,7 +818,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 fan_speed_orig = amdsmi.amdsmi_get_gpu_fan_speed(gpu, 0)
                 self.common.print(msg, fan_speed_orig)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 found_error = True
@@ -829,7 +829,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 fan_speed_max = amdsmi.amdsmi_get_gpu_fan_speed_max(gpu, 0)
                 self.common.print(msg, fan_speed_max)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 found_error = True
@@ -848,7 +848,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_gpu_fan_speed(gpu, 0, fan_speed)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -858,7 +858,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_gpu_fan_speed(gpu, 0, fan_speed_orig)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -878,7 +878,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 overdrive_value_current = amdsmi.amdsmi_get_gpu_overdrive_level(gpu)
                 self.common.print(msg, overdrive_value_current)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 continue
@@ -894,7 +894,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_gpu_overdrive_level(gpu, overdrive_value)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -904,7 +904,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_gpu_overdrive_level(gpu, overdrive_value_current)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -934,7 +934,7 @@ class TestAmdSmiPython(unittest.TestCase):
                     bitmask = 1 << (current_bandwidth_index - 1)
                 else:
                     bitmask = 1 << (current_bandwidth_index)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 continue
@@ -945,7 +945,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_gpu_pci_bandwidth(gpu, bitmask)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 continue
@@ -957,7 +957,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_gpu_pci_bandwidth(gpu, bitmask)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -977,12 +977,12 @@ class TestAmdSmiPython(unittest.TestCase):
                 dev_perf_level_name_current = amdsmi.amdsmi_get_gpu_perf_level(gpu)
                 items = dev_perf_level_name_current.split('_')
                 level_name_current = items[-1]
-                for index, level_name in enumerate(self.common.dev_perf_levels):
+                for index, level_name, cond in enumerate(self.common.dev_perf_levels):
                     if level_name == level_name_current:
                         dev_perf_level_current = self.common.dev_perf_levels[index][1]
                 self.common.print(msg, level_name_current)
-                self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+                self.common.check_ret('', '', cond)
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 self.common.print(msg, e)
                 continue
 
@@ -992,7 +992,7 @@ class TestAmdSmiPython(unittest.TestCase):
                     ret = amdsmi.amdsmi_set_gpu_perf_level(gpu, dev_perf_level)
                     self.common.print(msg, ret)
                     self.common.check_ret('', '', self.common.PASS)
-                except amdsmi.AmdSmiLibraryException as e:
+                except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                     if self.common.check_ret(msg, e, dev_perf_level_cond):
                         self.raise_exception = e
 
@@ -1001,7 +1001,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_gpu_perf_level(gpu, dev_perf_level_current)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, dev_perf_level_cond):
                     self.raise_exception = e
 
@@ -1034,7 +1034,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 self.common.check_ret('', '', self.common.PASS)
                 cap =  int((power_cap_info['max_power_cap'] + power_cap_info['min_power_cap']) / 2)
                 current_cap = power_cap_info['power_cap']
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 # Have to be able to get info before setting
@@ -1046,7 +1046,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_power_cap(gpu, sensor_type, cap)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -1056,7 +1056,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_power_cap(gpu, sensor_type, current_cap)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -1079,15 +1079,15 @@ class TestAmdSmiPython(unittest.TestCase):
 
                 num_supported = policy_info['num_supported']
                 if not isinstance(num_supported, int):
-                    self.common.print('Cannot determine num_supported={num_supported}', '')
+                    self.common.print(f'Cannot determine num_supported={num_supported}', '')
                     continue
                 policy_id_current = policy_info['current_id']
                 if not isinstance(policy_id_current, int):
-                    self.common.print('Cannot determine policy_id_current={policy_id_current}', '')
+                    self.common.print(f'Cannot determine policy_id_current={policy_id_current}', '')
                     continue
                 policy_id_orig = policy_info['policies'][policy_id_current]['policy_id']
                 if not isinstance(policy_id_orig, int):
-                    self.common.print('Cannot determine orig policy_id={policy_id_orig}', '')
+                    self.common.print(f'Cannot determine orig policy_id={policy_id_orig}', '')
                     continue
 
                 index = 0
@@ -1095,7 +1095,7 @@ class TestAmdSmiPython(unittest.TestCase):
                     if policy_id_current != 0:
                         index = 1
                 policy_id = policy_info['policies'][index]['policy_id']
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 continue
@@ -1106,7 +1106,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_soc_pstate(gpu, policy_id)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 continue
@@ -1117,7 +1117,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_soc_pstate(gpu, policy_id_orig)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -1147,15 +1147,15 @@ class TestAmdSmiPython(unittest.TestCase):
 
                 num_supported = policy_info['num_supported']
                 if not isinstance(num_supported, int):
-                    self.common.print('Cannot determine num_supported={num_supported}', '')
+                    self.common.print(f'Cannot determine num_supported={num_supported}', '')
                     continue
                 policy_id_current = policy_info['current_id']
                 if not isinstance(policy_id_current, int):
-                    self.common.print('Cannot determine policy_id_current={policy_id_current}', '')
+                    self.common.print(f'Cannot determine policy_id_current={policy_id_current}', '')
                     continue
                 policy_id_orig = policy_info['policies'][policy_id_current]['policy_id']
                 if not isinstance(policy_id_orig, int):
-                    self.common.print('Cannot determine orig policy_id={policy_id_orig}', '')
+                    self.common.print(f'Cannot determine orig policy_id={policy_id_orig}', '')
                     continue
                 index = 0
                 if num_supported >= 2:
@@ -1163,9 +1163,9 @@ class TestAmdSmiPython(unittest.TestCase):
                         index = 1
                 policy_id = policy_info['policies'][index]['policy_id']
                 if not isinstance(policy_id, int):
-                    self.common.print('Cannot determine policy_id={policy_id}', '')
+                    self.common.print(f'Cannot determine policy_id={policy_id}', '')
                     continue
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
                 continue
@@ -1176,7 +1176,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_xgmi_plpd(gpu, policy_id)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -1185,7 +1185,7 @@ class TestAmdSmiPython(unittest.TestCase):
             try:
                 ret = amdsmi.amdsmi_set_xgmi_plpd(gpu, policy_id_orig)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 if self.common.check_ret(msg, e, self.common.PASS):
                     self.raise_exception = e
 
@@ -1300,7 +1300,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 uma_info = amdsmi.amdsmi_get_gpu_uma_carveout_info(processors[i])
                 self.common.print(msg, uma_info)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 self.common.print(msg, e)
                 self.assertEqual(e.get_error_code(), amdsmi.amdsmi_wrapper.AMDSMI_STATUS_NOT_SUPPORTED, msg)
                 continue
@@ -1351,7 +1351,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 uma_info = amdsmi.amdsmi_get_gpu_uma_carveout_info(processors[i])
                 self.common.print(msg, uma_info)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 self.common.print(msg, e)
                 self.assertEqual(e.get_error_code(), amdsmi.amdsmi_wrapper.AMDSMI_STATUS_NOT_SUPPORTED, msg)
                 continue
@@ -1362,7 +1362,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_gpu_uma_carveout(processors[i], uma_info['current_index'])
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 self.fail(f"Failed to set UMA carveout to current value in DRY_RUN mode: {e}")
 
             # Test setting to different valid index if available
@@ -1373,7 +1373,7 @@ class TestAmdSmiPython(unittest.TestCase):
                     ret = amdsmi.amdsmi_set_gpu_uma_carveout(processors[i], test_index)
                     self.common.print(msg, ret)
                     self.common.check_ret('', '', self.common.PASS)
-                except amdsmi.AmdSmiLibraryException as e:
+                except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                     self.fail(f"Failed to set UMA carveout to valid index in DRY_RUN mode: {e}")
 
             # Test setting to invalid index (should fail with AMDSMI_STATUS_INVAL)
@@ -1382,7 +1382,7 @@ class TestAmdSmiPython(unittest.TestCase):
             try:
                 amdsmi.amdsmi_set_gpu_uma_carveout(processors[i], invalid_index)
                 self.fail(f"Should have raised exception for invalid index {invalid_index}")
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 self.common.print(msg, e)
                 self.assertEqual(e.get_error_code(), amdsmi.amdsmi_wrapper.AMDSMI_STATUS_INVAL, msg)
         return
@@ -1437,7 +1437,7 @@ class TestAmdSmiPython(unittest.TestCase):
             ret = amdsmi.amdsmi_set_ttm_pages_limit(ttm_info['current_pages'])
             self.common.print(msg, ret)
             self.common.check_ret('', '', self.common.PASS)
-        except amdsmi.AmdSmiLibraryException as e:
+        except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
             self.fail(f"Failed to set TTM to current value in DRY_RUN mode: {e}")
 
         # Test setting TTM to a different value
@@ -1448,7 +1448,7 @@ class TestAmdSmiPython(unittest.TestCase):
                 ret = amdsmi.amdsmi_set_ttm_pages_limit(test_pages)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
-            except amdsmi.AmdSmiLibraryException as e:
+            except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
                 self.fail(f"Failed to set TTM to different value in DRY_RUN mode: {e}")
 
         # Test setting TTM to 0 (should fail with AMDSMI_STATUS_INVAL)
@@ -1456,7 +1456,7 @@ class TestAmdSmiPython(unittest.TestCase):
         try:
             amdsmi.amdsmi_set_ttm_pages_limit(0)
             self.fail("Should have raised exception for pages=0")
-        except amdsmi.AmdSmiLibraryException as e:
+        except (amdsmi.AmdSmiLibraryException, amdsmi.AmdSmiParameterException) as e:
             self.common.print(msg, e)
             self.assertEqual(e.get_error_code(), amdsmi.amdsmi_wrapper.AMDSMI_STATUS_INVAL, msg)
 
@@ -1546,5 +1546,4 @@ if __name__ == '__main__':
 
     common.expand_glob_k_arg(globals())
     unittest.main(testRunner=runner)
-    sys.exit(0)
 
