@@ -231,6 +231,7 @@ if(BUILD_TESTS)
         transport/NetMPITests.cpp
         transport/ShmMPITests.cpp
         transport/NetIbMPITests.cpp
+        ImplicitLaunchOrderMPITests.cpp
       )
 
       # Create the MPI test executable
