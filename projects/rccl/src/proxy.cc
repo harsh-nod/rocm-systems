@@ -830,11 +830,22 @@ static ncclResult_t ncclProxyGetPostedOps(struct ncclProxyState* proxyState, int
   if (state->active == NULL) {
     pthread_mutex_lock(&pool->mutex);
     if (pool->nextOps == -1 && !state->stop) {
-      ncclProfilerStartProxyCtrlEvent(proxyState->profilerContext, &eHandle);
-      ncclProfilerRecordProxyCtrlEventState(eHandle, 0, ncclProfilerProxyCtrlSleep);
-      pthread_cond_wait(&pool->cond, &pool->mutex);
-      ncclProfilerRecordProxyCtrlEventState(eHandle, 0, ncclProfilerProxyCtrlWakeup);
-      ncclProfilerStopProxyCtrlEvent(eHandle);
+#ifdef ENABLE_ROCSHMEM
+      if (proxyState->rocshmemEnabled) {
+        while (pool->nextOps == -1 && !state->stop) {
+          pthread_mutex_unlock(&pool->mutex);
+          sched_yield();
+          pthread_mutex_lock(&pool->mutex);
+        }
+      } else
+#endif
+      {
+        ncclProfilerStartProxyCtrlEvent(proxyState->profilerContext, &eHandle);
+        ncclProfilerRecordProxyCtrlEventState(eHandle, 0, ncclProfilerProxyCtrlSleep);
+        pthread_cond_wait(&pool->cond, &pool->mutex);
+        ncclProfilerRecordProxyCtrlEventState(eHandle, 0, ncclProfilerProxyCtrlWakeup);
+        ncclProfilerStopProxyCtrlEvent(eHandle);
+      }
     }
   }
   state->nextOps = pool->nextOps;
