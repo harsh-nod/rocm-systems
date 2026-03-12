@@ -20,6 +20,7 @@
 
 #include <hip/hip_runtime.h>
 #include <fstream>
+#include <optional>
 
 #include "hip_internal.hpp"
 #include "platform/ndrange.hpp"
@@ -101,12 +102,6 @@ hipError_t hipModuleGetFunctionCount(unsigned int* count, hipModule_t mod) {
     HIP_RETURN(hipErrorInvalidResourceHandle);
   }
   HIP_RETURN(PlatformState::Instance().GetFuncCount(count, mod));
-}
-
-hipError_t hipModuleGetLoadingMode(hipModuleLoadingMode_t* mode) {
-  HIP_INIT_API(hipModuleGetLoadingMode, mode);
-  PlatformState::Instance().GetLoadingMode(mode);
-  HIP_RETURN(hipSuccess);
 }
 
 hipError_t hipModuleGetGlobal(hipDeviceptr_t* dptr, size_t* bytes, hipModule_t hmod,
@@ -475,7 +470,10 @@ hipError_t ihipModuleLaunchKernel(hipFunction_t f, amd::LaunchParams& launch_par
   }
   hip::DeviceFunc* function = hip::DeviceFunc::asFunction(f);
   amd::Kernel* kernel = function->kernel();
-  amd::ScopedLock lock(DEBUG_HIP_KERNARG_COPY_OPT ? nullptr : &function->dflock_);
+  std::optional<std::scoped_lock<std::recursive_mutex>> lock;
+  if (!DEBUG_HIP_KERNARG_COPY_OPT) {
+    lock.emplace(function->dflock_);
+  }
 
   hipError_t status =
       ihipLaunchKernel_validate(f, launch_params, kernelParams, extra, deviceId, params);
