@@ -21,7 +21,7 @@
 #include "hip_graph_internal.hpp"
 #include <queue>
 
-#define USE_RUN_NODE_DFS 0
+#define USE_RECURSIVE_LAUNCH 0
 
 #define CASE_STRING(X, C)                                                                          \
   case X:                                                                                          \
@@ -512,25 +512,14 @@ void Graph::UpdateStreams(hip::Stream* launch_stream,
   }
 }
 
-#if USE_RUN_NODE_DFS
+#if USE_RECURSIVE_LAUNCH
 // ================================================================================================
-bool Graph::RunOneNodeDFS(Node top_node, bool top_wait) {
-  
-  dfs_queue_.clear();
-  dfs_queue_.emplace_back(top_node, top_wait);
-  amd::Command::EventWaitList waitList;
-  
-  while (!dfs_queue_.empty()) {
+bool Graph::RunOneNodeRec(Node node, bool wait) {
+  if (node->launch_id_ != -1) return true;
 
-    auto [node, wait] = dfs_queue_.back();
-    if (node->launch_id_ != -1) continue;
-
-    dfs_queue_.pop_back();
     // Clear the storage of the wait nodes
     memset(&wait_order_[0], 0, sizeof(Node) * wait_order_.size());
-    waitList.clear();
-
-    bool skip_me = false;
+    amd::Command::EventWaitList waitList;
     // Walk through dependencies and find the last launches on each parallel stream
     for (auto depNode : node->GetDependencies()) {
       // Process only the nodes that have been submitted
@@ -548,32 +537,31 @@ bool Graph::RunOneNodeDFS(Node top_node, bool top_wait) {
       } else {
         // It should be a safe return,
         // since the last edge to this dependency has to submit the command
-        skip_me = true;
-        break;
+        return true;
       }
-    } // for
-    if (skip_me) continue;
-
+    }
     // Create a wait list from the last launches of all dependencies
     for (auto dep : wait_order_) {
       if (dep == nullptr) continue;
-      // Add all commands in the wait list
+            // Add all commands in the wait list
       if (dep->GetType() != hipGraphNodeTypeGraph) {
         for (auto command : dep->GetCommands()) {
+          // XPUT("dep command: %s", command->Xstring().c_str());
           waitList.push_back(command);
         }
         continue;
       }
     } // for
     if (node->GetType() == hipGraphNodeTypeGraph) {
-      XPUT("Child graphs are not handled!");
+      // Process child graph separately, since, there is no connection
+      auto child = reinterpret_cast<hip::ChildGraphNode*>(node)->GetChildGraph();
+      if (!reinterpret_cast<hip::ChildGraphNode*>(node)->GetGraphCaptureStatus()) {
+        child->RunNodes(node->stream_id_, &streams_, &waitList);
+      }
     } else {
       // Assing a stream to the current node
       node->SetStream(streams_);
       // Create the execution commands on the assigned stream
-      
-      // NOTE this is expensive!
-      // Can we create commands before??
       auto status = node->CreateCommand(node->GetQueue());
       if (status != hipSuccess) {
         LogPrintfError("Command creation for node id(%d) failed!", current_id_ + 1);
@@ -581,8 +569,7 @@ bool Graph::RunOneNodeDFS(Node top_node, bool top_wait) {
       }
       // Retain all commands, since potentially the command can finish before a wait signal
       for (auto command : node->GetCommands()) {
-        command->retain(); // reference count is 2 after creation (by default)
-        // XPUT("command %s ref %d", command->Xstring().c_str(), command->referenceCount());
+        command->retain();
       }
 
       // If a wait was requested, then process the list
@@ -595,23 +582,28 @@ bool Graph::RunOneNodeDFS(Node top_node, bool top_wait) {
     // Assign the launch ID of the submmitted node
     // This is also applied to childGraphs to prevent them from being reprocessed
     node->launch_id_ = current_id_++;
+    uint32_t i = 0;
     // Execute the nodes in the edges list
-    const auto& edges = node->GetEdges();
-    for (uint32_t i = 0; i < edges.size(); i++) {
+    for (auto edge: node->GetEdges()) {
       // Don't wait in the nodes, executed on the same streams and if it has just one dependency
       bool wait = ((i < DEBUG_HIP_FORCE_GRAPH_QUEUES) ||
-                   (edges[i]->GetDependencies().size() > 1)) ? true : false;
-      dfs_queue_.emplace_back(edges[i], wait);
+                   (edge->GetDependencies().size() > 1)) ? true : false;
+      // XPUT("%d: edge: %p wait: %d", i, edge, wait);
+      // Execute the edge node
+      if (!RunOneNodeRec(edge, wait)) {
+        return false;
+      }
+      i++;
     }
-    if (edges.empty()) {
+    if (i == 0) {
       // Add a leaf node into the list for a wait.
       // Always use the last node, since it's the latest for the particular queue
       leafs_[node->stream_id_] = node;
     }
-  } // while
+
   return true;
 }
-#else // USE_RUN_NODE_DFS
+#else // USE_RECURSIVE_LAUNCH
 // ================================================================================================
 bool Graph::RunOneNode(Node node) {
   // Clear the storage of the wait nodes
@@ -723,7 +715,102 @@ bool Graph::RunOneNode(Node node) {
   node->SetWait(false);
   return true;
 }
-#endif // USE_RUN_NODE_DFS
+#endif // USE_RECURSIVE_LAUNCH
+
+// Path Decomposition: assign each node to a unique path starting from roots, printing all such paths, sorted by length
+bool Graph::PathDecomposition() {
+  // Get topological order of nodes in the graph
+  auto topo_order = GetTopoOrder();
+
+  // Mapping from Node to index in topo_order for fast lookup
+  std::unordered_map<Node, int> node_to_idx;
+  for (size_t i = 0; i < topo_order.size(); ++i) {
+    node_to_idx[topo_order[i]] = static_cast<int>(i);
+  }
+
+  // Track assigned nodes
+  std::unordered_set<Node> assigned;
+
+  // Identify root nodes (those with no dependencies)
+  std::vector<Node> roots;
+  for (auto node : topo_order) {
+    if (node->GetDependencies().empty()) {
+      roots.push_back(node);
+    }
+  }
+
+  // Vector for all paths
+  std::vector<std::vector<Node>> all_paths;
+
+  // Path decomposition starting from each root
+  for (auto root : roots) {
+    Node current = root;
+    std::vector<Node> path;
+    while (current && assigned.find(current) == assigned.end()) {
+      path.push_back(current);
+      assigned.insert(current);
+      // Find next child (edge) that is unassigned, and is earliest in topo order
+      Node next = nullptr;
+      for (auto child : current->GetEdges()) {
+        if (assigned.find(child) == assigned.end()) {
+          if (!next || node_to_idx[child] < node_to_idx[next]) {
+            next = child;
+          }
+        }
+      }
+      current = next;
+    }
+    if (!path.empty()) {
+      all_paths.push_back(path);
+    }
+  }
+
+  // Cover any orphaned/uncovered nodes
+  for (auto node : topo_order) {
+    if (assigned.find(node) == assigned.end()) {
+      std::vector<Node> path;
+      Node current = node;
+      while (current && assigned.find(current) == assigned.end()) {
+        path.push_back(current);
+        assigned.insert(current);
+        Node next = nullptr;
+        for (auto child : current->GetEdges()) {
+          if (assigned.find(child) == assigned.end()) {
+            if (!next || node_to_idx[child] < node_to_idx[next]) {
+              next = child;
+            }
+          }
+        }
+        current = next;
+      }
+      if (!path.empty()) {
+        all_paths.push_back(path);
+      }
+    }
+  }
+
+  // Sort paths by descending length (longest first)
+  std::sort(all_paths.begin(), all_paths.end(),
+            [](const std::vector<Node>& a, const std::vector<Node>& b) {
+              return a.size() > b.size();
+            });
+
+  // Print out the paths using XPUT
+  XPUT("Graph Path Decomposition:\n");
+  int pathid = 0;
+  for (const auto& path : all_paths) {
+    std::stringstream ss;
+    ss << "Path " << pathid++ << " (length = " << path.size() << "):";
+    for (auto node : path) {
+      ss << " " << node->Xstring();
+    }
+    ss << "\n";
+    XPUT("%s", ss.str().c_str());
+  }
+
+  // Return true if all nodes assigned
+  return assigned.size() == topo_order.size();
+}
 
 // ================================================================================================
 bool Graph::RunNodes(
@@ -768,15 +855,17 @@ bool Graph::RunNodes(
     last_command->release();
   }
 
+  //PathDecomposition();
+
   // Run all commands in the graph
-#if USE_RUN_NODE_DFS
+#if USE_RECURSIVE_LAUNCH
+for (auto node : GetNodes()) node->launch_id_ = -1;
   for (auto node : GetNodes()) {
     if (node->launch_id_ == -1) {
       // XPUT("RunOneNodeDFS node %s", node->Xstring().c_str());
-      if (!RunOneNodeDFS(node, true)) return false;
+      if (!RunOneNodeRec(node, true)) return false;
     }
   }
-  for (auto node : GetNodes()) node->launch_id_ = -1;
 #else 
   for (auto node : GetTopoOrder()) {
     node->launch_id_ = -1;
@@ -808,7 +897,6 @@ bool Graph::RunNodes(
       command->release();
     }
   }
-
   return true;
 }
 

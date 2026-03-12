@@ -21,7 +21,6 @@
 #pragma once
 #include <algorithm>
 #include <queue>
-#include <deque>
 #include <stack>
 #include <iostream>
 #include <unordered_map>
@@ -452,7 +451,12 @@ class GraphNode : public hipGraphNodeDOTAttribute {
 
   std::string Xstring() {
     std::ostringstream oss;
-    this->PrintAttributes(oss, hipGraphDebugDotFlagsHandles);
+    //this->PrintAttributes(oss, hipGraphDebugDotFlagsHandles);
+    auto label = GetLabel(hipGraphDebugDotFlagsHandles);
+    if (label.length() > 20) {
+      label = label.substr(0,20) + "..";
+    }
+    oss << label;
     return oss.str();
   }
 
@@ -709,7 +713,9 @@ class Graph {
   //! Runs one node on the assigned stream
   bool RunOneNode(Node node);
 
-  bool RunOneNodeDFS(Node top_node, bool top_wait);
+  bool RunOneNodeRec(Node top_node, bool top_wait);
+
+  bool PathDecomposition();
 
   //! Runs all nodes from the execution graph on the assigned streams
   bool RunNodes(
@@ -844,7 +850,6 @@ class Graph {
   //! Map tracking the maximum number of concurrent streams required per device for graph execution.
   //! Key: device ID, Value: maximum number of streams needed for that device
   std::unordered_map<int, int> max_streams_dev_;
-  std::deque< std::pair< Node, bool >> dfs_queue_;
 };
 
 class GraphExec : public amd::ReferenceCountedObject, public Graph {
