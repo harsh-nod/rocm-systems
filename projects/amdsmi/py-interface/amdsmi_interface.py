@@ -737,7 +737,7 @@ def _format_bad_page_info(bad_page_info, bad_page_count: ctypes.c_uint32) -> Lis
     return table_records
 
 
-def _format_bdf(amdsmi_bdf: Union[amdsmi_wrapper.amdsmi_bdf_t, amdsmi_wrapper.struct_amdsmi_bdf_t]) -> str:
+def _format_bdf(amdsmi_bdf: Union[amdsmi_wrapper.amdsmi_bdf_t, amdsmi_wrapper.struct_bdf_]) -> str:
     """
     Format BDF struct to readable data.
 
@@ -749,7 +749,7 @@ def _format_bdf(amdsmi_bdf: Union[amdsmi_wrapper.amdsmi_bdf_t, amdsmi_wrapper.st
         `str`: String containing BDF data in a readable format.
     """
     try:
-        struct = amdsmi_bdf.struct_amdsmi_bdf_t
+        struct = amdsmi_bdf.bdf
     except AttributeError:
         struct = amdsmi_bdf
 
@@ -809,10 +809,10 @@ def _make_amdsmi_bdf_from_list(bdf):
     if len(bdf) != 4:
         return None
     amdsmi_bdf = amdsmi_wrapper.amdsmi_bdf_t()
-    amdsmi_bdf.struct_amdsmi_bdf_t.function_number = bdf[3]
-    amdsmi_bdf.struct_amdsmi_bdf_t.device_number = bdf[2]
-    amdsmi_bdf.struct_amdsmi_bdf_t.bus_number = bdf[1]
-    amdsmi_bdf.struct_amdsmi_bdf_t.domain_number = bdf[0]
+    amdsmi_bdf.bdf.function_number = bdf[3]
+    amdsmi_bdf.bdf.device_number = bdf[2]
+    amdsmi_bdf.bdf.bus_number = bdf[1]
+    amdsmi_bdf.bdf.domain_number = bdf[0]
     return amdsmi_bdf
 
 
@@ -2790,7 +2790,7 @@ def amdsmi_get_gpu_device_bdf(processor_handle: processor_handle_t) -> str:
             processor_handle, ctypes.byref(bdf_info))
     )
    
-    return _format_bdf(bdf_info.struct_amdsmi_bdf_t)
+    return _format_bdf(bdf_info)
 
 def amdsmi_get_gpu_device_bdf_bdf(processor_handle: amdsmi_wrapper.amdsmi_processor_handle) -> amdsmi_wrapper.amdsmi_bdf_t:
     if not isinstance(processor_handle, amdsmi_wrapper.amdsmi_processor_handle):
@@ -2817,7 +2817,7 @@ def amdsmi_get_nic_info(
 
 def amdsmi_get_ainic_info_summary(nic_info):
     return {
-        "bdf": _format_bdf(nic_info.bus.bdf.struct_amdsmi_bdf_t),
+        "bdf": _format_bdf(nic_info.bus.bdf),
         "UUID": nic_info.asic.permanent_address.decode('utf-8'),
         "Permanent Address": nic_info.asic.permanent_address.decode('utf-8'),
         # "Device Name": nic_info.asic.product_name.decode('utf-8'),
@@ -2843,7 +2843,7 @@ def amdsmi_get_ainic_info_detail(ainic_info_struct):
             "VENDOR_NAME": ainic_info_struct.asic.vendor_name.decode('utf-8')
         },
         "BUS":{
-            "bdf": _format_bdf(ainic_info_struct.bus.bdf.struct_amdsmi_bdf_t),
+            "bdf": _format_bdf(ainic_info_struct.bus.bdf),
             "MAX_PCIE_WIDTH": int(ainic_info_struct.bus.max_pcie_width),
             "MAX_PCIE_SPEED": ainic_info_struct.bus.max_pcie_speed,
             "PCIE_INTERFACE_VERSION": ainic_info_struct.bus.pcie_interface_version.decode('utf-8'),
@@ -2981,7 +2981,7 @@ def amdsmi_get_switch_device_bdf(processor_handle: amdsmi_wrapper.amdsmi_process
             processor_handle, ctypes.byref(bdf_info))
     )
 
-    return _format_bdf( bdf_info.struct_amdsmi_bdf_t)
+    return _format_bdf(bdf_info)
 
 def amdsmi_get_nic_temp_info(
     processor_handle: amdsmi_wrapper.amdsmi_processor_handle,
@@ -3080,7 +3080,7 @@ def amdsmi_get_root_switch(amdsmi_bdf: amdsmi_wrapper.amdsmi_bdf_t)-> str:
             amdsmi_bdf, ctypes.byref(switch_bdf_info))
     )
 
-    return _format_bdf(switch_bdf_info.struct_amdsmi_bdf_t)
+    return _format_bdf(switch_bdf_info)
 
 def amdsmi_get_gpu_device_uuid(processor_handle: processor_handle_t) -> str:
     if not isinstance(processor_handle, amdsmi_wrapper.amdsmi_processor_handle):
