@@ -25,6 +25,7 @@
 
 import argparse
 import copy
+import csv
 import re
 import sys
 from abc import abstractmethod
@@ -33,6 +34,7 @@ from pathlib import Path
 from typing import Any, Optional, TextIO
 
 import pandas as pd
+import yaml
 
 import config
 from rocprof_compute_soc.soc_base import OmniSoC_Base
@@ -78,6 +80,59 @@ TOP_STATS_BUILD_IN_CONFIG: OrderedDict[int, dict[str, Any]] = OrderedDict([
         },
     ),
 ])
+
+
+# ------------------------------------
+# Helper functions for join_prof()
+# ------------------------------------
+
+
+def test_df_column_equality(df: pd.DataFrame) -> bool:
+    """Test if all columns in dataframe are equal."""
+    return df.eq(df.iloc[:, 0], axis=0).all(1).all()
+
+
+def detect_missing_counters(
+    df: pd.DataFrame,
+    workload_dir: Path,
+    join_type: str,
+    iteration_multiplexing: Optional[int],
+) -> None:
+    """Detect missing counter values in joined dataframe.
+
+    Args:
+        df: Joined dataframe to check
+        workload_dir: Path to workload directory
+        join_type: Type of join performed ('kernel' or 'grid')
+        iteration_multiplexing: Iteration multiplexing value (None if disabled)
+    """
+    group_labels = ["Kernel_Name"]
+    if join_type == "grid":
+        group_labels.append("Grid_Size")
+
+    num_files = len(list(workload_dir.glob("perfmon/*.txt")))
+    kernels_with_missing_counters = []
+    for _, groups in df.groupby(group_labels):
+        if groups["Dispatch_ID"].nunique() < num_files:
+            kernel_name = groups.iloc[0]["Kernel_Name"]
+            kernels_with_missing_counters.append(kernel_name)
+
+    if kernels_with_missing_counters:
+        kernels_with_missing_counters = list(set(kernels_with_missing_counters))
+        console_warning(
+            "join_prof",
+            (
+                f"Insufficient number of kernel calls for kernels: "
+                f"{', '.join(kernels_with_missing_counters)} "
+                f"to collect all counters using iteration multiplexing. "
+                f"Please use kernel filtering and exclude the above kernels "
+                f"or turn off iteration multiplexing."
+            ),
+        )
+        with open(workload_dir / "profiling_config.yaml", "a") as f:
+            yaml.dump(
+                {"kernels_with_missing_counters": kernels_with_missing_counters}, f
+            )
 
 
 class OmniAnalyze_Base:
@@ -466,6 +521,237 @@ class OmniAnalyze_Base:
                 ),
             )
 
+    @demarcate
+    def join_prof(
+        self, workload_dir: Path, out: Optional[str] = None
+    ) -> Optional[pd.DataFrame]:
+        """Join separated rocprof runs into single pmc_perf.csv.
+
+        Args:
+            workload_dir: Path to workload directory containing CSV files
+            out: Optional output file path (defaults to workload_dir/pmc_perf.csv)
+
+        Returns:
+            DataFrame if called programmatically, None if saving to file
+        """
+        output_file = out or str(workload_dir / "pmc_perf.csv")
+
+        # Load profiling config from THIS workload directory (not args)
+        profiling_config = file_io.load_profiling_config(str(workload_dir))
+        format_rocprof = profiling_config.get("format_rocprof_output", "rocpd")
+        iteration_multiplexing = profiling_config.get("iteration_multiplexing", None)
+        join_type = profiling_config.get("join_type", "grid")
+        kokkos_trace = profiling_config.get("kokkos_trace", False)
+
+        # handle rocpd format
+        if format_rocprof == "rocpd":
+            # Vertically concat (by rows) results_*.csv into pmc_perf.csv
+            result_files = list(workload_dir.glob("results_*.csv"))
+
+            with open(output_file, "w", newline="") as outfile:
+                writer = None
+                for file in result_files:
+                    with open(file, newline="") as infile:
+                        reader = csv.reader(infile)
+                        header = next(reader)
+                        # Write header only once
+                        if writer is None:
+                            writer = csv.writer(outfile)
+                            writer.writerow(header)
+                        for row in reader:
+                            writer.writerow(row)
+
+            console_debug(f"Created file: {output_file}")
+
+            if iteration_multiplexing is not None:
+                df = pd.read_csv(output_file)
+                detect_missing_counters(
+                    df, workload_dir, join_type, iteration_multiplexing
+                )
+
+            return None
+
+        # Collect files to process - normalize to Path objects
+        files: list[Path] = []
+
+        csv_patterns = ["pmc_perf_*.csv", "SQ_*.csv", "SQC_*.csv"]
+        files = [
+            file for pattern in csv_patterns for file in workload_dir.glob(pattern)
+        ]
+
+        if kokkos_trace:
+            # remove marker api trace outputs from this list
+            files = [f for f in files if not f.name.endswith("_marker_api_trace.csv")]
+
+        # Process files and create joined dataframe
+        df = None
+        for i, file in enumerate(files):
+            current_df = pd.read_csv(file)
+
+            if current_df.empty:
+                console_warning("join_prof", f"Empty dataframe from {file}")
+                continue
+
+            if join_type == "kernel":
+                key = current_df.groupby("Kernel_Name").cumcount()
+                current_df["key"] = current_df.Kernel_Name + " - " + key.astype(str)
+            elif join_type == "grid":
+                key = current_df.groupby(["Kernel_Name", "Grid_Size"]).cumcount()
+                current_df["key"] = (
+                    current_df["Kernel_Name"].astype(str)
+                    + " - "
+                    + current_df["Grid_Size"].astype(str)
+                    + " - "
+                    + key.astype(str)
+                )
+            else:
+                console_error(
+                    "join_prof",
+                    f"{join_type} is an unrecognized option for --join-type",
+                )
+
+            if df is None:
+                df = current_df
+            else:
+                # join by unique index of kernel
+                df = pd.merge(
+                    df, current_df, how="inner", on="key", suffixes=("", f"_{i}")
+                )
+
+        if df is None or df.empty:
+            console_warning("join_prof", "No data available after processing all files")
+            return None
+
+        # TODO: check for any mismatch in joins
+        duplicate_cols = {
+            "GPU_ID": [col for col in df.columns if col.startswith("GPU_ID")],
+            "Grid_Size": [col for col in df.columns if col.startswith("Grid_Size")],
+            "Workgroup_Size": [
+                col for col in df.columns if col.startswith("Workgroup_Size")
+            ],
+            "LDS_Per_Workgroup": [
+                col for col in df.columns if col.startswith("LDS_Per_Workgroup")
+            ],
+            "Scratch_Per_Workitem": [
+                col for col in df.columns if col.startswith("Scratch_Per_Workitem")
+            ],
+            "SGPR": [col for col in df.columns if col.startswith("SGPR")],
+        }
+
+        # Check for vgpr counter in ROCm < 5.3
+        if "vgpr" in df.columns:
+            duplicate_cols["vgpr"] = [
+                col for col in df.columns if col.startswith("vgpr")
+            ]
+        # Check for vgpr counter in ROCm >= 5.3
+        else:
+            duplicate_cols["Arch_VGPR"] = [
+                col for col in df.columns if col.startswith("Arch_VGPR")
+            ]
+            duplicate_cols["Accum_VGPR"] = [
+                col for col in df.columns if col.startswith("Accum_VGPR")
+            ]
+
+        for key, cols in duplicate_cols.items():
+            current_df = df[cols]
+            if not test_df_column_equality(current_df):
+                console_warning(
+                    "join_prof",
+                    f"Detected differing {key} values while joining pmc_perf.csv",
+                )
+            else:
+                console_debug("join_prof", f"Successfully joined {key} in pmc_perf.csv")
+
+        # now, we can:
+        #   A) throw away any of the "boring" duplicates
+        columns_to_remove = [
+            # rocprofv2 headers
+            "GPU_ID_",
+            "Grid_Size_",
+            "Workgroup_Size_",
+            "LDS_Per_Workgroup_",
+            "Scratch_Per_Workitem_",
+            "vgpr_",
+            "Arch_VGPR_",
+            "Accum_VGPR_",
+            "SGPR_",
+            "Dispatch_ID_",
+            "Queue_ID",
+            "Queue_Index",
+            "PID",
+            "TID",
+            "SIG",
+            "OBJ",
+            "Correlation_ID_",
+            "Wave_Size_",
+            # rocscope specific merged counters, keep original
+            "dispatch_",
+            # extras
+            "sig",
+            "queue-id",
+            "queue-index",
+            "pid",
+            "tid",
+            "fbar",
+        ]
+
+        df = df[
+            [
+                col
+                for col in df.columns
+                if not any(col.startswith(prefix) for prefix in columns_to_remove)
+            ]
+        ]
+
+        #   B) any timestamps that are _not_ the duration,
+        #      which is the one we care about
+        timestamp_patterns = ["DispatchNs", "CompleteNs", "HostDuration"]
+
+        df = df[
+            [
+                col
+                for col in df.columns
+                if not any(pattern in col for pattern in timestamp_patterns)
+            ]
+        ]
+
+        #   C) sanity check the name and key
+        name_cols = [col for col in df.columns if "Kernel_Name" in col]
+        if not name_cols:
+            return df
+
+        for col in name_cols[1:]:
+            assert (df[name_cols[0]] == df[col]).all()
+
+        df = df.drop(columns=name_cols[1:])
+
+        # now take the median of the durations
+        start_cols = [col for col in df.columns if "Start_Timestamp" in col]
+        end_cols = [col for col in df.columns if "End_Timestamp" in col]
+
+        # compute mean mean timestamps
+        if start_cols and end_cols:
+            mean_start = df[start_cols].mean(axis=1)
+            mean_end = df[end_cols].mean(axis=1)
+
+            # Replace with consolidated timestamps
+            df = df.drop(columns=start_cols + end_cols)
+            df["Start_Timestamp"] = mean_start
+            df["End_Timestamp"] = mean_end
+
+        # finally, join the drop key
+        if "key" in df.columns:
+            df = df.drop(columns=["key"])
+
+        console_debug("join_prof", "Checking for missing counter values...")
+
+        if iteration_multiplexing is not None:
+            detect_missing_counters(df, workload_dir, join_type, iteration_multiplexing)
+
+        # save to file
+        df.to_csv(output_file, index=False)
+        return None
+
     # ----------------------------------------------------
     # Required methods to be implemented by child classes
     # ----------------------------------------------------
@@ -507,6 +793,32 @@ class OmniAnalyze_Base:
             # Apply filters to workloads
             for path_info, filter_value in zip(args.path, filter_list):
                 setattr(self._runs[path_info[0]], attr_name, filter_value)
+
+        # Join pmc_perf_*.csv or results_*.csv files if needed
+        for path_info in args.path:
+            workload_dir = Path(path_info[0])
+
+            # Detect CSV format: merged vs separate
+            pmc_perf = workload_dir / "pmc_perf.csv"
+            pmc_perf_files = list(workload_dir.glob("pmc_perf_*.csv"))
+            results_files = list(workload_dir.glob("results_*.csv"))
+
+            if pmc_perf.exists():
+                # Already merged (old workload or re-running analyze)
+                console_debug(f"Using existing {pmc_perf}")
+            elif pmc_perf_files or results_files:
+                # New format: separate CSVs need joining
+                files_desc = "pmc_perf_*.csv" if pmc_perf_files else "results_*.csv"
+                console_log(f"Joining {files_desc} for {workload_dir}...")
+                self.join_prof(workload_dir, out=str(pmc_perf))
+                console_log(f"Created {pmc_perf}")
+            else:
+                # No PMC data found - error out immediately with clear message
+                console_error(
+                    f"No profiling data found in {workload_dir}.\n"
+                    f"Expected: pmc_perf.csv or pmc_perf_*.csv or results_*.csv\n"
+                    f"Please run 'rocprof-compute profile' first."
+                )
 
     @abstractmethod
     def run_analysis(self) -> None:

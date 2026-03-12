@@ -8,6 +8,10 @@ Full documentation for ROCm Compute Profiler is available at [https://rocm.docs.
 
 ### Changed
 
+* Profile mode output format:
+  * Profile mode now creates separate counter collection files (pmc_perf_*.csv or results_*.csv).
+  * Analyze mode automatically merges these files into pmc_perf.csv during pre-processing.
+
 ### Removed
 
 * Removed HIP API tracing since it's out-of-scope for ROCm Compute Profiler and the trace files were not being analyzed.

@@ -160,9 +160,6 @@ class rocprofiler_sdk_profiler(RocProfCompute_Base):
     def post_processing(self) -> None:
         """Perform any post-processing steps prior to profiling."""
         if self.ready_to_profile:
-            # Manually join each pmc_perf*.csv output
-            self.join_prof()
-            # Run roofline microbenchmark
             super().post_processing()
         else:
             console_log("roofline", "Detected existing pmc_perf.csv")

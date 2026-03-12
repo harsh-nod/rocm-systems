@@ -684,14 +684,6 @@ class OmniSoC_Base:
             # Dynamic import to isolate hip dependency during profile time only
             from utils import benchmark
 
-            pmc_path = Path(self.get_args().path) / "pmc_perf.csv"
-            if not pmc_path.is_file():
-                console_error(
-                    "roofline",
-                    "Incomplete or missing profiling data. Skipping roofline.",
-                    exit=False,
-                )
-                return
             console_log(
                 "roofline", f"Checking for roofline.csv in {self.get_args().path}"
             )
