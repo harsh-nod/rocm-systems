@@ -202,7 +202,7 @@ void* MemoryPool::AllocateMemory(size_t size, Stream* stream, void* dptr) {
     }
     if (dev_ptr == nullptr) {
       size_t free = 0, total = 0;
-      hipError_t err = hipMemGetInfo(&free, &total);
+      hipError_t err = ihipMemGetInfo(&free, &total);
       if (err == hipSuccess) {
         LogPrintfError(
             "Allocation failed : Device memory : required :\
@@ -251,6 +251,13 @@ bool MemoryPool::FreeMemory(amd::Memory* memory, Stream* stream, Event* event) {
     if (!state_.use_vm_heap_ && memory->getUserData().phys_mem_obj != nullptr) {
       memory = memory->getUserData().phys_mem_obj;
     }
+    // Graph-allocated virtual buffer: normal FreeMemory/SvmBuffer::free miss
+    // releasing phys_mem_obj, sub_obj, and parent VA. Handle cleanup here.
+    if (HIP_MEM_POOL_USE_VM && (memory->getMemFlags() & CL_MEM_VA_RANGE_AMD) &&
+        memory->parent() != nullptr &&
+        memory->getUserData().phys_mem_obj != nullptr) {
+      amd::Memory* phys_mem_obj = memory->getUserData().phys_mem_obj;
+    }
 
     // If the free heap grows over the busy heap, then force release
     if (AMD_DIRECT_DISPATCH && (free_heap_.GetTotalSize() > busy_heap_.GetTotalSize())) {
@@ -261,7 +268,7 @@ bool MemoryPool::FreeMemory(amd::Memory* memory, Stream* stream, Event* event) {
       // If free mmeory is less than 12.5% of total, then force wait release
       size_t free = 0;
       size_t total = 0;
-      hipError_t err = hipMemGetInfo(&free, &total);
+      hipError_t err = ihipMemGetInfo(&free, &total);
       if ((err == hipSuccess) && (free < (total >> 3))) {
         constexpr bool kSafeRelease = true;
         free_heap_.ReleaseAllMemory(free_heap_.GetTotalSize() >> 1, kSafeRelease);
