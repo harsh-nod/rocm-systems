@@ -120,16 +120,19 @@ ncclResult_t ncclRegCleanup(struct ncclComm* comm) {
 }
 
 NCCL_API(ncclResult_t, ncclCommRegister, const ncclComm_t comm, void* buff, size_t size, void** handle);
+
 ncclResult_t ncclCommRegister_impl(const ncclComm_t comm, void* buff, size_t size, void** handle) {
   ncclResult_t ret = ncclSuccess;
 
-  if (!ncclParamLocalRegister())
+  if (!ncclParamLocalRegister() || ncclP2pUsesMemcpy()) {
     *handle = NULL;
-  else {
+    INFO(NCCL_REG, "Skipping registration for buffer %p size %zi (LocalRegister=%ld, P2pUsesMemcpy=%d)",
+         buff, size, ncclParamLocalRegister(), ncclP2pUsesMemcpy());
+  } else {
     #ifdef ENABLE_MSCCLPP
     if (comm->mscclppCompatible) {
       if (comm->mscclCompatible && size > 0){
-        bool isManagedBuffer = false; 
+        bool isManagedBuffer = false;
         CUDACHECK(hipPointerGetAttribute(&isManagedBuffer, HIP_POINTER_ATTRIBUTE_IS_MANAGED, const_cast<void*>(buff)));
         if(!isManagedBuffer){
           INFO(NCCL_INIT, "MSCCL++: ncclCommRegister");
@@ -151,7 +154,13 @@ end:
 }
 
 ncclResult_t ncclCommGraphRegister(const ncclComm_t comm, void* buff, size_t size, void** handle) {
-  NCCLCHECK(ncclRegister(comm, buff, size, true, handle));
+  if (ncclP2pUsesMemcpy()) {
+    *handle = NULL;
+    INFO(NCCL_REG, "Skipping graph registration for buffer %p size %zi (P2pUsesMemcpy=%d)",
+         buff, size, ncclP2pUsesMemcpy());
+  } else {
+    NCCLCHECK(ncclRegister(comm, buff, size, true, handle));
+  }
   return ncclSuccess;
 }
 

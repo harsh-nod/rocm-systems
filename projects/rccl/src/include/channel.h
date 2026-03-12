@@ -19,6 +19,7 @@ ncclResult_t freeChannel(struct ncclChannel* channel, int nRanks, int collnetNRa
 inline uint8_t ncclP2pChannelBaseForRound(struct ncclComm* comm, int p2pRound, int p2pBatchEnable = 0) {
   int base;
   if (comm->nNodes > 1) {
+
     int nodeDelta = p2pRound/comm->maxLocalRanks;
     int localDelta = p2pRound%comm->maxLocalRanks;
     int batchSize = (comm->nNodes > 2 && p2pBatchEnable) ? NCCL_MAX_DEV_WORK_P2P_PER_BATCH : 1;

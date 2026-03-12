@@ -469,6 +469,7 @@ add_custom_target(update_git_version
   VERBATIM
 )
 
+
 list(APPEND HIP_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/git_version.cpp)
 
 # Set up RCCL library

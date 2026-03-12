@@ -153,6 +153,9 @@ struct ncclSharedResources {
 
   /* proxy related shared res */
   struct ncclProxyState* proxyState;
+
+  // GIN state
+  struct ncclGinState ginState;
 };
 
 struct ncclChannel {
@@ -498,6 +501,7 @@ struct ncclComm {
 
   ncclNet_t* ncclNet;
   void* netContext;
+  void* ginContext;
   int netPluginIndex;
   int ncclNetVer;
   ncclNetDeviceType netDeviceType;
@@ -511,7 +515,7 @@ struct ncclComm {
   int maxTreePattern;
   bool initAlgoChannels[NCCL_NUM_ALGORITHMS];
   bool runtimeConn; // if dynamic connection is supported
-  bool directMode;
+  bool directMode; // if any process manages more than one local rank
   int cuMemSupport;
 
   uint64_t magic; // Magic number for all network communication. Not a security key -- only goal is to detect mismatches.
@@ -570,6 +574,7 @@ struct ncclComm {
   int p2pnChannels;
   int p2pnChannelsPerPeer;
   int p2pChannelShiftSize;
+  int p2pSchedGroupSize;
 
   // Should this comm allocate LL buffers for network P2P connections?
   bool allocP2pNetLLBuffers;
@@ -599,6 +604,7 @@ struct ncclComm {
   uint32_t* childAbortFlag;
   uint32_t* childAbortFlagDev;
   uint32_t destroyFlag;
+  uint32_t revokedFlag;
 
   // Flags for enable P2P NET
   uint32_t p2pNet;
@@ -734,11 +740,12 @@ struct ncclComm {
   // CE Collective
   struct ncclCeColl ceColl;
   struct ncclIntruQueue<struct ncclCeInitTask, &ncclCeInitTask::next> ceInitTaskQueue;
-  
+
   // buffer registration cache
   struct ncclRegCache regCache;
   int isAllNvlink;
-  bool isAllDirectP2p;
+  bool isAllDirectP2p; // Subject to NCCL_P2P_LEVEL (for local ranks only).
+  bool isAllCudaP2p; // Raw CUDA capability (for local ranks only).
   int symmetricSupport;
   bool useNetPXN;
   bool useGdr;
