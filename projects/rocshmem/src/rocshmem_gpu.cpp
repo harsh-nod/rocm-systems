@@ -451,6 +451,25 @@ __device__ int rocshmem_wg_team_create_ctx(rocshmem_team_t team, long options,
   return result == true ? 0 : -1;
 }
 
+__device__ int rocshmem_ctx_create_kernel(long options, rocshmem_ctx_t *ctx, int count) {
+  GPU_DPRINTF("Function: rocshmem_ctx_create_kernel (options=%ld)\n", options);
+  // TODO: return error if option isn't SHARED or count is larger than num ctx
+  /*
+
+  if ((option != ROCSHMEM_CTX_SHARED) || (count > max_num_ctxs)) {
+    return - 1;
+  }
+
+  if (get_flat_block_id() == 0) {
+    memcpy(ctx, rocshmem_ctx_array, count);
+  }
+
+  __syncthreads();
+
+  */
+  return 0;
+}
+
 __device__ void rocshmem_wg_ctx_destroy(
     [[maybe_unused]] rocshmem_ctx_t *ctx) {
   GPU_DPRINTF("Function: rocshmem_wg_ctx_destroy (ctx=%zd)\n",
