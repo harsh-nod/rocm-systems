@@ -24,7 +24,6 @@
 ##############################################################################
 import argparse
 import textwrap
-from abc import abstractmethod
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -48,7 +47,6 @@ from utils.roofline_calc import (
     PEAK_OPS_DATATYPES,
     SUPPORTED_DATATYPES,
     calc_ai_analyze,
-    calc_ai_profile,
     construct_roof,
 )
 from utils.specs import MachineSpecs
@@ -79,50 +77,14 @@ class Roofline:
         self,
         args: argparse.Namespace,
         mspec: MachineSpecs,
-        run_parameters: Optional[dict[str, Any]] = None,
+        run_parameters: dict[str, Any],
     ) -> None:
         self.__args = args
         self.__mspec = mspec
-        self.__run_parameters = (
-            run_parameters
-            if run_parameters
-            else {
-                "workload_dir": None,  # in some cases (i.e. --specs),
-                # path will not be given
-                "device_id": 0,
-                "sort_type": "kernels",
-                "mem_level": "ALL",
-                "is_standalone": False,
-                "roofline_data_type": ["FP32"],  # default to FP32
-                "kernel_filter": False,
-                "iteration_multiplexing": None,
-            }
-        )
+        self.__run_parameters = run_parameters
         self.__ai_data: Optional[dict[str, Any]] = None
         self.__ceiling_data: Optional[dict[str, Any]] = None
         self.__figure = go.Figure()
-
-        # Set roofline run parameters from args
-        if hasattr(self.__args, "path") and not run_parameters:
-            self.__run_parameters["workload_dir"] = self.__args.path
-        if hasattr(self.__args, "no_roof") and not self.__args.no_roof:
-            self.__run_parameters["is_standalone"] = True
-        if hasattr(self.__args, "mem_level") and self.__args.mem_level != "ALL":
-            self.__run_parameters["mem_level"] = self.__args.mem_level
-        if hasattr(self.__args, "sort") and self.__args.sort != "ALL":
-            self.__run_parameters["sort_type"] = self.__args.sort
-        self.__run_parameters["roofline_data_type"] = self.__args.roofline_data_type
-        if (hasattr(self.__args, "kernel") and self.__args.kernel) or (
-            hasattr(self.__args, "gpu_kernel") and self.__args.gpu_kernel
-        ):
-            self.__run_parameters["kernel_filter"] = True
-        if (
-            hasattr(self.__args, "iteration_multiplexing")
-            and self.__args.iteration_multiplexing is not None
-        ):
-            self.__run_parameters["iteration_multiplexing"] = (
-                self.__args.iteration_multiplexing
-            )
 
     def get_args(self) -> argparse.Namespace:
         return self.__args
@@ -223,23 +185,20 @@ class Roofline:
             return "Compute Bound"
 
     @demarcate
-    def empirical_roofline(
-        self, ret_df: dict[str, pd.DataFrame]
-    ) -> Optional[html.Section]:
+    def construct_plotly_figures(
+        self, ai_data: dict[str, Any]
+    ) -> tuple[Optional[go.Figure], Optional[go.Figure], str, str]:
         """
-        Generate a set of empirical roofline plots given a directory containing
-        required profiling and benchmarking data.
+        Build raw Plotly figure objects from pre-computed AI data.
+
+        Returns (ops_figure, flops_figure, ops_dt_list, flops_dt_list).
+        No I/O or HTML wrapping.
         """
         self.roof_setup()
 
         console_debug("roofline", f"Path: {self.__run_parameters.get('workload_dir')}")
 
-        self.__ai_data = calc_ai_profile(
-            self.__mspec,
-            self.__run_parameters.get("sort_type"),
-            ret_df,
-            self.__run_parameters["iteration_multiplexing"],
-        )
+        self.__ai_data = ai_data
 
         msg = "AI at each mem level:"
         for key, value in self.__ai_data.items():
@@ -261,11 +220,7 @@ class Roofline:
                 }
 
         ops_figure = flops_figure = None
-        ops_dt_list = flops_dt_list = kernel_list = ""
-
-        # collect ceiling data for all datatypes to find global minimums
-        all_ops_ceiling_data = {}
-        all_flops_ceiling_data = {}
+        ops_dt_list = flops_dt_list = ""
 
         for dt in self.__run_parameters.get("roofline_data_type", []):
             gpu_arch = getattr(self.__mspec, "gpu_arch", "unknown_arch")
@@ -295,8 +250,6 @@ class Roofline:
                         kernel_names_data=kernel_names_data,
                     )
                 ops_dt_list += "_" + str(dt)
-                # store ceiling data for this datatype
-                all_ops_ceiling_data[str(dt)] = self.__ceiling_data
 
             if ops_flops == "Flops":
                 if flops_figure:
@@ -310,68 +263,98 @@ class Roofline:
                         kernel_names_data=kernel_names_data,
                     )
                 flops_dt_list += "_" + str(dt)
-                # Store ceiling data for this datatype
-                all_flops_ceiling_data[str(dt)] = self.__ceiling_data
 
-        # Output will be different depending on interaction type:
-        # Save HTMLs if we're in "standalone roofline" mode,
-        # otherwise return HTML to be used in GUI outputif flops_figure:
+        return ops_figure, flops_figure, ops_dt_list, flops_dt_list
 
-        if self.__run_parameters["is_standalone"]:
-            dev_id = str(self.__run_parameters["device_id"])
-            if self.__run_parameters.get("kernel_filter", False):
-                for name in sorted(self.__args.kernel):
-                    kernel_list += "_" + name
+    def save_html_files(
+        self,
+        ops_figure: Optional[go.Figure],
+        flops_figure: Optional[go.Figure],
+        ops_dt_list: str,
+        flops_dt_list: str,
+    ) -> None:
+        """Write Plotly figures to standalone HTML files on disk."""
+        dev_id = str(self.__run_parameters["device_id"])
+        kernel_list = ""
+        if self.__run_parameters.get("kernel_filter", False):
+            for name in sorted(self.__args.kernel):
+                kernel_list += "_" + name
 
-            if ops_figure:
-                ops_figure.write_html(
-                    f"{self.__run_parameters['workload_dir']}/empirRoof_gpu-{dev_id}{ops_dt_list}{kernel_list}.html"
-                )
+        workload_dir = self.__run_parameters["workload_dir"]
 
-            if flops_figure:
-                flops_figure.write_html(
-                    f"{self.__run_parameters['workload_dir']}/empirRoof_gpu-{dev_id}{flops_dt_list}{kernel_list}.html"
-                )
-
-            console_log("roofline", "Empirical Roofline HTML file saved!")
-        else:
-            # Create HTML output for GUI mode.
-            ops_graph = (
-                html.Div(
-                    className="float-child",
-                    children=[
-                        html.H3(children="Empirical Roofline Analysis (Ops)"),
-                        dcc.Graph(figure=ops_figure),
-                    ],
-                )
-                if ops_figure
-                else None
+        if ops_figure:
+            ops_figure.write_html(
+                f"{workload_dir}/empirRoof_gpu-{dev_id}{ops_dt_list}{kernel_list}.html"
             )
 
-            flops_graph = (
-                html.Div(
-                    className="float-child",
-                    children=[
-                        html.H3(children="Empirical Roofline Analysis (Flops)"),
-                        dcc.Graph(figure=flops_figure),
-                    ],
-                )
-                if flops_figure
-                else None
+        if flops_figure:
+            flops_figure.write_html(
+                f"{workload_dir}/empirRoof_gpu-{dev_id}{flops_dt_list}{kernel_list}.html"
             )
 
-            return html.Section(
-                id="roofline",
+        console_log("roofline", "Empirical Roofline HTML file saved!")
+
+    @staticmethod
+    def generate_html_section(
+        ops_figure: Optional[go.Figure],
+        flops_figure: Optional[go.Figure],
+    ) -> Optional[html.Section]:
+        """Wrap Plotly figures in Dash HTML components for WebUI embedding."""
+        if ops_figure is None and flops_figure is None:
+            return None
+
+        ops_graph = (
+            html.Div(
+                className="float-child",
                 children=[
-                    html.Div(
-                        className="float-container",
-                        children=[
-                            ops_graph,
-                            flops_graph,
-                        ],
-                    )
+                    html.H3(children="Empirical Roofline Analysis (Ops)"),
+                    dcc.Graph(figure=ops_figure),
                 ],
             )
+            if ops_figure
+            else None
+        )
+
+        flops_graph = (
+            html.Div(
+                className="float-child",
+                children=[
+                    html.H3(children="Empirical Roofline Analysis (Flops)"),
+                    dcc.Graph(figure=flops_figure),
+                ],
+            )
+            if flops_figure
+            else None
+        )
+
+        return html.Section(
+            id="roofline",
+            children=[
+                html.Div(
+                    className="float-container",
+                    children=[
+                        ops_graph,
+                        flops_graph,
+                    ],
+                )
+            ],
+        )
+
+    @demarcate
+    def html_generate_plot(
+        self, ai_data: dict[str, Any]
+    ) -> Optional[html.Section]:
+        """
+        Legacy convenience wrapper: build figures and either save to disk
+        or return as Dash HTML section depending on is_standalone.
+        """
+        ops_fig, flops_fig, ops_dt, flops_dt = self.construct_plotly_figures(ai_data)
+
+        if self.__run_parameters["is_standalone"]:
+            self.save_html_files(ops_fig, flops_fig, ops_dt, flops_dt)
+            return None
+        else:
+            return self.generate_html_section(ops_fig, flops_fig)
 
     @demarcate
     def generate_plot(
@@ -490,6 +473,10 @@ class Roofline:
 
                 subplot_row = 1
                 skipAI = False
+            else:
+                # generate an empty figure object in the
+                # event that no kernel names are provided
+                fig = go.Figure()
         else:
             # Adding to existing figure
             if hasattr(fig, "_grid_ref") and fig._grid_ref is not None:
@@ -1071,18 +1058,13 @@ class Roofline:
     def cli_generate_plot(
         self,
         dtype: str,
-        workload: schema.Workload,
-        config: dict[str, Any],
-        arch_config: schema.ArchConfig,
+        ai_data: dict[str, Any],
     ) -> Optional[str]:
         """
         Plot CLI mode roofline analysis in terminal using plotext
 
         :param dtype: The datatype to be profiled
-        :param workload: Complete dataframe
-        :param config: Profiling configuration from profiling_config.yaml
-        :param arch_config: Archetype-specific configurations
-        :type method: str
+        :param ai_data: Pre-computed arithmetic intensity data from calc_ai_analyze
         :return: Build the current figure using plot.build(),
         or None if datatype is not valid for the architecture
         :rtype: str or None
@@ -1098,56 +1080,7 @@ class Roofline:
             )
             return
 
-        # Normalize workload_dir to get the base directory
-        workload_dir = self.__run_parameters.get("workload_dir")
-        if workload_dir is None:
-            console_error(
-                "workload_dir is not set",
-                exit=False,
-            )
-            return
-
-        # Extract base directory path regardless of-
-        # whether workload_dir is list or string
-        if isinstance(workload_dir, list):
-            if not workload_dir or not workload_dir[0]:
-                console_error(
-                    "workload_dir list is empty or contains invalid entries",
-                    exit=False,
-                )
-                return
-            # Handle nested list structure [0][0] or simple list [0]
-            base_dir = (
-                workload_dir[0][0]
-                if isinstance(workload_dir[0], (list, tuple))
-                else workload_dir[0]
-            )
-        else:
-            # workload_dir is a string
-            base_dir = workload_dir
-
-        base_path = Path(base_dir)
-        roofline_csv = base_path / "roofline.csv"
-        if not roofline_csv.is_file():
-            console_log("roofline", f"{roofline_csv} does not exist")
-            return
-
-        if (
-            workload
-            and hasattr(workload, "roofline_peaks")
-            and workload.roofline_peaks.empty
-        ):
-            # CSV validation failed earlier, skip plot generation
-            console_warning("roofline", "Skipping plot generation")
-            return None
-
-        self.__ai_data = calc_ai_analyze(
-            workload=workload,
-            mspec=self.__mspec,
-            sort_type=str(self.__run_parameters.get("sort_type")),
-            config=config,
-            arch_config=arch_config,
-        )
+        self.__ai_data = ai_data
 
         self.__ceiling_data = construct_roof(
             roofline_parameters=self.__run_parameters, dtype=dtype
@@ -1311,7 +1244,7 @@ class Roofline:
                 console_debug("roofline", f"AI_{kernel_names[i]}: {val1}, {val2}")
         plt.xlabel(f"Arithmetic Intensity ({ops_flops}s/Byte)")
         plt.ylabel("Performance (GFLOP/sec)")
-        plt.title(f"Roofline ({dtype}) - {base_path}")
+        plt.title(f"Roofline ({dtype}) - {self.__run_parameters.get('workload_dir', '')}")
 
         # Canvas config
         plt.theme("pro")
@@ -1321,31 +1254,6 @@ class Roofline:
         # Build figure
         # Print plot using `plt._utility.write(self.cli_generate_plot(dtype))`
         return plt.build()
-
-    @demarcate
-    def standalone_roofline(
-        self,
-        df: dict[str, pd.DataFrame],
-    ) -> None:
-        self.roof_setup()
-
-        # Change vL1D to a interpretable str, if required
-        if "vL1D" in self.__run_parameters["mem_level"]:
-            self.__run_parameters["mem_level"].remove("vL1D")
-            self.__run_parameters["mem_level"].append("L1")
-
-        self.empirical_roofline(ret_df=df)
-
-    # NB: Currently the post_prossesing() method is the only one being used by
-    # rocprofiler-compute, we include pre_processing() and profile() methods for
-    # those who wish to borrow the roofline module
-    @abstractmethod
-    def post_processing(
-        self,
-        filtered_pmc: pd.DataFrame,
-    ) -> None:
-        if self.__run_parameters["is_standalone"]:
-            self.standalone_roofline(filtered_pmc)
 
     def get_dtype(self) -> list[str]:
         return self.__run_parameters["roofline_data_type"]

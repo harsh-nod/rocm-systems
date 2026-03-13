@@ -68,7 +68,7 @@ Full documentation for ROCm Compute Profiler is available at [https://rocm.docs.
 
 * Changed the option ``--rocprofiler-sdk-library-path`` to ``--rocprofiler-sdk-tool-path`` to more accurately describe that it selects the path to the ROCprofiler-SDK tool (librocprofiler-sdk-tool.so) and not the library.
 
-* Standalone roofline (--roof-only option) in profile mode now creates HTML file output instead of PDF file output for roofline charts.
+* Standalone roofline (--roof-only option) in profile mode now creates `roofline.csv` only. HTML roofline charts are generated via `rocprof-compute analyze`.
 
 * Corrected kernel filtering during Roofline profiling to find substrings instead of requiring full kernel names.
 
@@ -114,10 +114,9 @@ Full documentation for ROCm Compute Profiler is available at [https://rocm.docs.
 
 * ``--path`` and ``--subpath`` options have been deprecated in favor of ``--output-directory`` and will be removed in a future release.
 
-### Upcoming changes
+### Breaking changes
 
-* Move Roofline visualization to analysis mode
-    * Roofline plot files will no longer be generated in profiling mode; Roofline plots will be generated automatically when user runs analysis on a workload. A deprecation warning has been added during profiling mode to notify users of this change.
+* **Roofline HTML visualization moved to analyze mode.** Profile mode now creates only `roofline.csv` via microbenchmarks. To generate HTML roofline charts, run `rocprof-compute analyze -p <workload_dir>`. Roofline visualization options (`--sort`, `--mem-level`, `--roofline-data-type`) are now analyze-mode arguments. The `calc_ai_profile()` function has been removed; `calc_ai_analyze()` is the single source of truth for arithmetic intensity calculation.
 
 ## ROCm Compute Profiler 3.4.0 for ROCm 7.2.0
 

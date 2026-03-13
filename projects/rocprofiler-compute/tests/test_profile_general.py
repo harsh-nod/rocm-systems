@@ -85,7 +85,6 @@ CSVS = sorted([
 ])
 
 ROOF_ONLY_FILES = sorted([
-    "empirRoof_gpu-0_FP32.html",
     "pmc_perf.csv",
     "roofline.csv",
     "sysinfo.csv",
@@ -1146,11 +1145,9 @@ def test_output_directory_no_name_no_output_dir(
 @pytest.mark.roofline_1
 def test_roof_basic_validation(binary_handler_profile_rocprof_compute):
     """
-    Test basic roofline HTML generation with full validation pipeline.
-    This test runs the complete validation flow including counter logging
-    and metric comparison (if enabled in config). Validates that roofline HTMLs
-    are generated with the integrated multi-subplot layout (roofline plot +
-    plot points table + kernel names table).
+    Test basic roofline CSV generation in profile mode.
+    Validates that roofline.csv is generated via microbenchmarks.
+    HTML generation is now in analyze mode.
     """
     if soc in ("MI100"):
         # roofline is not supported on MI100
@@ -1164,11 +1161,13 @@ def test_roof_basic_validation(binary_handler_profile_rocprof_compute):
         config, workload_dir, options, check_success=False, roof=True
     )
 
-    # assert successful run
     assert returncode == 0
     file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
 
     assert sorted(list(file_dict.keys())) == ROOF_ONLY_FILES
+
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
 
     validate(
         inspect.stack()[0][3],
@@ -1180,69 +1179,69 @@ def test_roof_basic_validation(binary_handler_profile_rocprof_compute):
 
 
 @pytest.mark.roofline_1
-def test_roof_multiple_data_types(binary_handler_profile_rocprof_compute):
-    """Test roofline with multiple data types"""
+def test_roof_multiple_data_types(
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+):
+    """Profile creates CSV only; analyze generates HTML for each data type."""
     if soc in ("MI100"):
-        # roofline is not supported on MI100
         pytest.skip("Roofline not supported on MI100")
-        return
 
-    # test multiple data types
-    data_types = ["FP32"]  # start with just FP32 to avoid complex validation
+    options = ["--device", "0", "--roof-only"]
+    workload_dir = test_utils.get_output_dir()
 
-    for dtype in data_types:
-        options = [
-            "--device",
-            "0",
-            "--roof-only",
-            "--roofline-data-type",
-            dtype,
-        ]
-        workload_dir = test_utils.get_output_dir()
+    returncode = binary_handler_profile_rocprof_compute(
+        config, workload_dir, options, check_success=False, roof=True
+    )
+    assert returncode == 0
+    assert (Path(workload_dir) / "roofline.csv").exists()
 
-        try:
-            returncode = binary_handler_profile_rocprof_compute(
-                config, workload_dir, options, check_success=False, roof=True
-            )
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
 
-            if returncode == 0:
-                assert os.path.exists(f"{workload_dir}/pmc_perf.csv")
+    code = binary_handler_analyze_rocprof_compute([
+        "analyze",
+        "--path",
+        workload_dir,
+        "--roofline-data-type",
+        "FP32",
+    ])
+    assert code == 0
 
-                file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
-                assert sorted(list(file_dict.keys())) == ROOF_ONLY_FILES
-            else:
-                pass
-        finally:
-            test_utils.clean_output_dir(config["cleanup"], workload_dir)
+    test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
 
 @pytest.mark.roofline_1
-def test_roof_invalid_data_type(binary_handler_profile_rocprof_compute):
-    """Test roofline with invalid data type"""
+def test_roof_invalid_data_type(
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+):
+    """Invalid --roofline-data-type should be caught by analyze argparser."""
     if soc in ("MI100"):
-        # roofline is not supported on MI100
         pytest.skip("Roofline not supported on MI100")
-        return
 
-    # test invalid data types
-    invalid_options = [
-        "--device",
-        "0",
-        "--roof-only",
-        "--roofline-data-type",
-        "INVALID_TYPE",
-    ]
+    options = ["--device", "0", "--roof-only"]
     workload_dir = test_utils.get_output_dir()
 
-    try:
-        returncode = binary_handler_profile_rocprof_compute(
-            config, workload_dir, invalid_options, check_success=False, roof=True
-        )
+    returncode = binary_handler_profile_rocprof_compute(
+        config, workload_dir, options, check_success=False, roof=True
+    )
+    assert returncode == 0
+    assert (Path(workload_dir) / "roofline.csv").exists()
 
-        assert returncode >= 0
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
 
-    finally:
-        test_utils.clean_output_dir(config["cleanup"], workload_dir)
+    code = binary_handler_analyze_rocprof_compute([
+        "analyze",
+        "--path",
+        workload_dir,
+        "--roofline-data-type",
+        "INVALID_TYPE",
+    ])
+    assert code >= 0
+
+    test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
 
 @pytest.mark.roofline_1
@@ -1506,94 +1505,83 @@ def test_roofline_kernel_filter(binary_handler_profile_rocprof_compute):
     )
     assert returncode == 0
 
-    # html file should still be present in all cases
-    # check at the end just in case that it is non-zero file
-    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
-    assert len(html_files) > 0, (
-        "Roofline HTML should still be generated when non-existent kernels are provided"
-    )
+    # Profile mode no longer generates HTML (moved to analyze mode)
+    # Verify CSV exists instead
+    assert (Path(workload_dir) / "roofline.csv").exists()
 
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
 
 @pytest.mark.roofline_1
-def test_roofline_unsupported_datatype_error(binary_handler_profile_rocprof_compute):
-    """
-    Test datatype validation error in empirical_roofline()
-    This should trigger console_error for unsupported datatype
-    """
+def test_roofline_unsupported_datatype_error(
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+):
+    """Unsupported datatype should be caught during analyze, not profile."""
     if soc in ("MI100"):
         pytest.skip("Skipping roofline test for MI100")
-        return
 
-    options = [
-        "--device",
-        "0",
-        "--roof-only",
-        "--roofline-data-type",
-        "UNSUPPORTED_TYPE",
-    ]
+    options = ["--device", "0", "--roof-only"]
     workload_dir = test_utils.get_output_dir()
 
-    returncode = binary_handler_profile_rocprof_compute(  # noqa: F841
+    returncode = binary_handler_profile_rocprof_compute(
         config, workload_dir, options, check_success=False, roof=True
     )
+    assert returncode == 0
+    assert (Path(workload_dir) / "roofline.csv").exists()
+
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
+
+    code = binary_handler_analyze_rocprof_compute([
+        "analyze",
+        "--path",
+        workload_dir,
+        "--roofline-data-type",
+        "UNSUPPORTED_TYPE",
+    ])
+    assert code >= 0
 
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
 
 @pytest.mark.roofline_2
 @pytest.mark.parametrize(
-    "options,expected_files,test_id",
+    "analyze_options,test_id",
     [
-        (
-            ["--device", "0", "--roof-only", "--roofline-data-type", "FP32"],
-            ["empirRoof_gpu-0_FP32.html"],
-            "FP32_datatype",
-        ),
-        (
-            ["--device", "0", "--roof-only", "--roofline-data-type", "FP16"],
-            ["empirRoof_gpu-0_FP16.html"],
-            "FP16_datatype",
-        ),
-        (
-            ["--device", "0", "--roof-only", "--kernel", "KERNEL_NAME_PLACEHOLDER"],
-            ["EXPECTED_FILE_PLACEHOLDER"],
-            "kernel_filter",
-        ),
+        (["--roofline-data-type", "FP32"], "FP32_datatype"),
+        (["--roofline-data-type", "FP16"], "FP16_datatype"),
     ],
-    ids=["FP32_datatype", "FP16_datatype", "kernel_filter"],
+    ids=["FP32_datatype", "FP16_datatype"],
 )
 def test_roof_plot_modes(
-    binary_handler_profile_rocprof_compute, options, expected_files, test_id
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+    analyze_options,
+    test_id,
 ):
+    """Profile creates CSV, analyze with --roofline-data-type creates HTML."""
     if soc in ("MI100"):
         pytest.skip("Skipping roofline test for MI100")
-        return
 
-    # Handle dynamic kernel name substitution for the kernel_filter test case
-    options = [
-        config["kernel_name_1"] if opt == "KERNEL_NAME_PLACEHOLDER" else opt
-        for opt in options
-    ]
-    # Test `--kernel` filtering outputs are present and labelled correctly
-    filter_empirRoof = "empirRoof_gpu-0_" + config["kernel_name_1"]
-    expected_files = [
-        filter_empirRoof if f == "EXPECTED_FILE_PLACEHOLDER" else f
-        for f in expected_files
-    ]
-
+    profile_options = ["--device", "0", "--roof-only"]
     workload_dir = test_utils.get_output_dir(param_id=test_id)
 
     returncode = binary_handler_profile_rocprof_compute(
-        config, workload_dir, options, check_success=False, roof=True
+        config, workload_dir, profile_options, check_success=False, roof=True
     )
     assert returncode == 0
+    assert (Path(workload_dir) / "roofline.csv").exists()
 
-    for expected_file in expected_files:
-        expected_path = os.path.join(workload_dir, expected_file)
-        if os.path.exists(expected_path):
-            assert os.path.getsize(expected_path) > 0
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
+
+    code = binary_handler_analyze_rocprof_compute([
+        "analyze",
+        "--path",
+        workload_dir,
+    ] + analyze_options)
+    assert code == 0
 
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
@@ -1647,8 +1635,7 @@ def test_roof_error_handling(binary_handler_profile_rocprof_compute):
 @pytest.mark.roofline_2
 def test_roofline_missing_file_handling(binary_handler_profile_rocprof_compute):
     """
-    Test handling of missing roofline.csv file
-    This should trigger error message in cli_generate_plot()
+    Test cli_generate_plot with empty ai_data returns None for unsupported arch
     """
     if soc in ("MI100"):
         pytest.skip("Skipping roofline test for MI100")
@@ -1661,7 +1648,6 @@ def test_roofline_missing_file_handling(binary_handler_profile_rocprof_compute):
 
     try:
         from roofline import Roofline
-        from utils.schema import Workload
         from utils.specs import generate_machine_specs
 
         class MockArgs:
@@ -1673,7 +1659,6 @@ def test_roofline_missing_file_handling(binary_handler_profile_rocprof_compute):
 
         args = MockArgs()
         mspec = generate_machine_specs(None, None)
-        workload = Workload()
 
         workload_dir = test_utils.get_output_dir()
 
@@ -1689,7 +1674,7 @@ def test_roofline_missing_file_handling(binary_handler_profile_rocprof_compute):
         roofline_instance = Roofline(args, mspec, run_parameters)
 
         result = roofline_instance.cli_generate_plot(
-            "FP32", workload, config, arch_config
+            "FP32", ai_data={}
         )
 
         assert result is None
@@ -1743,7 +1728,7 @@ def test_roofline_invalid_datatype_cli(binary_handler_profile_rocprof_compute):
         roofline_instance = Roofline(args, mspec, run_parameters)
 
         result = roofline_instance.cli_generate_plot(
-            "INVALID_DATATYPE", workload, config, arch_config
+            "INVALID_DATATYPE", ai_data={}
         )
 
         assert result is None
@@ -1755,21 +1740,34 @@ def test_roofline_invalid_datatype_cli(binary_handler_profile_rocprof_compute):
 
 
 @pytest.mark.roofline_2
-def test_roofline_ceiling_data_validation(binary_handler_profile_rocprof_compute):
-    """
-    Test ceiling data validation in generate_plot()
-    This covers error handling in lines 516-526
-    """
+def test_roofline_ceiling_data_validation(
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+):
+    """Invalid --mem-level should be caught during analyze, not profile."""
     if soc in ("MI100"):
         pytest.skip("Skipping roofline test for MI100")
-        return
 
-    options = ["--device", "0", "--roof-only", "--mem-level", "INVALID_LEVEL"]
+    profile_options = ["--device", "0", "--roof-only"]
     workload_dir = test_utils.get_output_dir()
 
-    returncode = binary_handler_profile_rocprof_compute(  # noqa: F841
-        config, workload_dir, options, check_success=False, roof=True
+    returncode = binary_handler_profile_rocprof_compute(
+        config, workload_dir, profile_options, check_success=False, roof=True
     )
+    assert returncode == 0
+    assert (Path(workload_dir) / "roofline.csv").exists()
+
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
+
+    code = binary_handler_analyze_rocprof_compute([
+        "analyze",
+        "--path",
+        workload_dir,
+        "--mem-level",
+        "INVALID_LEVEL",
+    ])
+    assert code >= 0
 
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
@@ -1826,7 +1824,15 @@ def test_roofline_plot_points_data_generation():
             "ai_hbm": "red",
         }
 
-        roofline_instance = Roofline(args, mspec)
+        run_parameters = {
+            "workload_dir": None,
+            "device_id": 0,
+            "sort_type": "kernels",
+            "mem_level": "ALL",
+            "is_standalone": False,
+            "roofline_data_type": ["FP32"],
+        }
+        roofline_instance = Roofline(args, mspec, run_parameters)
 
         for cache_level in ["ai_l1", "ai_l2", "ai_hbm"]:
             if cache_level in mock_ai_data:
@@ -1899,7 +1905,15 @@ def test_roofline_bound_status_calculation():
 
         args = MockArgs()
         mspec = generate_machine_specs(None, None)
-        roofline_instance = Roofline(args, mspec)
+        run_parameters = {
+            "workload_dir": None,
+            "device_id": 0,
+            "sort_type": "kernels",
+            "mem_level": "ALL",
+            "is_standalone": False,
+            "roofline_data_type": ["FP32"],
+        }
+        roofline_instance = Roofline(args, mspec, run_parameters)
 
         ceiling_data = {
             "hbm": [[0.01, 10], [10, 1000], 100],
@@ -1949,13 +1963,8 @@ def test_roofline_bound_status_calculation():
 @pytest.mark.roofline_2
 def test_roofline_many_kernels_dynamic_height(binary_handler_profile_rocprof_compute):
     """
-    Test roofline HTML generation with many kernels (10+) to verify:
-    - Dynamic height calculation works
-    - HTML is generated successfully
-    - File size is reasonable
-
-    Note: This test uses a regular workload but validates the HTML structure
-    can handle the multi-subplot layout properly.
+    Test roofline CSV generation with many kernels.
+    HTML generation is now in analyze mode.
     """
     if soc in ("MI100"):
         pytest.skip("Skipping roofline test for MI100")
@@ -1970,20 +1979,10 @@ def test_roofline_many_kernels_dynamic_height(binary_handler_profile_rocprof_com
 
     assert returncode == 0, "Roofline profiling should succeed"
 
+    assert (Path(workload_dir) / "roofline.csv").exists()
+
     html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
-    assert len(html_files) > 0, "At least one roofline HTML should be generated"
-
-    for html_file in html_files:
-        assert html_file.exists(), f"HTML file {html_file} should exist"
-        file_size = html_file.stat().st_size
-
-        # HTML should be larger than 10KB (has content) but less than 50MB (reasonable)
-        assert file_size > 10000, (
-            f"HTML {html_file} too small ({file_size} bytes), may be malformed"
-        )
-        assert file_size < 50000000, (
-            f"HTML {html_file} too large ({file_size} bytes), may have issues"
-        )
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
 
     file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
     assert sorted(list(file_dict.keys())) == ROOF_ONLY_FILES
@@ -2200,123 +2199,142 @@ def test_join_type_kernel(binary_handler_profile_rocprof_compute):
 
 
 @pytest.mark.sort
-def test_roof_sort_dispatches(binary_handler_profile_rocprof_compute):
-    # only test 1 device for roofline
+def test_roof_sort_dispatches(
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+):
+    """Profile creates CSV; analyze with --sort dispatches generates output."""
     if soc in ("MI100"):
-        # roofline is not supported on MI100
-        assert True
-        # Do not continue testing
-        return
+        pytest.skip("Roofline not supported on MI100")
 
-    options = ["--device", "0", "--roof-only", "--sort", "dispatches"]
+    profile_options = ["--device", "0", "--roof-only"]
     workload_dir = test_utils.get_output_dir()
     returncode = binary_handler_profile_rocprof_compute(
-        config, workload_dir, options, check_success=False, roof=True
+        config, workload_dir, profile_options, check_success=False, roof=True
     )
-
-    # assert successful run
     assert returncode == 0
 
     file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
-
     assert sorted(list(file_dict.keys())) == ROOF_ONLY_FILES
 
-    validate(
-        inspect.stack()[0][3],
-        workload_dir,
-        file_dict,
-    )
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
 
+    code = binary_handler_analyze_rocprof_compute([
+        "analyze",
+        "--path",
+        workload_dir,
+        "--sort",
+        "dispatches",
+    ])
+    assert code == 0
+
+    validate(inspect.stack()[0][3], workload_dir, file_dict)
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
 
 @pytest.mark.sort
-def test_roof_sort_kernels(binary_handler_profile_rocprof_compute):
-    # only test 1 device for roofline
+def test_roof_sort_kernels(
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+):
+    """Profile creates CSV; analyze with --sort kernels generates output."""
     if soc in ("MI100"):
-        # roofline is not supported on MI100
-        assert True
-        # Do not continue testing
-        return
+        pytest.skip("Roofline not supported on MI100")
 
-    options = ["--device", "0", "--roof-only", "--sort", "kernels"]
+    profile_options = ["--device", "0", "--roof-only"]
     workload_dir = test_utils.get_output_dir()
     returncode = binary_handler_profile_rocprof_compute(
-        config, workload_dir, options, check_success=False, roof=True
+        config, workload_dir, profile_options, check_success=False, roof=True
     )
-
-    # assert successful run
     assert returncode == 0
-    file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
 
+    file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
     assert sorted(list(file_dict.keys())) == ROOF_ONLY_FILES
 
-    validate(
-        inspect.stack()[0][3],
-        workload_dir,
-        file_dict,
-    )
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
 
+    code = binary_handler_analyze_rocprof_compute([
+        "analyze",
+        "--path",
+        workload_dir,
+        "--sort",
+        "kernels",
+    ])
+    assert code == 0
+
+    validate(inspect.stack()[0][3], workload_dir, file_dict)
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
 
 @pytest.mark.mem
-def test_roof_mem_levels_vL1D(binary_handler_profile_rocprof_compute):
-    # only test 1 device for roofline
+def test_roof_mem_levels_vL1D(
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+):
+    """Profile creates CSV; analyze with --mem-level vL1D generates output."""
     if soc in ("MI100"):
-        # roofline is not supported on MI100
-        assert True
-        # Do not continue testing
-        return
+        pytest.skip("Roofline not supported on MI100")
 
-    options = ["--device", "0", "--roof-only", "--mem-level", "vL1D"]
+    profile_options = ["--device", "0", "--roof-only"]
     workload_dir = test_utils.get_output_dir()
     returncode = binary_handler_profile_rocprof_compute(
-        config, workload_dir, options, check_success=False, roof=True
+        config, workload_dir, profile_options, check_success=False, roof=True
     )
-
-    # assert successful run
     assert returncode == 0
-    file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
 
+    file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
     assert sorted(list(file_dict.keys())) == ROOF_ONLY_FILES
 
-    validate(
-        inspect.stack()[0][3],
-        workload_dir,
-        file_dict,
-    )
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
 
+    code = binary_handler_analyze_rocprof_compute([
+        "analyze",
+        "--path",
+        workload_dir,
+        "--mem-level",
+        "vL1D",
+    ])
+    assert code == 0
+
+    validate(inspect.stack()[0][3], workload_dir, file_dict)
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
 
 @pytest.mark.mem
-def test_roof_mem_levels_LDS(binary_handler_profile_rocprof_compute):
-    # only test 1 device for roofline
+def test_roof_mem_levels_LDS(
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+):
+    """Profile creates CSV; analyze with --mem-level LDS generates output."""
     if soc in ("MI100"):
-        # roofline is not supported on MI100
-        assert True
-        # Do not continue testing
-        return
+        pytest.skip("Roofline not supported on MI100")
 
-    options = ["--device", "0", "--roof-only", "--mem-level", "LDS"]
+    profile_options = ["--device", "0", "--roof-only"]
     workload_dir = test_utils.get_output_dir()
     returncode = binary_handler_profile_rocprof_compute(
-        config, workload_dir, options, check_success=False, roof=True
+        config, workload_dir, profile_options, check_success=False, roof=True
     )
-
-    # assert successful run
     assert returncode == 0
-    file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
 
+    file_dict = test_utils.check_csv_files(workload_dir, 1, num_kernels)
     assert sorted(list(file_dict.keys())) == ROOF_ONLY_FILES
 
-    validate(
-        inspect.stack()[0][3],
-        workload_dir,
-        file_dict,
-    )
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
 
+    code = binary_handler_analyze_rocprof_compute([
+        "analyze",
+        "--path",
+        workload_dir,
+        "--mem-level",
+        "LDS",
+    ])
+    assert code == 0
+
+    validate(inspect.stack()[0][3], workload_dir, file_dict)
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
 

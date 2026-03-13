@@ -169,18 +169,46 @@ class cli_analysis(OmniAnalyze_Base):
                 if gpu_arch in ["gfx90a", "gfx940", "gfx941", "gfx942", "gfx950"]:
                     soc = self.get_socs()
                     if soc and gpu_arch in soc:
-                        roof_obj = soc[gpu_arch].roofline_obj
+                        soc_obj = soc[gpu_arch]
+                        soc_obj.analysis_setup(
+                            roofline_parameters={
+                                "workload_dir": workload_path,
+                                "device_id": 0,
+                                "sort_type": str(args.sort),
+                                "mem_level": args.mem_level,
+                                "is_standalone": True,
+                                "roofline_data_type": args.roofline_data_type,
+                                "kernel_filter": bool(args.gpu_kernel),
+                                "iteration_multiplexing": self._profiling_config.get(
+                                    "iteration_multiplexing"
+                                ),
+                            }
+                        )
 
-                        if roof_obj:
-                            # store path in workload for calc_ai_analyze
+                        if hasattr(soc_obj, "roofline_obj"):
+                            roof_obj = soc_obj.roofline_obj
                             workload.path = workload_path
 
-                            # NOTE: using default data type
-                            roof_plot = roof_obj.cli_generate_plot(
-                                dtype=roof_obj.get_dtype()[0],
+                            from utils.roofline_calc import calc_ai_analyze
+
+                            ai_data = calc_ai_analyze(
                                 workload=workload,
+                                mspec=soc_obj._mspec,
+                                sort_type=str(args.sort),
                                 config=self._profiling_config,
                                 arch_config=arch_config,
+                            )
+
+                            roof_plot = roof_obj.cli_generate_plot(
+                                dtype=roof_obj.get_dtype()[0],
+                                ai_data=ai_data,
+                            )
+
+                            ops_fig, flops_fig, ops_dt, flops_dt = (
+                                roof_obj.construct_plotly_figures(ai_data=ai_data)
+                            )
+                            roof_obj.save_html_files(
+                                ops_fig, flops_fig, ops_dt, flops_dt
                             )
 
             tty.show_all(

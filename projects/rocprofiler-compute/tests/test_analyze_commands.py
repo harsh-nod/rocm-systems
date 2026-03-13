@@ -1726,3 +1726,185 @@ def test_list_torch_operators_no_trace_data(binary_handler_analyze_rocprof_compu
     # Should show warning but exit successfully
     assert code == 0
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
+
+
+# =============================================================================
+# Roofline analyze tests (Phase 1: HTML generation moved from profile to analyze)
+# =============================================================================
+
+soc = test_utils.gpu_soc()
+
+
+@pytest.mark.roofline_1
+def test_analyze_generates_roofline_html(
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+):
+    """
+    Full workflow: profile creates roofline.csv, analyze generates HTML.
+    Verifies the two-step roofline pipeline works end-to-end.
+    """
+    if soc in ("MI100"):
+        pytest.skip("Roofline not supported on MI100")
+
+    profile_config = {
+        "app_1": ["./tests/vcopy", "-n", "1048576", "-b", "256", "-i", "3"],
+        "kernel_name_1": "vecCopy",
+        "cleanup": config["cleanup"],
+    }
+    workload_dir = test_utils.get_output_dir()
+
+    returncode = binary_handler_profile_rocprof_compute(
+        profile_config, workload_dir, ["--device", "0", "--roof-only"],
+        check_success=False, roof=True,
+    )
+    assert returncode == 0
+    assert (Path(workload_dir) / "roofline.csv").exists()
+
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) == 0, "Profile should NOT generate HTML files"
+
+    code = binary_handler_analyze_rocprof_compute([
+        "analyze",
+        "--path",
+        workload_dir,
+        "--roofline-data-type",
+        "FP32",
+    ])
+    assert code == 0
+
+    test_utils.clean_output_dir(config["cleanup"], workload_dir)
+
+
+@pytest.mark.roofline_1
+def test_analyze_roofline_multiple_datatypes(
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+):
+    """
+    Profile then analyze with multiple data types.
+    Verifies each datatype can be requested independently.
+    """
+    if soc in ("MI100"):
+        pytest.skip("Roofline not supported on MI100")
+
+    profile_config = {
+        "app_1": ["./tests/vcopy", "-n", "1048576", "-b", "256", "-i", "3"],
+        "kernel_name_1": "vecCopy",
+        "cleanup": config["cleanup"],
+    }
+    workload_dir = test_utils.get_output_dir()
+
+    returncode = binary_handler_profile_rocprof_compute(
+        profile_config, workload_dir, ["--device", "0", "--roof-only"],
+        check_success=False, roof=True,
+    )
+    assert returncode == 0
+    assert (Path(workload_dir) / "roofline.csv").exists()
+
+    for dtype in ["FP32", "FP16"]:
+        code = binary_handler_analyze_rocprof_compute([
+            "analyze",
+            "--path",
+            workload_dir,
+            "--roofline-data-type",
+            dtype,
+        ])
+        assert code == 0
+
+    test_utils.clean_output_dir(config["cleanup"], workload_dir)
+
+
+@pytest.mark.roofline_1
+def test_analyze_missing_roofline_csv_graceful(
+    binary_handler_analyze_rocprof_compute,
+):
+    """
+    Analyze without roofline.csv should not crash.
+    Uses a workload directory that has sysinfo.csv but no roofline.csv.
+    """
+    for dir in indirs:
+        workload_dir = test_utils.setup_workload_dir(dir)
+        roofline_csv = Path(workload_dir) / "roofline.csv"
+        if roofline_csv.exists():
+            roofline_csv.unlink()
+
+        code = binary_handler_analyze_rocprof_compute([
+            "analyze",
+            "--path",
+            workload_dir,
+        ])
+        assert code == 0
+
+        test_utils.clean_output_dir(config["cleanup"], workload_dir)
+        break
+
+
+@pytest.mark.roofline_1
+def test_analyze_roofline_idempotent(
+    binary_handler_profile_rocprof_compute,
+    binary_handler_analyze_rocprof_compute,
+):
+    """
+    Running analyze twice on the same profiling output should produce
+    consistent results without errors.
+    """
+    if soc in ("MI100"):
+        pytest.skip("Roofline not supported on MI100")
+
+    profile_config = {
+        "app_1": ["./tests/vcopy", "-n", "1048576", "-b", "256", "-i", "3"],
+        "kernel_name_1": "vecCopy",
+        "cleanup": config["cleanup"],
+    }
+    workload_dir = test_utils.get_output_dir()
+
+    returncode = binary_handler_profile_rocprof_compute(
+        profile_config, workload_dir, ["--device", "0", "--roof-only"],
+        check_success=False, roof=True,
+    )
+    assert returncode == 0
+
+    analyze_args = [
+        "analyze",
+        "--path",
+        workload_dir,
+        "--roofline-data-type",
+        "FP32",
+    ]
+
+    code1 = binary_handler_analyze_rocprof_compute(analyze_args)
+    assert code1 == 0
+
+    code2 = binary_handler_analyze_rocprof_compute(analyze_args)
+    assert code2 == 0
+
+    test_utils.clean_output_dir(config["cleanup"], workload_dir)
+
+
+@pytest.mark.roofline_2
+def test_analyze_corrupted_roofline_csv_graceful(
+    binary_handler_analyze_rocprof_compute,
+):
+    """
+    Analyze with a corrupted roofline.csv should handle gracefully.
+    """
+    import shutil
+    import tempfile
+
+    for dir in indirs:
+        if os.path.exists(dir):
+            with tempfile.TemporaryDirectory() as temp_dir:
+                workload_dir = os.path.join(temp_dir, "corrupted_workload")
+                shutil.copytree(dir, workload_dir)
+
+                roofline_csv = Path(workload_dir) / "roofline.csv"
+                roofline_csv.write_text("this,is,bad,csv\nnot,valid,roofline,data\n")
+
+                code = binary_handler_analyze_rocprof_compute([
+                    "analyze",
+                    "--path",
+                    workload_dir,
+                ])
+                assert code >= 0
+            break

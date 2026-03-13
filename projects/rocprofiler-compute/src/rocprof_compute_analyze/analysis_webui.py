@@ -218,14 +218,14 @@ class webui_analysis(OmniAnalyze_Base):
             has_roofline = (Path(self.dest_dir) / "roofline.csv").is_file()
             soc = self.get_socs()
             if soc and self.arch in soc:
-                if has_roofline and hasattr(soc[self.arch], "roofline_obj"):
+                if has_roofline:
                     # update roofline for visualization in GUI
                     soc[self.arch].analysis_setup(
                         roofline_parameters={
                             "workload_dir": self.dest_dir,
                             "device_id": 0,
-                            "sort_type": "kernels",
-                            "mem_level": "ALL",
+                            "sort_type": str(args.sort),
+                            "mem_level": args.mem_level,
                             "include_kernel_names": True,
                             "is_standalone": False,
                             "roofline_data_type": self.__roofline_data_type,
@@ -236,16 +236,28 @@ class webui_analysis(OmniAnalyze_Base):
                         }
                     )
                     roof_obj = soc[self.arch].roofline_obj
-                    div_children.append(
-                        roof_obj.empirical_roofline(
-                            ret_df=parser.apply_filters(
-                                workload=base_data[base_run],
-                                dir_path=self.dest_dir,
-                                is_gui=True,
-                                debug=args.debug,
-                            )
-                        )
+
+                    workload = base_data[base_run]
+                    workload.path = self.dest_dir
+
+                    from utils.roofline_calc import calc_ai_analyze
+
+                    ai_data = calc_ai_analyze(
+                        workload=workload,
+                        mspec=soc[self.arch]._mspec,
+                        sort_type=str(args.sort),
+                        config=self._profiling_config,
+                        arch_config=arch_configs,
                     )
+
+                    ops_fig, flops_fig, _, _ = roof_obj.construct_plotly_figures(
+                        ai_data=ai_data,
+                    )
+                    roofline_section = roof_obj.generate_html_section(
+                        ops_fig, flops_fig,
+                    )
+                    if roofline_section is not None:
+                        div_children.append(roofline_section)
 
             # Iterate over each section as defined in panel configs
             for panel_id, panel in panel_configs.items():
