@@ -398,7 +398,8 @@ void TestComputePartitionReadWrite::Run(void) {
   // Confirm system supports compute partition, before executing wait
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_compute_partition", "", VERB(STANDARD));
   ret = amdsmi_get_gpu_compute_partition(0, orig_char_computePartition, k255Len);
-  DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret, AMDSMI_STATUS_SUCCESS, AMDSMI_STATUS_INVAL);
+  DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret, AMDSMI_STATUS_SUCCESS,
+                        AMDSMI_STATUS_INVAL);
   if (ret == AMDSMI_STATUS_SUCCESS) {
     system_wait(15);
   }
@@ -417,7 +418,8 @@ void TestComputePartitionReadWrite::Run(void) {
     }
     PrintDeviceHeader(processor_handles_[dv_ind]);
 
-    DISPLAY_AMDSMI_API("amdsmi_get_gpu_compute_partition", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
+    DISPLAY_AMDSMI_API("amdsmi_get_gpu_compute_partition", "gpu=" + std::to_string(dv_ind),
+                       VERB(STANDARD));
     ret = amdsmi_get_gpu_compute_partition(processor_handles_[dv_ind], orig_char_computePartition,
                                             k255Len);
     DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret, AMDSMI_STATUS_SUCCESS, AMDSMI_STATUS_NOT_SUPPORTED);
@@ -439,14 +441,13 @@ void TestComputePartitionReadWrite::Run(void) {
                   << " ===============" << std::endl;
       }
 
-      DISPLAY_AMDSMI_API("amdsmi_set_gpu_compute_partition", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
+      DISPLAY_AMDSMI_API("amdsmi_set_gpu_compute_partition", "gpu=" + std::to_string(dv_ind),
+                         VERB(STANDARD));
       auto ret_set = amdsmi_set_gpu_compute_partition(processor_handles_[dv_ind], updatePartition);
-      DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_set, AMDSMI_STATUS_SETTING_UNAVAILABLE,
-                                     AMDSMI_STATUS_NO_PERM,
-                                     AMDSMI_STATUS_SUCCESS,
-                                     AMDSMI_STATUS_BUSY,
-                                     AMDSMI_STATUS_NOT_SUPPORTED,
-                                     AMDSMI_STATUS_INVAL);
+      DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_set,
+                            AMDSMI_STATUS_SETTING_UNAVAILABLE, AMDSMI_STATUS_NO_PERM,
+                            AMDSMI_STATUS_SUCCESS, AMDSMI_STATUS_BUSY, AMDSMI_STATUS_NOT_SUPPORTED,
+                            AMDSMI_STATUS_INVAL);
       IF_VERB(STANDARD) {
           std::cout << "\t**" << "amdsmi_set_gpu_compute_partition(processor_handles_["
                     << dv_ind << "], " << computePartitionString(updatePartition) << "): "
@@ -478,7 +479,8 @@ void TestComputePartitionReadWrite::Run(void) {
         break;
       }
 
-      DISPLAY_AMDSMI_API("amdsmi_get_gpu_compute_partition", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
+      DISPLAY_AMDSMI_API("amdsmi_get_gpu_compute_partition", "gpu=" + std::to_string(dv_ind),
+                         VERB(STANDARD));
       ret = amdsmi_get_gpu_compute_partition(processor_handles_[dv_ind],
                                             current_char_computePartition,
                                             k255Len);
@@ -505,14 +507,13 @@ void TestComputePartitionReadWrite::Run(void) {
          static_cast<amdsmi_compute_partition_type_t>(
           mapStringToSMIComputePartitionTypes.at(
             std::string(orig_char_computePartition)));
-    DISPLAY_AMDSMI_API("amdsmi_set_gpu_compute_partition", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
+    DISPLAY_AMDSMI_API("amdsmi_set_gpu_compute_partition", "gpu=" + std::to_string(dv_ind),
+                       VERB(STANDARD));
     auto ret_set = amdsmi_set_gpu_compute_partition(processor_handles_[dv_ind], updatePartition);
-    DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_set, AMDSMI_STATUS_SETTING_UNAVAILABLE,
-                                   AMDSMI_STATUS_NO_PERM,
-                                   AMDSMI_STATUS_SUCCESS,
-                                   AMDSMI_STATUS_BUSY,
-                                   AMDSMI_STATUS_NOT_SUPPORTED,
-                                   AMDSMI_STATUS_INVAL);
+    DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_set,
+                          AMDSMI_STATUS_SETTING_UNAVAILABLE, AMDSMI_STATUS_NO_PERM,
+                          AMDSMI_STATUS_SUCCESS, AMDSMI_STATUS_BUSY, AMDSMI_STATUS_NOT_SUPPORTED,
+                          AMDSMI_STATUS_INVAL);
     EXPECT_TRUE(ret_set == AMDSMI_STATUS_SETTING_UNAVAILABLE
       || ret_set== AMDSMI_STATUS_NO_PERM
       || ret_set == AMDSMI_STATUS_SUCCESS
@@ -547,7 +548,8 @@ void TestComputePartitionReadWrite::Run(void) {
     PrintDeviceHeader(processor_handles_[dv_ind]);
     amdsmi_accelerator_partition_profile_t profile = {};
     uint32_t partition_id[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    DISPLAY_AMDSMI_API("amdsmi_get_gpu_accelerator_partition_profile", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
+    DISPLAY_AMDSMI_API("amdsmi_get_gpu_accelerator_partition_profile",
+                       "gpu=" + std::to_string(dv_ind), VERB(STANDARD));
     ret = amdsmi_get_gpu_accelerator_partition_profile(processor_handles_[dv_ind],
                                                         &profile, &partition_id[0]);
     DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret, AMDSMI_STATUS_SUCCESS);
@@ -615,7 +617,8 @@ void TestComputePartitionReadWrite::Run(void) {
         case AMDSMI_ACCELERATOR_PARTITION_CPX: {
           uint16_t num_xcd;
           uint32_t max_xcps = 0;
-          DISPLAY_AMDSMI_API("amdsmi_get_gpu_xcd_counter", "gpu="+std::to_string(primary_index), VERB(STANDARD));
+          DISPLAY_AMDSMI_API("amdsmi_get_gpu_xcd_counter", "gpu=" + std::to_string(primary_index),
+                             VERB(STANDARD));
           ret = amdsmi_get_gpu_xcd_counter(processor_handles_[primary_index], &num_xcd);
           DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret, AMDSMI_STATUS_SUCCESS);
           if (ret == AMDSMI_STATUS_SUCCESS) {
@@ -663,7 +666,8 @@ void TestComputePartitionReadWrite::Run(void) {
     EXPECT_TRUE(ret == AMDSMI_STATUS_SUCCESS
                 || ret == AMDSMI_STATUS_NOT_SUPPORTED);
     amdsmi_accelerator_partition_profile_config_t profile_config = {};
-    DISPLAY_AMDSMI_API("amdsmi_get_gpu_accelerator_partition_profile_config", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
+    DISPLAY_AMDSMI_API("amdsmi_get_gpu_accelerator_partition_profile_config",
+                       "gpu=" + std::to_string(dv_ind), VERB(STANDARD));
     ret = amdsmi_get_gpu_accelerator_partition_profile_config(processor_handles_[dv_ind],
                                                               &profile_config);
     DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret, AMDSMI_STATUS_SUCCESS);
@@ -687,11 +691,13 @@ void TestComputePartitionReadWrite::Run(void) {
       std::cout << "\t**=========================================================\n";
     }
     // Test setting invalid profile index
-    DISPLAY_AMDSMI_API("amdsmi_set_gpu_accelerator_partition_profile", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
+    DISPLAY_AMDSMI_API("amdsmi_set_gpu_accelerator_partition_profile",
+                       "gpu=" + std::to_string(dv_ind), VERB(STANDARD));
     auto ret_expect_invalid = amdsmi_set_gpu_accelerator_partition_profile(
                                 processor_handles_[dv_ind],
                                 profile_config.num_profiles);
-    DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_expect_invalid, AMDSMI_STATUS_INVAL);
+    DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_expect_invalid,
+                          AMDSMI_STATUS_INVAL);
     IF_VERB(STANDARD) {
       std::cout << "\t**amdsmi_set_gpu_accelerator_partition_profile(processor_handles_["
                 << dv_ind << "], " << profile_config.num_profiles << "):"
@@ -804,7 +810,8 @@ void TestComputePartitionReadWrite::Run(void) {
                   << " ===============" << std::endl;
       }
 
-      DISPLAY_AMDSMI_API("amdsmi_set_gpu_accelerator_partition_profile", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
+      DISPLAY_AMDSMI_API("amdsmi_set_gpu_accelerator_partition_profile",
+                         "gpu=" + std::to_string(dv_ind), VERB(STANDARD));
       auto ret_set = amdsmi_set_gpu_accelerator_partition_profile(
                         processor_handles_[dv_ind],
                         profile_config.profiles[config].profile_index);
@@ -846,7 +853,8 @@ void TestComputePartitionReadWrite::Run(void) {
         continue;
       }
 
-      DISPLAY_AMDSMI_API("amdsmi_get_gpu_accelerator_partition_profile", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
+      DISPLAY_AMDSMI_API("amdsmi_get_gpu_accelerator_partition_profile",
+                         "gpu=" + std::to_string(dv_ind), VERB(STANDARD));
       auto ret_get = amdsmi_get_gpu_accelerator_partition_profile(processor_handles_[dv_ind],
                         &profile, &partition_id[0]);
       DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_get, AMDSMI_STATUS_SUCCESS);
@@ -886,16 +894,15 @@ void TestComputePartitionReadWrite::Run(void) {
                     "N/A" : std::to_string(original_profile_config.original_profile_index)) << ")"
                 << " ===============" << std::endl;
     }
-    DISPLAY_AMDSMI_API("amdsmi_set_gpu_accelerator_partition_profile", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
+    DISPLAY_AMDSMI_API("amdsmi_set_gpu_accelerator_partition_profile",
+                       "gpu=" + std::to_string(dv_ind), VERB(STANDARD));
     auto ret_set = amdsmi_set_gpu_accelerator_partition_profile(
                       processor_handles_[dv_ind],
                       original_profile_config.original_profile_index);
-    DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_set, AMDSMI_STATUS_SETTING_UNAVAILABLE,
-                                   AMDSMI_STATUS_NO_PERM,
-                                   AMDSMI_STATUS_SUCCESS,
-                                   AMDSMI_STATUS_BUSY,
-                                   AMDSMI_STATUS_NOT_SUPPORTED,
-                                   AMDSMI_STATUS_INVAL);
+    DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_set,
+                          AMDSMI_STATUS_SETTING_UNAVAILABLE, AMDSMI_STATUS_NO_PERM,
+                          AMDSMI_STATUS_SUCCESS, AMDSMI_STATUS_BUSY, AMDSMI_STATUS_NOT_SUPPORTED,
+                          AMDSMI_STATUS_INVAL);
     IF_VERB(STANDARD) {
       std::cout << "\t**amdsmi_set_gpu_accelerator_partition_profile(processor_handles_["
                 << dv_ind << "],"
@@ -912,7 +919,8 @@ void TestComputePartitionReadWrite::Run(void) {
       || ret_set == AMDSMI_STATUS_BUSY
       || ret_set == AMDSMI_STATUS_NOT_SUPPORTED
       || ret_set == AMDSMI_STATUS_INVAL);
-    DISPLAY_AMDSMI_API("amdsmi_get_gpu_accelerator_partition_profile", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
+    DISPLAY_AMDSMI_API("amdsmi_get_gpu_accelerator_partition_profile",
+                       "gpu=" + std::to_string(dv_ind), VERB(STANDARD));
     auto ret_get = amdsmi_get_gpu_accelerator_partition_profile(processor_handles_[dv_ind],
                                                                 &profile, &partition_id[0]);
     DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_get, AMDSMI_STATUS_SUCCESS);
@@ -1041,12 +1049,10 @@ void TestComputePartitionReadWrite::Run(void) {
         = static_cast<amdsmi_compute_partition_type_t>(partition);
       DISPLAY_AMDSMI_API("amdsmi_set_gpu_compute_partition", "", VERB(STANDARD));
       auto ret_set = amdsmi_set_gpu_compute_partition(p_handle2, updatePartition);
-      DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_set, AMDSMI_STATUS_SETTING_UNAVAILABLE,
-                                     AMDSMI_STATUS_NO_PERM,
-                                     AMDSMI_STATUS_SUCCESS,
-                                     AMDSMI_STATUS_BUSY,
-                                     AMDSMI_STATUS_NOT_SUPPORTED,
-                                     AMDSMI_STATUS_INVAL);
+      DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret_set,
+                            AMDSMI_STATUS_SETTING_UNAVAILABLE, AMDSMI_STATUS_NO_PERM,
+                            AMDSMI_STATUS_SUCCESS, AMDSMI_STATUS_BUSY, AMDSMI_STATUS_NOT_SUPPORTED,
+                            AMDSMI_STATUS_INVAL);
       IF_VERB(STANDARD) {
           std::cout << "\t**" << "amdsmi_set_gpu_compute_partition(processor_handles_["
                     << dv_ind << "], " << computePartitionString(updatePartition) << "): "
