@@ -27,9 +27,11 @@ import sys
 
 import unittest
 
-amdsmi_path = os.environ.get('AMDSMI_PATH', '/opt/rocm/share/amd_smi')
+amdsmi_path = os.environ.get("AMDSMI_PATH", "/opt/rocm/share/amd_smi")
 if not os.path.exists(amdsmi_path):
-    raise FileNotFoundError(f'AMDSMI_PATH "{amdsmi_path}" does not exist. Please set the correct path in your environment.')
+    raise FileNotFoundError(
+        f'AMDSMI_PATH "{amdsmi_path}" does not exist. Please set the correct path in your environment.'
+    )
 sys.path.append(amdsmi_path)
 try:
     import amdsmi
@@ -141,10 +143,12 @@ class Common:
 
     def __init__(self, verbose, *args, **kwargs):
         self.verbose = verbose
-        self.max_num_physical_devices = amdsmi.amdsmi_interface.AMDSMI_MAX_NUM_XCP * amdsmi.amdsmi_interface.AMDSMI_MAX_DEVICES
-        self.PASS = 'AMDSMI_STATUS_SUCCESS'
-        self.FAIL = 'AMDSMI_STATUS_INVAL'
-        self.ANY_FAIL = 'ANY_FAIL'
+        self.max_num_physical_devices = (
+            amdsmi.amdsmi_interface.AMDSMI_MAX_NUM_XCP * amdsmi.amdsmi_interface.AMDSMI_MAX_DEVICES
+        )
+        self.PASS = "AMDSMI_STATUS_SUCCESS"
+        self.FAIL = "AMDSMI_STATUS_INVAL"
+        self.ANY_FAIL = "ANY_FAIL"
 
         # Tests marked wtih either of these flags will be skipped
         # and need to be implemented later.
@@ -181,13 +185,12 @@ class Common:
 
             amdsmi.amdsmi_shut_down()
         except amdsmi.AmdSmiLibraryException as e:
-            print(f'In class Common, Cannot get processor information, {e}')
+            print(f"In class Common, Cannot get processor information, {e}")
 
-        self.not_supported_error_codes = \
-        [
-            ( '2', 'AMDSMI_STATUS_NOT_SUPPORTED'),
-            ( '3', 'AMDSMI_STATUS_NOT_YET_IMPLEMENTED'),
-            ('49', 'AMDSMI_STATUS_NO_HSMP_MSG_SUP')
+        self.not_supported_error_codes = [
+            ("2", "AMDSMI_STATUS_NOT_SUPPORTED"),
+            ("3", "AMDSMI_STATUS_NOT_YET_IMPLEMENTED"),
+            ("49", "AMDSMI_STATUS_NO_HSMP_MSG_SUP"),
         ]
 
         self.error_map = {}
@@ -335,10 +338,10 @@ class Common:
             if data is None:
                 print(msg, flush=True)
             elif any(data in value for value in self.not_supported_error_codes):
-                print(f'{msg} {data}', flush=True)
+                print(f"{msg} {data}", flush=True)
             else:
                 if isinstance(data, str) and data in self.error_map.values():
-                    print(msg, end='')
+                    print(msg, end="")
                 else:
                     print(msg)
                 if isinstance(data, dict) or isinstance(data, list):
@@ -350,9 +353,9 @@ class Common:
     def print_func_name(self, msg=None):
         if self.verbose == VERBOSITY_VERBOSE:
             stk = inspect.stack()
-            if stk[1].function == '_callSetUp':
+            if stk[1].function == "_callSetUp":
                 return
-            print(f'\n## {stk[1].function}()', flush=True)
+            print(f"\n## {stk[1].function}()", flush=True)
             if msg:
                 print(msg, flush=True)
         return
@@ -381,9 +384,9 @@ class Common:
         return
 
     def get_error_code(self, exc):
-        error_code = '-1'
-        error_code_name = 'UNKNOWN_ERROR'
-        if hasattr(exc, 'get_error_code'):
+        error_code = "-1"
+        error_code_name = "UNKNOWN_ERROR"
+        if hasattr(exc, "get_error_code"):
             error_code = str(exc.get_error_code())
             if error_code in self.error_map:
                 error_code_name = self.error_map[error_code]
@@ -400,8 +403,8 @@ class Common:
                         error_code = key
                         break
             else:
-                error_code = '-1'
-        elif hasattr(exc, 'get_error_code'):
+                error_code = "-1"
+        elif hasattr(exc, "get_error_code"):
             error_code, error_code_name = self.get_error_code(exc)
         else:
             error_code = str(exc).split(':', maxsplit=1)[0]
@@ -410,37 +413,38 @@ class Common:
         # Check for when there are multiple passing conditions
         if isinstance(expected_code_name, list):
             for ec in expected_code_name:
-                if not self.check_ret(msg, exc, ec, False):  # check without printing
-                    # This expected code matched - print once and return success
-                    if self.verbose > VERBOSITY_QUIET and printIt:
-                        if msg:
-                            print(f'{msg}\n', end='')
-                        print(f'\tTest PASSED with expected result {ec}', flush=True)
-                    return False
+                rc = self.check_ret(
+                    msg, exc, ec, False
+                )  # Do not print msg, otherwise multiple msgs printed
+                if not rc:
+                    rc = self.check_ret(msg, exc, ec)  # Call check again so msg is printed
+                    return rc
 
-            # No expected result matched - print failure (respects same guards as single-condition path)
-            if self.verbose > VERBOSITY_QUIET and printIt:
-                if msg:
-                    print(f'{msg}\n', end='')
-                print(f'\tTest FAILED with expected results {expected_code_name} but received {error_code_name}', flush=True)
+            # No expected results found
+            if msg:
+                print(f"{msg}\n", end="")
+            print(
+                f"Test FAILED with expected results {expected_code_name} but received {error_code_name}",
+                flush=True,
+            )
             return True
 
         # Check for single passing condition
-        status_msg = ''
+        status_msg = ""
         status_ret = False
         if any(error_code in value for value in self.not_supported_error_codes):
             status_msg = f'\tAMDSMI API Returned {error_code_name}'
         elif error_code_name == expected_code_name:
-            status_msg = f'\tTest PASSED with expected result {expected_code_name}'
+            status_msg = f"\tTest PASSED with expected result {expected_code_name}"
         elif error_code_name != self.PASS and expected_code_name == self.ANY_FAIL:
-            status_msg = f'\tTest PASSED with expected result {expected_code_name} and received {error_code_name}'
+            status_msg = f"\tTest PASSED with expected result {expected_code_name} and received {error_code_name}"
         else:
-            status_msg = f'\tTest FAILED with expected result {expected_code_name} but received {error_code_name}'
+            status_msg = f"\tTest FAILED with expected result {expected_code_name} but received {error_code_name}"
             status_ret = True
         if self.verbose > VERBOSITY_QUIET and printIt:
             if msg:
-                print(f'{msg}\n', end='')
-            print(f'{status_msg}', flush=True)
+                print(f"{msg}\n", end="")
+            print(f"{status_msg}", flush=True)
         return status_ret
 
     def _check_amdgpu_driver(self):

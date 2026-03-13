@@ -44,12 +44,15 @@ verbose = common.VERBOSITY_NORMAL
 
 amdsmi_path = os.environ.get("AMDSMI_PATH", "/opt/rocm/share/amd_smi")
 if not os.path.exists(amdsmi_path):
-    raise FileNotFoundError(f'AMDSMI_PATH "{amdsmi_path}" does not exist. Please set the correct path in your environment.')
+    raise FileNotFoundError(
+        f"AMDSMI_PATH '{amdsmi_path}' does not exist. Please set the correct path in your environment."
+    )
 sys.path.append(amdsmi_path)
 try:
     import amdsmi
 except ImportError as exc:
-    raise ImportError(f'Could not import {amdsmi_path}') from exc
+    raise ImportError(f"Could not import {amdsmi_path}") from exc
+
 
 class TestAmdSmiInit(unittest.TestCase):
     @classmethod
@@ -1309,20 +1312,20 @@ class TestAmdSmiPython(unittest.TestCase):
                 continue
 
             # Validate returned data structure
-            self.assertIn('current_index', uma_info)
-            self.assertIn('num_options', uma_info)
-            self.assertIn('options', uma_info)
+            self.assertIn("current_index", uma_info)
+            self.assertIn("num_options", uma_info)
+            self.assertIn("options", uma_info)
 
             # Validate that current_index is within valid range
-            self.assertGreaterEqual(uma_info['current_index'], 0)
-            self.assertLess(uma_info['current_index'], uma_info['num_options'])
+            self.assertGreaterEqual(uma_info["current_index"], 0)
+            self.assertLess(uma_info["current_index"], uma_info["num_options"])
 
             # Validate that we have at least one option
-            self.assertGreater(uma_info['num_options'], 0)
-            self.assertLessEqual(uma_info['num_options'], 16)
+            self.assertGreater(uma_info["num_options"], 0)
+            self.assertLessEqual(uma_info["num_options"], 16)
 
             # Validate options list
-            self.assertEqual(len(uma_info['options']), uma_info['num_options'])
+            self.assertEqual(len(uma_info["options"]), uma_info["num_options"])
 
             for j, opt in enumerate(uma_info['options']):
                 self.assertIn('index', opt)
@@ -1341,8 +1344,8 @@ class TestAmdSmiPython(unittest.TestCase):
         self.assertLessEqual(len(processors), self.common.max_num_physical_devices)
 
         # Enable DRY_RUN mode; ensure cleanup even if test fails
-        os.environ['AMDSMI_DRY_RUN'] = '1'
-        self.addCleanup(os.environ.pop, 'AMDSMI_DRY_RUN', None)
+        os.environ["AMDSMI_DRY_RUN"] = "1"
+        self.addCleanup(os.environ.pop, "AMDSMI_DRY_RUN", None)
 
         for i in range(0, len(processors)):
             self.common.print_device_header(i)
@@ -1405,10 +1408,10 @@ class TestAmdSmiPython(unittest.TestCase):
             return
 
         # Validate returned data structure
-        self.assertIn('current_pages', ttm_info)
+        self.assertIn("current_pages", ttm_info)
 
         # Validate that pages value is reasonable (> 0)
-        self.assertGreater(ttm_info['current_pages'], 0)
+        self.assertGreater(ttm_info["current_pages"], 0)
 
         page_size = os.sysconf('SC_PAGESIZE')
         gb = (ttm_info['current_pages'] * page_size) / (1024 ** 3)
@@ -1431,8 +1434,8 @@ class TestAmdSmiPython(unittest.TestCase):
             return
 
         # Enable DRY_RUN mode; ensure cleanup even if test fails
-        os.environ['AMDSMI_DRY_RUN'] = '1'
-        self.addCleanup(os.environ.pop, 'AMDSMI_DRY_RUN', None)
+        os.environ["AMDSMI_DRY_RUN"] = "1"
+        self.addCleanup(os.environ.pop, "AMDSMI_DRY_RUN", None)
 
         # Test setting TTM pages limit to current value
         msg = f'\t### amdsmi_set_ttm_pages_limit(pages={ttm_info["current_pages"]}) (DRY_RUN):'
@@ -1444,7 +1447,7 @@ class TestAmdSmiPython(unittest.TestCase):
             self.fail(f"Failed to set TTM to current value in DRY_RUN mode: {e}")
 
         # Test setting TTM to a different value
-        test_pages = ttm_info['current_pages'] // 2
+        test_pages = ttm_info["current_pages"] // 2
         if test_pages > 0:
             msg = f'\t### amdsmi_set_ttm_pages_limit(pages={test_pages}) (DRY_RUN):'
             try:

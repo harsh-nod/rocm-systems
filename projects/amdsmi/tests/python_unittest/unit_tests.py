@@ -45,12 +45,14 @@ import common
 
 amdsmi_path = os.environ.get('AMDSMI_PATH', '/opt/rocm/share/amd_smi')
 if not os.path.exists(amdsmi_path):
-    raise FileNotFoundError(f'AMDSMI_PATH "{amdsmi_path}" does not exist. Please set the correct path in your environment.')
+    raise FileNotFoundError(
+        f"AMDSMI_PATH '{amdsmi_path}' does not exist. Please set the correct path in your environment."
+    )
 sys.path.append(amdsmi_path)
 try:
     import amdsmi
 except ImportError as exc:
-    raise ImportError(f'Could not import {amdsmi_path}') from exc
+    raise ImportError(f"Could not import {amdsmi_path}") from exc
 
 
 verbose = common.VERBOSITY_NORMAL
@@ -182,23 +184,28 @@ class TestAmdSmiPythonBDF(unittest.TestCase):
         # expect retry error to raise SmiRetryException
         with self.assertRaises(amdsmi.AmdSmiRetryException) as retry_test:
             amdsmi.amdsmi_interface._check_res(
-                (lambda: amdsmi.amdsmi_wrapper.AMDSMI_STATUS_RETRY)())
+                (lambda: amdsmi.amdsmi_wrapper.AMDSMI_STATUS_RETRY)()
+            )
         # except retry error to have AMDSMI_STATUS_RETRY error code
-        self.assertEqual(retry_test.exception.get_error_code(),
-                         amdsmi.amdsmi_wrapper.AMDSMI_STATUS_RETRY)
+        self.assertEqual(
+            retry_test.exception.get_error_code(), amdsmi.amdsmi_wrapper.AMDSMI_STATUS_RETRY
+        )
 
         # expect timeout error to raise SmiTimeoutException
         with self.assertRaises(amdsmi.AmdSmiTimeoutException) as timeout_test:
             amdsmi.amdsmi_interface._check_res(
-                (lambda: amdsmi.amdsmi_wrapper.AMDSMI_STATUS_TIMEOUT)())
+                (lambda: amdsmi.amdsmi_wrapper.AMDSMI_STATUS_TIMEOUT)()
+            )
         # except timeout error to have AMDSMI_STATUS_RETRY error code
-        self.assertEqual(timeout_test.exception.get_error_code(),
-                         amdsmi.amdsmi_wrapper.AMDSMI_STATUS_TIMEOUT)
+        self.assertEqual(
+            timeout_test.exception.get_error_code(), amdsmi.amdsmi_wrapper.AMDSMI_STATUS_TIMEOUT
+        )
 
         # expect invalid args error to raise AmdSmiLibraryException
         with self.assertRaises(amdsmi.AmdSmiLibraryException) as inval_test:
             amdsmi.amdsmi_interface._check_res(
-                (lambda: amdsmi.amdsmi_wrapper.AMDSMI_STATUS_INVAL)())
+                (lambda: amdsmi.amdsmi_wrapper.AMDSMI_STATUS_INVAL)()
+            )
         # expect invalid args error to have AMDSMI_STATUS_INVAL error code
         self.assertEqual(inval_test.exception.get_error_code(),
                          amdsmi.amdsmi_wrapper.AMDSMI_STATUS_INVAL)
@@ -748,7 +755,7 @@ class TestAmdSmiPython(unittest.TestCase):
         for i, gpu in enumerate(self.common.processors):
             self.common.print_device_header(i)
             try:
-                msg = f'gpu({i}): '
+                msg = f"gpu({i}): "
                 ret = amdsmi.amdsmi_get_gpu_partition_metrics_info(gpu)
                 self.common.print(msg, ret)
                 self.common.check_ret('', '', self.common.PASS)
