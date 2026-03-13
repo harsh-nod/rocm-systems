@@ -23,12 +23,15 @@
 #ifndef TESTS_AMD_SMI_TEST_TEST_COMMON_H_
 #define TESTS_AMD_SMI_TEST_TEST_COMMON_H_
 
-#include <memory>
-#include <vector>
-#include <string>
-#include <iomanip>
-
 #include <gtest/gtest.h>
+
+#include <iostream>
+#include <iomanip>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <vector>
+
 #include "test_base.h"
 
 #include "amd_smi/amdsmi.h"
@@ -62,7 +65,7 @@ inline constexpr amdsmi_status_t NotSupportedErrorCodes[] = {
     AMDSMI_STATUS_NO_HSMP_MSG_SUP
 };
 
-inline void DISPLAY_AMDSMI_API(std::string_view func_name, std::string desc, bool isVerbose) {
+inline void DISPLAY_AMDSMI_API(std::string_view func_name, std::string_view desc, bool isVerbose) {
     if (isVerbose)
         std::cout << "\t### " << (func_name) << "(" << (desc) << ")" << std::endl;
     return;

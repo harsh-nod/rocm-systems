@@ -100,6 +100,7 @@ void TestFanRead::Run(void) {
       DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS);
       CHK_ERR_ASRT(err)
       IF_VERB(STANDARD) {
+        std::cout << "\t**Current fan RPMs: ";
         std::cout << static_cast<float>(val_i64)/static_cast<float>(val_ui64)*100;
         std::cout << "% ("<< val_i64 << "/" << val_ui64 << ")" << std::endl;
       }
