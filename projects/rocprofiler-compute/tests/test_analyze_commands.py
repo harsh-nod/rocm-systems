@@ -1755,8 +1755,11 @@ def test_analyze_generates_roofline_html(
     workload_dir = test_utils.get_output_dir()
 
     returncode = binary_handler_profile_rocprof_compute(
-        profile_config, workload_dir, ["--device", "0", "--roof-only"],
-        check_success=False, roof=True,
+        profile_config,
+        workload_dir,
+        ["--device", "0", "--roof-only"],
+        check_success=False,
+        roof=True,
     )
     assert returncode == 0
     assert (Path(workload_dir) / "roofline.csv").exists()
@@ -1772,6 +1775,9 @@ def test_analyze_generates_roofline_html(
         "FP32",
     ])
     assert code == 0
+
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) > 0, "Analyze should generate roofline HTML files"
 
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
@@ -1796,8 +1802,11 @@ def test_analyze_roofline_multiple_datatypes(
     workload_dir = test_utils.get_output_dir()
 
     returncode = binary_handler_profile_rocprof_compute(
-        profile_config, workload_dir, ["--device", "0", "--roof-only"],
-        check_success=False, roof=True,
+        profile_config,
+        workload_dir,
+        ["--device", "0", "--roof-only"],
+        check_success=False,
+        roof=True,
     )
     assert returncode == 0
     assert (Path(workload_dir) / "roofline.csv").exists()
@@ -1811,6 +1820,9 @@ def test_analyze_roofline_multiple_datatypes(
             dtype,
         ])
         assert code == 0
+
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) > 0, "Analyze should generate roofline HTML files"
 
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
@@ -1860,8 +1872,11 @@ def test_analyze_roofline_idempotent(
     workload_dir = test_utils.get_output_dir()
 
     returncode = binary_handler_profile_rocprof_compute(
-        profile_config, workload_dir, ["--device", "0", "--roof-only"],
-        check_success=False, roof=True,
+        profile_config,
+        workload_dir,
+        ["--device", "0", "--roof-only"],
+        check_success=False,
+        roof=True,
     )
     assert returncode == 0
 
@@ -1878,6 +1893,9 @@ def test_analyze_roofline_idempotent(
 
     code2 = binary_handler_analyze_rocprof_compute(analyze_args)
     assert code2 == 0
+
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) > 0, "Analyze should generate roofline HTML files"
 
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 

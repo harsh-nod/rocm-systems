@@ -28,13 +28,11 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 import numpy as np
-import pandas as pd
 import plotext as plt
 import plotly.graph_objects as go
 from dash import dcc, html
 from plotly.subplots import make_subplots
 
-from utils import schema
 from utils.logger import (
     console_debug,
     console_error,
@@ -46,7 +44,6 @@ from utils.roofline_calc import (
     MFMA_DATATYPES,
     PEAK_OPS_DATATYPES,
     SUPPORTED_DATATYPES,
-    calc_ai_analyze,
     construct_roof,
 )
 from utils.specs import MachineSpecs
@@ -90,7 +87,6 @@ class Roofline:
         return self.__args
 
     def roof_setup(self) -> None:
-        # Setup the workload directory for roofline profiling.
         workload_dir_val = self.__run_parameters.get("workload_dir")
 
         if not workload_dir_val:
@@ -99,23 +95,7 @@ class Roofline:
             )
             return
 
-        if isinstance(workload_dir_val, list):
-            if not workload_dir_val or not workload_dir_val[0]:
-                console_error(
-                    "Workload directory list is empty or invalid. "
-                    "Cannot perform setup.",
-                    exit=False,
-                )
-                return
-            # Handle nested list structure [0][0] or simple list [0]
-            base_dir = (
-                workload_dir_val[0][0]
-                if isinstance(workload_dir_val[0], (list, tuple))
-                else workload_dir_val[0]
-            )
-        else:
-            # workload_dir_val is a string
-            base_dir = workload_dir_val
+        base_dir = str(workload_dir_val)
 
         base_path = Path(base_dir)
 
@@ -282,17 +262,21 @@ class Roofline:
 
         workload_dir = self.__run_parameters["workload_dir"]
 
+        wrote = False
         if ops_figure:
             ops_figure.write_html(
                 f"{workload_dir}/empirRoof_gpu-{dev_id}{ops_dt_list}{kernel_list}.html"
             )
+            wrote = True
 
         if flops_figure:
             flops_figure.write_html(
                 f"{workload_dir}/empirRoof_gpu-{dev_id}{flops_dt_list}{kernel_list}.html"
             )
+            wrote = True
 
-        console_log("roofline", "Empirical Roofline HTML file saved!")
+        if wrote:
+            console_log("roofline", "Roofline HTML files saved.")
 
     @staticmethod
     def generate_html_section(
@@ -339,22 +323,6 @@ class Roofline:
                 )
             ],
         )
-
-    @demarcate
-    def html_generate_plot(
-        self, ai_data: dict[str, Any]
-    ) -> Optional[html.Section]:
-        """
-        Legacy convenience wrapper: build figures and either save to disk
-        or return as Dash HTML section depending on is_standalone.
-        """
-        ops_fig, flops_fig, ops_dt, flops_dt = self.construct_plotly_figures(ai_data)
-
-        if self.__run_parameters["is_standalone"]:
-            self.save_html_files(ops_fig, flops_fig, ops_dt, flops_dt)
-            return None
-        else:
-            return self.generate_html_section(ops_fig, flops_fig)
 
     @demarcate
     def generate_plot(
@@ -1092,10 +1060,11 @@ class Roofline:
         if not isinstance(dtype, str):
             console_error("Unsupported datatype input - must be str")
 
-        # Change vL1D to a interpretable str, if required
-        if "vL1D" in self.__run_parameters["mem_level"]:
-            self.__run_parameters["mem_level"].remove("vL1D")
-            self.__run_parameters["mem_level"].append("L1")
+        # Local copy so we don't mutate run_parameters for subsequent callers.
+        raw_mem = self.__run_parameters["mem_level"]
+        mem_level = list(raw_mem) if isinstance(raw_mem, list) else raw_mem
+        if isinstance(mem_level, list) and "vL1D" in mem_level:
+            mem_level = [("L1" if m == "vL1D" else m) for m in mem_level]
 
         color_scheme = {
             "HBM": "blue+",
@@ -1122,9 +1091,7 @@ class Roofline:
 
         # Plot bandwidth lines
         cache_hierarchy = (
-            ["HBM", "L2", "L1", "LDS"]
-            if self.__run_parameters["mem_level"] == "ALL"
-            else self.__run_parameters["mem_level"]
+            ["HBM", "L2", "L1", "LDS"] if mem_level == "ALL" else mem_level
         )
 
         for cache_level in cache_hierarchy:
@@ -1244,7 +1211,8 @@ class Roofline:
                 console_debug("roofline", f"AI_{kernel_names[i]}: {val1}, {val2}")
         plt.xlabel(f"Arithmetic Intensity ({ops_flops}s/Byte)")
         plt.ylabel("Performance (GFLOP/sec)")
-        plt.title(f"Roofline ({dtype}) - {self.__run_parameters.get('workload_dir', '')}")
+        wdir = self.__run_parameters.get("workload_dir", "")
+        plt.title(f"Roofline ({dtype}) - {wdir}")
 
         # Canvas config
         plt.theme("pro")

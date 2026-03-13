@@ -27,7 +27,6 @@ import sys
 from pathlib import Path
 
 import pandas as pd
-
 from rocprof_compute_analyze.analysis_base import OmniAnalyze_Base
 from utils import file_io, parser, tty
 from utils.kernel_name_shortener import kernel_name_shortener
@@ -167,8 +166,9 @@ class cli_analysis(OmniAnalyze_Base):
             # Generate roofline plot for single-path, compatible architectures
             if (len(args.path)) == 1:
                 if gpu_arch in ["gfx90a", "gfx940", "gfx941", "gfx942", "gfx950"]:
+                    has_roofline = (Path(workload_path) / "roofline.csv").is_file()
                     soc = self.get_socs()
-                    if soc and gpu_arch in soc:
+                    if has_roofline and soc and gpu_arch in soc:
                         soc_obj = soc[gpu_arch]
                         soc_obj.analysis_setup(
                             roofline_parameters={

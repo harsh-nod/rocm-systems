@@ -993,8 +993,7 @@ def test_output_directory_all_placeholders_combined(
     binary_handler_profile_rocprof_compute(config, workload_dir)
 
     workload_dir = (
-        workload_dir
-        .replace("%hostname%", hostname)
+        workload_dir.replace("%hostname%", hostname)
         .replace("%gpumodel%", GPU_MODEL)
         .replace("%env{ENV_1}%", "custom_env")
         .replace("%rank%", rank)
@@ -1576,11 +1575,14 @@ def test_roof_plot_modes(
     html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
     assert len(html_files) == 0, "Profile should NOT generate HTML files"
 
-    code = binary_handler_analyze_rocprof_compute([
-        "analyze",
-        "--path",
-        workload_dir,
-    ] + analyze_options)
+    code = binary_handler_analyze_rocprof_compute(
+        [
+            "analyze",
+            "--path",
+            workload_dir,
+        ]
+        + analyze_options
+    )
     assert code == 0
 
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
@@ -1673,9 +1675,7 @@ def test_roofline_missing_file_handling(binary_handler_profile_rocprof_compute):
 
         roofline_instance = Roofline(args, mspec, run_parameters)
 
-        result = roofline_instance.cli_generate_plot(
-            "FP32", ai_data={}
-        )
+        result = roofline_instance.cli_generate_plot("FP32", ai_data={})
 
         assert result is None
 
@@ -1702,7 +1702,6 @@ def test_roofline_invalid_datatype_cli(binary_handler_profile_rocprof_compute):
 
     try:
         from roofline import Roofline
-        from utils.schema import Workload
         from utils.specs import generate_machine_specs
 
         class MockArgs:
@@ -1714,7 +1713,6 @@ def test_roofline_invalid_datatype_cli(binary_handler_profile_rocprof_compute):
 
         args = MockArgs()
         mspec = generate_machine_specs(None, None)
-        workload = Workload()
 
         run_parameters = {
             "workload_dir": test_utils.get_output_dir(),
@@ -1727,9 +1725,7 @@ def test_roofline_invalid_datatype_cli(binary_handler_profile_rocprof_compute):
 
         roofline_instance = Roofline(args, mspec, run_parameters)
 
-        result = roofline_instance.cli_generate_plot(
-            "INVALID_DATATYPE", ai_data={}
-        )
+        result = roofline_instance.cli_generate_plot("INVALID_DATATYPE", ai_data={})
 
         assert result is None
 

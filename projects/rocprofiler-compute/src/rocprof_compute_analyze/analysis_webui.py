@@ -254,7 +254,8 @@ class webui_analysis(OmniAnalyze_Base):
                         ai_data=ai_data,
                     )
                     roofline_section = roof_obj.generate_html_section(
-                        ops_fig, flops_fig,
+                        ops_fig,
+                        flops_fig,
                     )
                     if roofline_section is not None:
                         div_children.append(roofline_section)
