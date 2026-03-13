@@ -1242,3 +1242,5 @@ memory:
   Unit_hipMemGetMemPool_Basic: *level_2
   Unit_hipMemSetMemPool_Negative: *level_2
   Unit_hipMemSetMemPool_Basic: *level_2
+  Unit_hipMemGetDefaultMemPool_Negative: *level_2
+  Unit_hipMemGetDefaultMemPool_Basic: *level_2
