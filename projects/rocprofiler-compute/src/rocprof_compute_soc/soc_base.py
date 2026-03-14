@@ -32,8 +32,6 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Any, Optional
 
-import yaml
-
 import config
 from roofline import Roofline
 from utils.amdsmi_interface import amdsmi_ctx, get_gpu_model, get_mem_max_clock
@@ -61,6 +59,7 @@ from utils.utils import (
     parse_sets_yaml,
     resolve_rocm_library_path,
 )
+from vendored import yaml
 
 
 class OmniSoC_Base:

@@ -35,7 +35,6 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 import pandas as pd
-import yaml
 
 from rocprof_compute_soc.soc_base import OmniSoC_Base
 from utils.logger import (
@@ -54,6 +53,7 @@ from utils.utils import (
     print_status,
     run_prof,
 )
+from vendored import yaml
 
 
 class RocProfCompute_Base:

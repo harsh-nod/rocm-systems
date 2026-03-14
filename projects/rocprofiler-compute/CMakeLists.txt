@@ -98,6 +98,34 @@ if(CHECK_PYTHON_DEPS AND NOT STANDALONEBINARY)
         list(POP_BACK CMAKE_MESSAGE_INDENT)
     endif()
 
+    # ==============================================================================
+    # Git Submodule Auto-Initialization
+    # ==============================================================================
+    # Automatically checkout vendored dependencies from git submodules during
+    # CMake configure. Developers don't need to manually run git submodule commands.
+
+    find_package(Git QUIET)
+    if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+        message(STATUS "Checking vendored dependencies (git submodules)...")
+
+        # PyYAML submodule
+        if(NOT EXISTS "${PROJECT_SOURCE_DIR}/src/vendored/pyyaml/.git")
+            message(STATUS "  Initializing vendored/pyyaml submodule...")
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive src/vendored/pyyaml
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                RESULT_VARIABLE GIT_SUBMOD_RESULT
+            )
+            if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+                message(FATAL_ERROR "git submodule update failed for src/vendored/pyyaml")
+            endif()
+        else()
+            message(STATUS "  vendored/pyyaml: OK")
+        endif()
+
+        # Future vendored packages can be added here with similar blocks
+    endif()
+
     # Check required Python packages
     file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt" pythonDeps)
 
@@ -733,6 +761,33 @@ install(
     COMPONENT main
     PATTERN "__pycache__" EXCLUDE
 )
+# ==============================================================================
+# Vendored Dependencies Installation
+# ==============================================================================
+# Each vendored package has its own install block to accommodate structural
+# differences between packages. Only pure Python code is installed.
+# See src/vendored/README.md and CONTRIBUTING.md for vendoring guidelines.
+
+# Vendored package wrapper
+install(
+    FILES src/vendored/__init__.py
+    DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME}/vendored
+    COMPONENT main
+)
+
+# PyYAML (pure Python only, no C extensions)
+install(
+    DIRECTORY src/vendored/pyyaml/lib/yaml
+    DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME}/vendored/pyyaml/lib
+    COMPONENT main
+    FILES_MATCHING PATTERN "*.py"
+    PATTERN "__pycache__" EXCLUDE
+    PATTERN "*.pyc" EXCLUDE
+)
+
+# Future vendored packages go here with their own install() blocks
+# Each package may have different structure, so per-package blocks provide flexibility
+
 # samples
 install(
     DIRECTORY sample

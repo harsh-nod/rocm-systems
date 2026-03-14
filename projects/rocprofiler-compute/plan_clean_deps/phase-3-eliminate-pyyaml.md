@@ -95,7 +95,7 @@ See CONTRIBUTING.md for vendoring workflow.
 # Auto-initialize vendored dependencies
 find_package(Git QUIET)
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/src/vendored/pyyaml/lib/yaml/__init__.py")
+    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/src/vendored/pyyaml/.git")
         execute_process(
             COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive src/vendored/pyyaml
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
