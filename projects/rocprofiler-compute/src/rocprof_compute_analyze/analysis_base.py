@@ -34,7 +34,6 @@ from pathlib import Path
 from typing import Any, Optional, TextIO
 
 import pandas as pd
-import yaml
 
 import config
 from rocprof_compute_soc.soc_base import OmniSoC_Base
@@ -96,7 +95,6 @@ def detect_missing_counters(
     df: pd.DataFrame,
     workload_dir: Path,
     join_type: str,
-    iteration_multiplexing: Optional[int],
 ) -> None:
     """Detect missing counter values in joined dataframe.
 
@@ -104,7 +102,6 @@ def detect_missing_counters(
         df: Joined dataframe to check
         workload_dir: Path to workload directory
         join_type: Type of join performed ('kernel' or 'grid')
-        iteration_multiplexing: Iteration multiplexing value (None if disabled)
     """
     group_labels = ["Kernel_Name"]
     if join_type == "grid":
@@ -129,10 +126,6 @@ def detect_missing_counters(
                 f"or turn off iteration multiplexing."
             ),
         )
-        with open(workload_dir / "profiling_config.yaml", "a") as f:
-            yaml.dump(
-                {"kernels_with_missing_counters": kernels_with_missing_counters}, f
-            )
 
 
 class OmniAnalyze_Base:
@@ -497,21 +490,6 @@ class OmniAnalyze_Base:
                     "Please choose a different name."
                 )
 
-        # Check if any kernel's counters are missing due to iteration multiplexing
-        if (
-            profiling_config.get("iteration_multiplexing") is not None
-            and profiling_config.get("kernels_with_missing_counters") is not None
-        ):
-            missing_kernels = profiling_config.get("kernels_with_missing_counters")
-            console_warning(
-                "analysis",
-                (
-                    "The following kernels have missing counter data "
-                    "due to iteration multiplexing and should be filtered out: "
-                    f"{', '.join(missing_kernels)}"
-                ),
-            )
-
         if profiling_config.get("iteration_multiplexing") is not None:
             console_log(
                 "analysis",
@@ -565,9 +543,7 @@ class OmniAnalyze_Base:
 
             if iteration_multiplexing is not None:
                 df = pd.read_csv(output_file)
-                detect_missing_counters(
-                    df, workload_dir, join_type, iteration_multiplexing
-                )
+                detect_missing_counters(df, workload_dir, join_type)
 
             return None
 
@@ -746,11 +722,56 @@ class OmniAnalyze_Base:
         console_debug("join_prof", "Checking for missing counter values...")
 
         if iteration_multiplexing is not None:
-            detect_missing_counters(df, workload_dir, join_type, iteration_multiplexing)
+            detect_missing_counters(df, workload_dir, join_type)
 
         # save to file
         df.to_csv(output_file, index=False)
         return None
+
+    def join_workload_csvs(self, workload_dir: Path) -> None:
+        """Join CSV files for a workload directory.
+
+        Handles multi-node and spatial multiplexing.
+
+        This method checks if the workload uses multi-node or spatial multiplexing,
+        and joins CSV files accordingly:
+        - Multi-node/spatial: Joins CSV files in each subdirectory (0/, 1/, 2/, etc.)
+        - Regular single-node: Joins CSV files in the workload directory directly
+
+        Args:
+            workload_dir: Path to the workload directory
+        """
+        args = self.get_args()
+
+        # Helper to process and join CSV files in a single directory
+        def process_and_join_directory(directory: Path) -> None:
+            pmc_perf = directory / "pmc_perf.csv"
+            pmc_perf_files = list(directory.glob("pmc_perf_*.csv"))
+            results_files = list(directory.glob("results_*.csv"))
+
+            if pmc_perf.exists():
+                console_debug(f"Using existing {pmc_perf}")
+            elif pmc_perf_files or results_files:
+                files_desc = "pmc_perf_*.csv" if pmc_perf_files else "results_*.csv"
+                console_log(f"Joining {files_desc} for {directory}...")
+                self.join_prof(directory, out=str(pmc_perf))
+                console_log(f"Created {pmc_perf}")
+            else:
+                console_error(
+                    f"No profiling data found in {directory}.\n"
+                    f"Expected: pmc_perf.csv or pmc_perf_*.csv or results_*.csv\n"
+                    f"Please run 'rocprof-compute profile' first."
+                )
+
+        # Handle multi-node and spatial multiplexing cases
+        if args.nodes is not None or args.spatial_multiplexing:
+            # Multi-node or spatial case: CSV files are in subdirectories
+            for subdir in workload_dir.iterdir():
+                if subdir.is_dir():
+                    process_and_join_directory(subdir)
+        else:
+            # Regular single-node case: CSV files are in workload_dir directly
+            process_and_join_directory(workload_dir)
 
     # ----------------------------------------------------
     # Required methods to be implemented by child classes
@@ -797,28 +818,7 @@ class OmniAnalyze_Base:
         # Join pmc_perf_*.csv or results_*.csv files if needed
         for path_info in args.path:
             workload_dir = Path(path_info[0])
-
-            # Detect CSV format: merged vs separate
-            pmc_perf = workload_dir / "pmc_perf.csv"
-            pmc_perf_files = list(workload_dir.glob("pmc_perf_*.csv"))
-            results_files = list(workload_dir.glob("results_*.csv"))
-
-            if pmc_perf.exists():
-                # Already merged (old workload or re-running analyze)
-                console_debug(f"Using existing {pmc_perf}")
-            elif pmc_perf_files or results_files:
-                # New format: separate CSVs need joining
-                files_desc = "pmc_perf_*.csv" if pmc_perf_files else "results_*.csv"
-                console_log(f"Joining {files_desc} for {workload_dir}...")
-                self.join_prof(workload_dir, out=str(pmc_perf))
-                console_log(f"Created {pmc_perf}")
-            else:
-                # No PMC data found - error out immediately with clear message
-                console_error(
-                    f"No profiling data found in {workload_dir}.\n"
-                    f"Expected: pmc_perf.csv or pmc_perf_*.csv or results_*.csv\n"
-                    f"Please run 'rocprof-compute profile' first."
-                )
+            self.join_workload_csvs(workload_dir)
 
     @abstractmethod
     def run_analysis(self) -> None:

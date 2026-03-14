@@ -133,6 +133,56 @@ ANALYZE MODE:
 
 ## Implementation Plan
 
+### Step 0: Clean Workload Directory on Re-Profile
+
+**Problem**: When re-profiling an existing workload directory, old CSV files remain:
+- Old `pmc_perf.csv` (merged by previous analyze run) becomes stale
+- Old `pmc_perf_*.csv` or `results_*.csv` files are out of sync
+- Analyze mode may use stale merged file instead of fresh data
+
+**Solution**: Delete and recreate workload directory when re-profiling.
+
+**File**: `src/rocprof_compute_base.py`
+
+**Location**: `run_profiler()` method, lines 528-533
+
+**Before**:
+```python
+# Create workload directory if it does not exist
+p = Path(self.__args.path)
+if not p.exists():
+    try:
+        p.mkdir(parents=True, exist_ok=False)
+    except FileExistsError:
+        console_error("Directory already exists.")
+```
+
+**After**:
+```python
+# Create workload directory (delete if exists for re-profiling)
+p = Path(self.__args.path)
+shutil.rmtree(p, ignore_errors=True)
+p.mkdir(parents=True)
+```
+
+**Changes**:
+1. Add `import shutil` to global imports (after line 27)
+2. Replace directory creation logic with simple delete + create
+3. Remove complex error handling (not needed)
+
+**Why Delete Everything?**
+- ✅ Simple: 2 lines, easy to understand
+- ✅ Complete: No stale data possible
+- ✅ Expected: Re-profiling means fresh start
+- ✅ Cheap: `roofline.csv` and `sysinfo.csv` regenerate in seconds
+- ❌ **Not** over-engineered: No selective "keep this, delete that" logic
+
+**User Workflow**:
+- Want to preserve old data? Use different `--name` or `--output-directory`
+- Re-profiling same target? Get clean slate automatically
+
+---
+
 ### Step 1: Move join_prof() Functions to Analyze
 
 **File**: `src/rocprof_compute_analyze/analysis_base.py`
@@ -166,11 +216,14 @@ def join_prof(self, workload_dir: Path, out: Optional[str] = None) -> Optional[p
     # Remove: File deletion (analyze is read-only on profile outputs)
     # ... (~225 lines after removing deletion logic)
 
-def detect_missing_counters(self, df: pd.DataFrame, workload_dir: Path) -> None:
+def detect_missing_counters(self, df: pd.DataFrame, workload_dir: Path, join_type: str) -> None:
     """Detect missing counter values in joined dataframe"""
     # Copy from profiler_base.py (lines 190-219)
     # Adapt to use workload_dir parameter instead of args.path
-    # ... (30 lines)
+    # CRITICAL: Remove yaml write - analyze must NOT modify profiling_config.yaml!
+    # CRITICAL: Remove unused iteration_multiplexing parameter (PR review feedback)
+    # Warning is emitted here, no need to write to config file
+    # ... (~30 lines)
 
 def test_df_column_equality(df: pd.DataFrame) -> bool:
     """Test if all columns in dataframe are equal"""
@@ -184,13 +237,133 @@ def test_df_column_equality(df: pd.DataFrame) -> bool:
 3. ✅ **Re-runnable** - can run analyze multiple times without re-profiling
 4. ✅ **Ownership** - profile created the files, user deletes them (not analyze)
 
+**CRITICAL: Remove profiling_config.yaml Write from detect_missing_counters()**
+
+The original `detect_missing_counters()` in profile mode writes to `profiling_config.yaml`:
+```python
+# WRONG - Analyze shouldn't modify profile outputs!
+with open(workload_dir / "profiling_config.yaml", "a") as f:
+    yaml.dump({"kernels_with_missing_counters": kernels_with_missing_counters}, f)
+```
+
+**This MUST be removed because:**
+1. ✅ `profiling_config.yaml` is created by **profile mode**
+2. ✅ Analyze should be **READ-ONLY** on profile outputs
+3. ✅ Re-running analyze appends duplicates (uses append mode `"a"`)
+4. ✅ Function already emits `console_warning()` with kernel names
+5. ✅ Redundant: `__validate_workload_counters()` reads this key and emits duplicate warning
+
+**Solution:**
+- Remove the yaml write (lines 129-134 in original)
+- Remove the duplicate warning read in `__validate_workload_counters()` (lines 500-513)
+- Keep the immediate warning in `detect_missing_counters()` (it's sufficient)
+- Remove unused `iteration_multiplexing` parameter (PR review feedback)
+
+**Consolidated Warning:** The single warning in `detect_missing_counters()` is better because:
+- Immediate feedback when joining CSVs
+- Clear, actionable message
+- No file modification required
+- No risk of stale/duplicate warnings
+
 ### Step 2: Update pre_processing() to Call join_prof()
 
 **File**: `src/rocprof_compute_analyze/analysis_base.py`
 
 **Modify `pre_processing()` at line 473** - add at the END, after filters:
 
+**CRITICAL Design Decision**: Handle multi-node/spatial multiplexing in the CALLER, not in join_prof()
+
+**Why?**
+1. ✅ **Separation of concerns**:
+   - `join_prof()` = Worker (dumb: given a directory, merge CSVs in it)
+   - Caller = Coordinator (smart: decides WHICH directories to process)
+2. ✅ **Matches create_df_pmc pattern** (file_io.py:234-331):
+   - `create_single_df_pmc()` = Worker (processes one directory)
+   - `create_df_pmc()` = Coordinator (iterates directories, calls worker)
+3. ✅ **Simpler join_prof()**: No need to check args.nodes or args.spatial_multiplexing
+4. ✅ **Clear responsibility**: Caller knows analysis context, worker just merges
+
+**Directory Structure Examples:**
+```
+# Single-node case:
+workloads/myapp/MI300X_A1/
+├── pmc_perf_0.csv        # Merge these → pmc_perf.csv
+├── pmc_perf_1.csv
+└── SQ_*.csv
+
+# Multi-node case (--node or MPI):
+workloads/mpi_app/MI300X_A1/
+├── 0/                    # Rank 0 - merge separately
+│   ├── pmc_perf_0.csv
+│   └── pmc_perf_1.csv
+├── 1/                    # Rank 1 - merge separately
+│   └── pmc_perf_0.csv
+└── 2/                    # Rank 2 - merge separately
+
+# Spatial multiplexing case:
+workloads/spatial/MI300X_A1/
+├── device_0/             # GPU 0 - merge separately
+├── device_1/             # GPU 1 - merge separately
+└── device_2/             # GPU 2 - merge separately
+```
+
+**Implementation Strategy:**
+1. Create a new PUBLIC method `join_workload_csvs(workload_dir: Path)` in `OmniAnalyze_Base`
+   - Public (not private with `_` prefix) because TUI needs to call it directly
+   - TUI doesn't call `super().pre_processing()` due to different architecture
+2. This method contains all the multi-node/spatial multiplexing logic
+3. Call this method from:
+   - `OmniAnalyze_Base.pre_processing()` loop for CLI/DB analyzers (they use super())
+   - `tui_analysis.pre_processing()` directly (doesn't use super())
+
+**Code Structure:**
+
 ```python
+def join_workload_csvs(self, workload_dir: Path) -> None:
+    """Join CSV files for a workload directory (handles multi-node and spatial multiplexing).
+
+    This method checks if the workload uses multi-node or spatial multiplexing,
+    and joins CSV files accordingly:
+    - Multi-node/spatial: Joins CSV files in each subdirectory (0/, 1/, 2/, etc.)
+    - Regular single-node: Joins CSV files in the workload directory directly
+
+    Args:
+        workload_dir: Path to the workload directory
+    """
+    args = self.get_args()
+
+    # Helper to process and join CSV files in a single directory
+    def process_and_join_directory(directory: Path) -> None:
+        pmc_perf = directory / "pmc_perf.csv"
+        pmc_perf_files = list(directory.glob("pmc_perf_*.csv"))
+        results_files = list(directory.glob("results_*.csv"))
+
+        if pmc_perf.exists():
+            console_debug(f"Using existing {pmc_perf}")
+        elif pmc_perf_files or results_files:
+            files_desc = "pmc_perf_*.csv" if pmc_perf_files else "results_*.csv"
+            console_log(f"Joining {files_desc} for {directory}...")
+            self.join_prof(directory, out=str(pmc_perf))
+            console_log(f"Created {pmc_perf}")
+        else:
+            console_error(
+                f"No profiling data found in {directory}.\n"
+                f"Expected: pmc_perf.csv or pmc_perf_*.csv or results_*.csv\n"
+                f"Please run 'rocprof-compute profile' first."
+            )
+
+    # Handle multi-node and spatial multiplexing cases
+    # Match create_df_pmc logic (file_io.py:292-331)
+    if args.nodes is not None or args.spatial_multiplexing:
+        # Multi-node or spatial case: CSV files are in subdirectories
+        for subdir in workload_dir.iterdir():
+            if subdir.is_dir():
+                process_and_join_directory(subdir)
+    else:
+        # Regular single-node case: CSV files are in workload_dir directly
+        process_and_join_directory(workload_dir)
+
+
 def pre_processing(self) -> None:
     """Perform initialization prior to analysis."""
     console_debug("analysis", "prepping to do some analysis")
@@ -212,36 +385,39 @@ def pre_processing(self) -> None:
     # This runs AFTER initalize_runs() (which doesn't need pmc_perf.csv)
     # But BEFORE child class pre_processing() (which does need it)
     for path_info in args.path:
-        # Match existing pattern: each element in args.path is a list [path, ...]
         workload_dir = Path(path_info[0])
-
-        # Check what format we have
-        pmc_perf = workload_dir / "pmc_perf.csv"
-        pmc_perf_files = list(workload_dir.glob("pmc_perf_*.csv"))
-        results_files = list(workload_dir.glob("results_*.csv"))  # rocpd format
-
-        if pmc_perf.exists():
-            # Already merged (old workload or re-running analyze)
-            console_debug(f"Using existing {pmc_perf}")
-        elif pmc_perf_files or results_files:
-            # New format: separate CSVs need joining
-            files_desc = "pmc_perf_*.csv" if pmc_perf_files else "results_*.csv"
-            console_log(f"Joining {files_desc} for {workload_dir}...")
-            self.join_prof(workload_dir, out=str(pmc_perf))
-            console_log(f"✓ Created {pmc_perf}")
-        else:
-            # No PMC data found - error out immediately with clear message
-            console_error(
-                f"No profiling data found in {workload_dir}.\n"
-                f"Expected: pmc_perf.csv or pmc_perf_*.csv or results_*.csv\n"
-                f"Please run 'rocprof-compute profile' first."
-            )
+        self.join_workload_csvs(workload_dir)
 
     # End of base class pre_processing()
     # Child class will now call file_io.create_df_pmc() which needs pmc_perf.csv
 ```
 
-**Logical Order**: First initialize workload objects (`initalize_runs()`), then prepare their data (`join_prof()`), then child class loads it.
+**TUI Integration (Special Case):**
+
+TUI analysis doesn't call `super().pre_processing()` due to fundamentally different architecture.
+Must call `join_workload_csvs()` manually:
+
+```python
+# File: src/rocprof_compute_tui/analysis_tui.py
+@demarcate
+def pre_processing(self) -> None:
+    self._profiling_config = file_io.load_profiling_config(self.path)
+    self._runs = self.initalize_runs()
+
+    # Join pmc_perf_*.csv or results_*.csv files if needed (Phase 2)
+    self.join_workload_csvs(Path(self.path))
+
+    # ... rest of TUI preprocessing ...
+```
+
+**Logical Order**: First initialize workload objects (`initalize_runs()`), then prepare their data (`join_workload_csvs()`), then child class loads it.
+
+**Benefits of Public Helper Method**:
+- ✅ **Cleaner code**: Separates concerns into its own method
+- ✅ **Testable**: `join_workload_csvs()` can be tested independently
+- ✅ **Reusable**: Can be called from TUI and other places if needed
+- ✅ **Readable**: Main `pre_processing()` loop is now just 2 lines per workload
+- ✅ **Public API**: TUI can call it directly without relying on super() chain
 
 ### Step 3: Remove from Profile Mode
 
@@ -257,21 +433,67 @@ def pre_processing(self) -> None:
 
 **Total deletion**: ~270 lines from base class
 
-#### Step 3b: Remove Method Calls from Child Classes
+#### Step 3b: Remove Method Calls and ready_to_profile Logic from Child Classes
 
-**CRITICAL**: The child profiler classes call `self.join_prof()` in their `post_processing()` methods. These calls MUST be removed, otherwise we'll get `AttributeError`!
+**CRITICAL Changes to Child Profiler Classes:**
+
+1. Remove `ready_to_profile` logic (obsolete after Step 0 cleanup)
+2. Remove `join_prof()` calls (moved to analyze mode)
+3. Update log messages to be generic (no "pmc_perf.csv" references)
+
+**Rationale for Removing `ready_to_profile`:**
+- Step 0 deletes entire workload directory before profiling
+- Checking for file existence is meaningless when directory is always empty
+- `pmc_perf.csv` is created by analyze mode, not profile mode
+- `--roof-only` should only control which counters to collect, not file management
 
 **File 1**: `src/rocprof_compute_profile/profiler_rocprof_v3.py`
 
-**Modify `post_processing()` method** (line 130):
+**Changes:**
 
 ```python
-# BEFORE:
+# BEFORE (lines 42-47):
+super().__init__(profiling_args, profiler_mode, soc)
+self.ready_to_profile = (
+    self.get_args().roof_only
+    and not (Path(self.get_args().path) / "pmc_perf.csv").is_file()
+    or not self.get_args().roof_only
+)
+
+# AFTER:
+super().__init__(profiling_args, profiler_mode, soc)
+
+
+# BEFORE (lines 116-127):
+@demarcate
+def run_profiling(self, version: str, prog: str) -> None:
+    """Run profiling."""
+    if not self.ready_to_profile:
+        console_log("roofline", "Detected existing pmc_perf.csv")
+        return
+
+    if self.get_args().roof_only:
+        console_log("roofline", "Generating pmc_perf.csv (roofline counters only).")
+
+    # Log profiling options and setup filtering
+    super().run_profiling(version, prog)
+
+# AFTER:
+@demarcate
+def run_profiling(self, version: str, prog: str) -> None:
+    """Run profiling."""
+    if self.get_args().roof_only:
+        console_log("roofline", "Profiling roofline counters only.")
+
+    # Log profiling options and setup filtering
+    super().run_profiling(version, prog)
+
+
+# BEFORE (lines 129-135):
 @demarcate
 def post_processing(self) -> None:
     """Perform any post-processing steps prior to profiling."""
     if self.ready_to_profile:
-        self.join_prof()  # ❌ DELETE THIS LINE
         super().post_processing()
     else:
         console_log("roofline", "Detected existing pmc_perf.csv")
@@ -280,24 +502,56 @@ def post_processing(self) -> None:
 @demarcate
 def post_processing(self) -> None:
     """Perform any post-processing steps prior to profiling."""
-    if self.ready_to_profile:
-        # join_prof() moved to analyze mode (Phase 2)
-        super().post_processing()
-    else:
-        console_log("roofline", "Detected existing pmc_perf.csv")
+    super().post_processing()
 ```
 
 **File 2**: `src/rocprof_compute_profile/profiler_rocprofiler_sdk.py`
 
-**Modify `post_processing()` method** (line 160):
+**Changes (identical to v3):**
 
 ```python
-# BEFORE:
+# BEFORE (lines 44-49):
+super().__init__(profiling_args, profiler_mode, soc)
+self.ready_to_profile = (
+    self.get_args().roof_only
+    and not (Path(self.get_args().path) / "pmc_perf.csv").is_file()
+    or not self.get_args().roof_only
+)
+
+# AFTER:
+super().__init__(profiling_args, profiler_mode, soc)
+
+
+# BEFORE (lines 146-157):
+@demarcate
+def run_profiling(self, version: str, prog: str) -> None:
+    """Run profiling."""
+    if not self.ready_to_profile:
+        console_log("roofline", "Detected existing pmc_perf.csv")
+        return
+
+    if self.get_args().roof_only:
+        console_log("roofline", "Generating pmc_perf.csv (roofline counters only).")
+
+    # Log profiling options and setup filtering
+    super().run_profiling(version, prog)
+
+# AFTER:
+@demarcate
+def run_profiling(self, version: str, prog: str) -> None:
+    """Run profiling."""
+    if self.get_args().roof_only:
+        console_log("roofline", "Profiling roofline counters only.")
+
+    # Log profiling options and setup filtering
+    super().run_profiling(version, prog)
+
+
+# BEFORE (lines 159-165):
 @demarcate
 def post_processing(self) -> None:
     """Perform any post-processing steps prior to profiling."""
     if self.ready_to_profile:
-        self.join_prof()  # ❌ DELETE THIS LINE
         super().post_processing()
     else:
         console_log("roofline", "Detected existing pmc_perf.csv")
@@ -306,17 +560,15 @@ def post_processing(self) -> None:
 @demarcate
 def post_processing(self) -> None:
     """Perform any post-processing steps prior to profiling."""
-    if self.ready_to_profile:
-        # join_prof() moved to analyze mode (Phase 2)
-        super().post_processing()
-    else:
-        console_log("roofline", "Detected existing pmc_perf.csv")
+    super().post_processing()
 ```
 
-**Summary of Step 3**:
-- Delete method definition from base class (profiler_base.py)
-- Delete method calls from BOTH child classes (profiler_rocprof_v3.py and profiler_rocprofiler_sdk.py)
-- Total: 3 files modified
+**Summary of Step 3b**:
+- Remove `ready_to_profile` initialization from both child classes
+- Simplify `run_profiling()`: remove skip logic, update log message
+- Simplify `post_processing()`: always call super(), remove conditional
+- Total: 2 files modified (profiler_rocprof_v3.py and profiler_rocprofiler_sdk.py)
+- Lines removed: ~20 lines of dead code
 
 ### Step 4: Remove pmc_perf.csv Check in soc_base.py
 
@@ -907,8 +1159,9 @@ If issues arise:
 - ✅ Support both standard (pmc_perf_*.csv) AND rocpd (results_*.csv) formats
 
 ### Critical Implementation Details
-- ✅ `join_prof()` must be called in `pre_processing()` BEFORE `initalize_runs()` (line 489)
-- ✅ Reason: `analysis_db.py:312` loads `pmc_perf.csv` during initialization
+- ✅ `join_workload_csvs()` must be called in `pre_processing()` AFTER `initalize_runs()` (line 489)
+- ✅ Reason: `initalize_runs()` only loads sysinfo.csv and roofline.csv, NOT pmc_perf.csv. Child classes load pmc_perf.csv in their pre_processing(), so base class must create it first.
+- ✅ Logical order: Initialize workloads → Prepare data (join CSVs) → Child class loads merged data
 - ✅ Handle both old format (pre-merged pmc_perf.csv) and new formats (separate files)
 - ✅ Test helper function supports both pmc_perf_*.csv and results_*.csv
 

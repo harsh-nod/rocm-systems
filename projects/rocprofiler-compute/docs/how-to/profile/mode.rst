@@ -375,7 +375,7 @@ of the underlying ``rocprof`` tool. The following formats are supported:
 
 * ``csv`` format:
    * Ask underlying rocprof tool to dump raw performance counter data in csv format.
-   * The generated csv files across multiple runs of rocprof are processed and dumped into the workload directory as separate csv files (pmc_perf_0.csv, pmc_perf_1.csv, etc.).
+   * The generated csv files across multiple runs of ROCProfiler-SDK are processed and dumped into the workload directory as separate csv files (pmc_perf_0.csv, pmc_perf_1.csv, etc.).
 
 * ``rocpd`` format:
    * Ask underlying rocprof tool to dump raw performance counter data in rocpd format.

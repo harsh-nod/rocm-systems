@@ -9,8 +9,8 @@ Full documentation for ROCm Compute Profiler is available at [https://rocm.docs.
 ### Changed
 
 * Profile mode output format:
-  * Profile mode now creates separate counter collection files (pmc_perf_*.csv or results_*.csv).
-  * Analyze mode automatically merges these files into pmc_perf.csv during pre-processing.
+  * Profile mode now creates separate counter collection files for each application replay (pmc_perf_*.csv or results_*.csv).
+  * Analyze mode automatically merges these files into a unified pmc_perf.csv containing information from all application replays during pre-processing.
 
 ### Removed
 

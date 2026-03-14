@@ -25,6 +25,7 @@
 
 import argparse
 import importlib
+import shutil
 import socket
 import sys
 import time
@@ -524,13 +525,10 @@ class RocProfCompute:
         profiler = self.create_profiler()
         profiler.sanitize()
 
-        # Create workload directory if it does not exist
+        # Create workload directory (delete if exists for re-profiling)
         p = Path(self.__args.path)
-        if not p.exists():
-            try:
-                p.mkdir(parents=True, exist_ok=False)
-            except FileExistsError:
-                console_error("Directory already exists.")
+        shutil.rmtree(p, ignore_errors=True)
+        p.mkdir(parents=True)
 
         # enable file-based logging
         setup_file_handler(self.__args.loglevel, self.__args.path)
