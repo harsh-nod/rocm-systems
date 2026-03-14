@@ -123,7 +123,6 @@ if(CHECK_PYTHON_DEPS AND NOT STANDALONEBINARY)
             message(STATUS "  vendored/pyyaml: OK")
         endif()
 
-        # Future vendored packages can be added here with similar blocks
     endif()
 
     # Check required Python packages
@@ -761,6 +760,7 @@ install(
     COMPONENT main
     PATTERN "__pycache__" EXCLUDE
 )
+
 # ==============================================================================
 # Vendored Dependencies Installation
 # ==============================================================================
@@ -784,9 +784,6 @@ install(
     PATTERN "__pycache__" EXCLUDE
     PATTERN "*.pyc" EXCLUDE
 )
-
-# Future vendored packages go here with their own install() blocks
-# Each package may have different structure, so per-package blocks provide flexibility
 
 # samples
 install(
