@@ -1,351 +1,219 @@
-# Phase 3: Eliminate PyYAML from Profile Mode
+# Phase 3: Vendor PyYAML
 
-**PR #3** | **Theme**: Create minimal YAML library for profile mode
-**Objective**: Remove external pyyaml dependency from profile code path
-**Dependencies**: PR #2 merged (easier without pandas conflicts)
+**Objective**: Vendor PyYAML 6.0.3 as git submodule to eliminate external dependency from profile-specific code
+**Dependencies**: Phase 1 & 2 merged
 **Duration**: 3-5 days
-**Status**: Ready to implement
 
 ---
 
-## Problem Statement
+## Summary
 
-After Phase 1 & 2, profile mode still has **3 YAML usage points** requiring external pyyaml:
+**Scope**: Update 3 profile-specific files to use vendored PyYAML. Build vendoring infrastructure for future packages.
 
-### 1. Writing profiling configuration (profiler_base.py line 477)
-```python
-with open(f"{self.__args.path}/profiling_config.yaml", "w") as f:
-    args_dict = vars(self.__args)
-    args_dict["filter_blocks"] = self._filter_blocks
-    args_dict["config_dir"] = str(args_dict["config_dir"])
-    yaml.dump(args_dict, f)
-```
-**Data**: Simple dict with strings, ints, bools, Path objects
-
-### 2. Reading/dumping analysis configs (soc_base.py detect_counters(), lines 302-336)
-Called during `profiling_setup()` → `perfmon_filter()` → `detect_counters()`:
-```python
-file_config = yaml.safe_load(stream)  # Load SoC config YAML
-yaml.dump(file_config, sort_keys=False)  # Dump filtered sections
-yaml.dump(panel_dict[panel_id], sort_keys=False)  # Dump panel
-yaml.dump(metric_dict[metric_id], sort_keys=False)  # Dump metric
-```
-**Data**: Nested dicts with strings, lists, complex expressions
-
-### 3. Writing perfmon counter definitions (soc_base.py line 656)
-Called during `perfmon_filter()` → `perfmon_coalesce()`:
-```python
-counter_def = {
-    "rocprofiler-sdk": {
-        "counters-schema-version": 1,
-        "counters": [{
-            "name": "TCC_HIT[0]",
-            "description": "TCC_HIT on 0th XCC and 0th channel",
-            "properties": [],
-            "definitions": [{
-                "architectures": ["gfx942"],
-                "expression": "select(TCC_HIT,[DIMENSION_XCC=[0], DIMENSION_INSTANCE=[0]])"
-            }]
-        }]
-    }
-}
-yaml.dump(counter_def, sort_keys=False)
-```
-**Data**: Nested dict/list structure for TCC channel counters
-
-### 4. Reading/merging counter definitions (utils.py run_prof(), lines 918-933)
-```python
-counter_defs = yaml.safe_load(file)  # Load base counter_defs.yaml
-counter_defs["rocprofiler-sdk"]["counters"].extend(...)  # Merge
-yaml.dump(counter_defs, tmpfile, default_flow_style=False, sort_keys=False)
-```
-**Data**: Same structure as #3
-
-**Current Dependency**: `pyyaml==6.0.3` (~50KB package)
+**Phase Boundaries**:
+- `utils/utils.py` intentionally NOT updated (Phase 4 will segregate shared utilities)
+- `requirements.txt` keeps pyyaml (analyze mode needs it)
+- Full profile isolation achieved after Phase 4 completes
 
 ---
 
-## Objective
+## Problem
 
-**Create minimal YAML library** (`src/utils/yaml_lib.py`) with only `safe_load()` and `dump()` for basic types.
+Profile mode has 7 files importing yaml:
 
-**Why this approach:**
-- ✅ We only use 2 functions: `yaml.safe_load()` and `yaml.dump()`
-- ✅ All YAML data uses only: dicts, lists, strings, ints, bools, None (no anchors, tags, etc.)
-- ✅ ~300 line single-file implementation sufficient
-- ✅ Based on PyYAML patterns but not full vendoring (no LICENSE needed, just attribution)
-- ✅ Supports Python 3.8-3.12
-- ✅ Zero external dependencies
+**Phase 3 scope (3 files):**
+1. `src/rocprof_compute_profile/profiler_base.py` (line 38)
+2. `src/rocprof_compute_soc/soc_base.py` (line 35)
+3. `src/utils/mi_gpu_spec.py` (line 29)
 
-**Rejected alternatives:**
-- ❌ Vendor full PyYAML: Overkill (~20 files, 5000+ lines for 2 functions)
-- ❌ Convert to JSON: YAML format is part of rocprofiler interface, can't change
+**Phase 4 scope:**
+4. `src/utils/utils.py` (line 53) - Shared file, segregate later
 
----
-
-## Scope
-
-### In Scope
-- Create `src/utils/yaml_lib.py` with `safe_load()` and `dump()`
-- Support parameters: `sort_keys=False`, `default_flow_style=None`
-- Update 3 import statements: profiler_base.py, soc_base.py, utils.py
-- Test all 4 YAML usage points still work
-- Validate against Python 3.8-3.12
-
-### Out of Scope
-- YAML usage in analyze mode (can still use external pyyaml)
-- Advanced YAML features (anchors, tags, custom types)
-- Optimizing YAML parsing performance
+**Not modified:**
+5. `src/utils/file_io.py` - Analyze only
+6. `src/utils/hash_checker.py` - Dev tool
+7. `src/rocprof_compute_tui/widgets/collapsibles.py` - TUI only
 
 ---
 
-## Implementation Plan
+## Implementation
 
-### Step 1: Create Minimal YAML Library
+### 1. Add Git Submodule
 
-**File**: `src/utils/yaml_lib.py` (new file, ~300-400 lines)
-
-Create single-file minimal YAML library based on PyYAML's safe subset:
-
-```python
-"""
-Minimal YAML Library for rocprof-compute
-Based on PyYAML 6.0.3 safe_load() and dump() implementations
-Source: https://github.com/yaml/pyyaml/tree/6.0.3
-Commit: c1a91bc2e756c091e4e05b84b8ec31e88e5630f (example)
-
-This is a minimal pure-Python YAML implementation supporting only:
-- Dicts (mappings)
-- Lists (sequences)
-- Strings, integers, floats, booleans, None
-- Basic YAML syntax (no anchors, tags, or advanced features)
-
-Sufficient for rocprof-compute's profiling configs and counter definitions.
-Compatible with Python 3.8+.
-"""
-
-def safe_load(stream):
-    """
-    Load YAML from string or file stream.
-    Supports only safe basic types (dict, list, str, int, float, bool, None).
-    """
-    # Implementation: Simple recursive descent parser
-    # Parse YAML syntax into Python objects
-    pass
-
-def dump(data, stream=None, sort_keys=False, default_flow_style=None):
-    """
-    Dump Python data to YAML format.
-
-    Args:
-        data: Python dict/list/str/int/float/bool/None
-        stream: File object to write to (or None for string return)
-        sort_keys: Whether to sort dict keys (default False)
-        default_flow_style: Use flow style (inline) if True (default None/block)
-
-    Returns:
-        YAML string if stream is None, otherwise None
-    """
-    # Implementation: Recursive serializer
-    # Convert Python objects to YAML syntax
-    pass
+```bash
+git submodule add https://github.com/yaml/pyyaml.git src/vendored/pyyaml
+cd src/vendored/pyyaml && git checkout 6.0.3 && cd ../../..
+git add .gitmodules src/vendored/pyyaml
+git commit -m "Vendor PyYAML 6.0.3"
 ```
 
-**Testing**: Create `tests/test_yaml_lib.py` to validate against real YAML files used in profiling.
+### 2. Create Vendored Package Wrapper
 
----
+**File**: `src/vendored/__init__.py`
 
-### Step 2: Update All YAML Imports
+```python
+"""Vendored dependencies for rocprofiler-compute."""
 
-**Files to modify**:
-1. `src/rocprof_compute_profile/profiler_base.py`
-2. `src/rocprof_compute_soc/soc_base.py`
-3. `src/utils/utils.py`
+# PyYAML 6.0.3 - https://github.com/yaml/pyyaml (MIT License)
+try:
+    from .pyyaml.lib import yaml
+except ImportError as e:
+    raise ImportError(
+        "\nERROR: Vendored PyYAML not found!\n"
+        "Run: git submodule update --init --recursive\n"
+    ) from e
 
-**Change**:
+__all__ = ['yaml']
+```
+
+**Why no fallback**: Fail fast to prevent dev/prod inconsistency.
+
+### 3. Create Documentation
+
+**File**: `src/vendored/README.md`
+
+```markdown
+# Vendored Dependencies
+
+| Package | Version | License | Source |
+|---------|---------|---------|--------|
+| PyYAML  | 6.0.3   | MIT     | https://github.com/yaml/pyyaml |
+
+## Usage
+```python
+from vendored import yaml
+```
+
+See CONTRIBUTING.md for vendoring workflow.
+```
+
+### 4. Update CMake
+
+**Add submodule auto-init** (after `find_package(Python3)`, ~line 100):
+
+```cmake
+# Auto-initialize vendored dependencies
+find_package(Git QUIET)
+if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/src/vendored/pyyaml/lib/yaml/__init__.py")
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive src/vendored/pyyaml
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            RESULT_VARIABLE GIT_SUBMOD_RESULT
+        )
+        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+            message(FATAL_ERROR "git submodule update failed for src/vendored/pyyaml")
+        endif()
+    endif()
+endif()
+```
+
+**Add installation** (after other `install(DIRECTORY src/...)`, ~line 722):
+
+```cmake
+# Vendored dependencies
+install(FILES src/vendored/__init__.py
+        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME}/vendored
+        COMPONENT main)
+
+install(DIRECTORY src/vendored/pyyaml/lib/yaml
+        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME}/vendored/pyyaml/lib
+        COMPONENT main
+        FILES_MATCHING PATTERN "*.py"
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE)
+```
+
+**Note**: The CMake pyyaml dependency check (lines 110-112) is NOT removed in Phase 3. It will be removed in Phase 5 after pyyaml is removed from requirements.txt.
+
+### 5. Update Python Imports
+
+Change in 3 files:
+- `src/rocprof_compute_profile/profiler_base.py` (line 38)
+- `src/rocprof_compute_soc/soc_base.py` (line 35)
+- `src/utils/mi_gpu_spec.py` (line 29)
+
 ```python
 # BEFORE:
 import yaml
 
 # AFTER:
-from utils import yaml_lib as yaml
+from vendored import yaml
 ```
 
-**Impact**: ~3 files, 3 lines changed
+### 6. Requirements
 
----
+**No changes needed**:
+- `requirements.txt` already has `pyyaml==6.0.3` (still needed by analyze mode and utils.py)
+- `requirements-test.txt` doesn't need it (tests use pyyaml from requirements.txt)
 
-### Step 3: Verify YAML Operations Still Work
+### 7. Update Documentation
 
-**Test all YAML usage points**:
-
-1. **profiler_base.py line 477** - Write profiling config
-2. **soc_base.py lines 302-336** - Read/dump analysis configs
-3. **soc_base.py line 656** - Write counter definitions
-4. **utils.py lines 918-933** - Read/merge/write counter definitions
-
-Run existing profile tests to ensure no regressions.
-
----
-
-### Step 4: Update Tests
-
-**File**: `tests/test_yaml_lib.py` (new)
-
-```python
-import pytest
-from pathlib import Path
-from utils import yaml_lib as yaml
-
-def test_yaml_lib_dump_basic_dict():
-    """Test dumping basic dictionary"""
-    data = {'key1': 'value1', 'key2': 123, 'key3': True}
-    result = yaml.dump(data)
-    assert 'key1: value1' in result
-    assert 'key2: 123' in result
-    assert 'key3: true' in result
-
-def test_yaml_lib_dump_nested():
-    """Test dumping nested structures"""
-    data = {
-        'rocprofiler-sdk': {
-            'counters-schema-version': 1,
-            'counters': [
-                {
-                    'name': 'TCC_HIT[0]',
-                    'description': 'Test counter',
-                    'properties': [],
-                    'definitions': [
-                        {'architectures': ['gfx942'], 'expression': 'test'}
-                    ]
-                }
-            ]
-        }
-    }
-    result = yaml.dump(data, sort_keys=False)
-    loaded = yaml.safe_load(result)
-    assert loaded == data
-
-def test_yaml_lib_safe_load_config():
-    """Test loading actual profiling config YAML"""
-    yaml_content = """
-    kernel_name: vecCopy
-    device: 0
-    iteration_multiplexing: null
-    spatial_multiplexing: false
-    """
-    result = yaml.safe_load(yaml_content)
-    assert result['kernel_name'] == 'vecCopy'
-    assert result['device'] == 0
-    assert result['iteration_multiplexing'] is None
-    assert result['spatial_multiplexing'] is False
-
-def test_yaml_lib_roundtrip_counter_defs():
-    """Test roundtrip of counter definition structure"""
-    # This mirrors actual usage in soc_base.py line 656
-    counter_def = {
-        'rocprofiler-sdk': {
-            'counters-schema-version': 1,
-            'counters': [
-                {
-                    'name': 'TEST_COUNTER',
-                    'description': 'Test description',
-                    'properties': [],
-                    'definitions': [{
-                        'architectures': ['gfx942'],
-                        'expression': 'select(TCC_HIT,[DIMENSION_XCC=[0]])'
-                    }]
-                }
-            ]
-        }
-    }
-
-    # Dump to YAML
-    yaml_str = yaml.dump(counter_def, sort_keys=False)
-
-    # Load back
-    loaded = yaml.safe_load(yaml_str)
-
-    # Verify identical
-    assert loaded == counter_def
-
-def test_profile_no_external_yaml():
-    """
-    CRITICAL: Verify profile mode doesn't import external pyyaml
-    """
-    import sys
-
-    # Clear pyyaml if imported
-    if 'yaml' in sys.modules and 'pyyaml' in str(sys.modules['yaml']):
-        del sys.modules['yaml']
-
-    # Import profile mode
-    from rocprof_compute_profile.profiler_base import RocProfCompute_Base
-
-    # yaml should be yaml_lib, not external pyyaml
-    import yaml
-    assert 'yaml_lib' in str(yaml.__file__), (
-        f"Profile imported external pyyaml! Got: {yaml.__file__}"
-    )
+**README.md** - Add to "Development from Source":
+```markdown
+### Prerequisites
+git submodule update --init --recursive
 ```
 
-**Update existing tests**: Verify all profile tests still pass with `yaml_lib`.
+**CONTRIBUTING.md** - Add "Vendoring External Dependencies" section after "Metrics Management":
+- Vendoring criteria (pure Python, permissive license, profile code path)
+- How to add packages (git submodule, CMake, imports)
+- How to update packages
+- SQLAlchemy example for future reference
+
+### 8. Testing
+
+Run existing profile tests:
+- Verify YAML operations work with vendored PyYAML
+- Confirm no regressions
+- Test dev mode (source) and install mode
+
+Optional: Add `tests/test_vendored.py` to verify profile uses vendored yaml.
 
 ---
 
 ## Success Criteria
 
-- [ ] `utils/yaml_lib.py` created with safe_load() and dump()
-- [ ] Profile mode imports `yaml_lib` instead of external `pyyaml`
-- [ ] `profiling_config.yaml` written correctly
-- [ ] Counter definitions loaded/written successfully
-- [ ] All 3 YAML usage points verified working
-- [ ] All profile tests pass
-- [ ] test_yaml_lib.py validates roundtrip correctness
-- [ ] **After this PR: Profile has ZERO external dependencies** 🎉
+- [ ] Git submodule added: `src/vendored/pyyaml/` (PyYAML 6.0.3)
+- [ ] Files created: `src/vendored/__init__.py`, `src/vendored/README.md`
+- [ ] CMake: Auto-init submodules, install vendored packages
+- [ ] Imports updated (3 files): profiler_base.py, soc_base.py, mi_gpu_spec.py
+- [ ] Requirements: No changes (pyyaml already in requirements.txt)
+- [ ] Docs: README.md (submodule init), CONTRIBUTING.md (vendoring workflow)
+- [ ] Tests pass, both dev and install modes work
 
 ---
 
-## Files to Modify (Preliminary)
+## Files Modified
 
-**Option A (Vendoring)**:
-- `src/utils/vendored/yaml/` (new) - PyYAML source
-- `src/rocprof_compute_profile/profiler_base.py` - Import from vendored
-- `LICENSE.md` - Add PyYAML attribution
+**New**:
+- `src/vendored/__init__.py`
+- `src/vendored/README.md`
+- `.gitmodules`
 
-**Option B (JSON)**:
-- `src/rocprof_compute_profile/profiler_base.py` - Use json module
-- `CMakeLists.txt` - Convert YAML to JSON at build time
-- Counter definition files - Provide JSON alternatives
+**Modified**:
+- `CMakeLists.txt` (submodule init, installation)
+- `src/rocprof_compute_profile/profiler_base.py` (line 38)
+- `src/rocprof_compute_soc/soc_base.py` (line 35)
+- `src/utils/mi_gpu_spec.py` (line 29)
+- `README.md`
+- `CONTRIBUTING.md`
 
----
+**Submodule**: `src/vendored/pyyaml/` (PyYAML 6.0.3)
 
-## Decision Criteria
-
-**Favor Option A (Vendoring) if**:
-- YAML human-readability important
-- Existing YAML configs extensive
-- PyYAML license compatible (MIT ✓)
-
-**Favor Option B (JSON) if**:
-- Simplicity preferred
-- Config files rarely hand-edited
-- Want truly zero external code
-
----
-
-## Implementation Details
-
-**To be filled in during execution based on**:
-- Phase 2 completion (pandas removed, cleaner codebase)
-- Analysis of all YAML usage points
-- BU preference for YAML vs JSON
-- License review for vendoring
+**NOT Modified**:
+- `src/utils/utils.py` (Phase 4 scope)
+- `requirements.txt` (keeps pyyaml)
+- `LICENSE.md` (already lists PyYAML line 36)
+- `CHANGELOG.md` (internal refactor, transparent to users)
 
 ---
 
 ## Notes
 
-- **Milestone**: After this phase, profile mode achieves ZERO external dependencies
-- Depends on Phase 2 merged to avoid merge conflicts
-- Relatively low-risk change (YAML usage well-defined)
+- **Location**: `src/vendored/` follows Python convention (pip, setuptools use `_vendor/`)
+- **Pure Python only**: No C extensions for portability
+- **Phase boundary**: utils.py segregation is Phase 4's responsibility
+- **Partial completion**: Profile still uses external PyYAML via utils.py until Phase 4
+- **CMake auto-init**: Submodules initialized during configure (seamless for CI and builds)
+- **No user-facing changes**: Internal refactoring only
