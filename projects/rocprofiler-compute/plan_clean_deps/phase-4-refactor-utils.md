@@ -80,7 +80,7 @@ Analysis-only functions:
 
 ## Test Results
 
-- ✅ 200/216 tests passing (15 pre-existing failures unrelated to refactor)
+- ✅ 214/214 tests passing, 2 skipped (matches develop baseline)
 - ✅ 26/26 data imputation tests passing
 - ✅ No circular dependencies
 - ✅ All imports updated correctly
