@@ -1,7 +1,7 @@
 ##############################################################################
 # MIT License
 #
-# Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2026 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +25,6 @@
 
 """
 Common utilities used by BOTH profile and analyze code paths.
-
-This module contains utilities that are called by both profiling and analysis
-operations, including:
-- Version/environment detection
-- Identifiers (UUID, rank)
-- Configuration parsing
-- Time formatting
-- General helpers
-
 Functions in this module must be dependency-light (stdlib only or vendored deps).
 """
 

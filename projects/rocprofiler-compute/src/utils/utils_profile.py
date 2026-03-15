@@ -1,7 +1,7 @@
 ##############################################################################
 # MIT License
 #
-# Copyright (c) 2021 - 2025 Advanced Micro Devices, Inc. All Rights Reserved.
+# Copyright (c) 2026 Advanced Micro Devices, Inc. All Rights Reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,17 +25,9 @@
 
 """
 Profile-specific utilities called ONLY by the profile code path.
-
-This module contains utilities exclusively used during profiling operations,
-including:
-- Core profiling execution (run_prof, pc_sampling_prof)
-- ROCProfV3 JSON/CSV conversion
-- Counter collection and configuration
-- Process management and subprocess handling
-- System information generation
-
 These functions are only called during 'rocprof-compute profile' operations,
 not during analysis.
+Functions in this module must be dependency-light (stdlib only or vendored deps).
 """
 
 import ctypes
