@@ -40,7 +40,6 @@ These functions are only called during 'rocprof-compute analyze' operations,
 not during profiling.
 """
 
-import glob
 import shutil
 from pathlib import Path
 from typing import Any, Optional, Union
@@ -180,65 +179,6 @@ def build_kernel_name_to_id(
 
 
 @demarcate
-def save_torch_trace_inputs(
-    workload_dir: str,
-    fbase: str,
-    output_format: str = "rocpd",
-) -> None:
-    """
-    Move counter_collection and marker_api_trace data to workload_dir,
-    for creation of PyTorch operator trace in Analyze mode.
-    """
-    src_dir = Path(workload_dir) / "out" / "pmc_1"
-    if output_format == "rocpd":
-        # Only one pair expected
-        src_counter = src_dir / f"{fbase}_counter_collection.csv"
-        src_marker = src_dir / f"{fbase}_marker_api_trace.csv"
-        dst_counter = Path(workload_dir) / f"torch_trace_{fbase}_counter_collection.csv"
-        dst_marker = Path(workload_dir) / f"torch_trace_{fbase}_marker_api_trace.csv"
-        # These files are expected to exist
-        # Letting shutil.copyfile raise error if files not found
-        shutil.copyfile(src_counter, dst_counter)
-        shutil.copyfile(src_marker, dst_marker)
-        console_log(
-            "torch trace",
-            "Moved counter collection and marker trace files "
-            "to workload dir for PyTorch trace creation.",
-        )
-        console_log("Counter Collection: ", str(dst_counter))
-        console_log("Marker API Trace: ", str(dst_marker))
-    elif output_format == "csv":
-        # Multiple pairs possible (one per PID/process)
-        counter_files = glob.glob(str(src_dir / "*/*_counter_collection.csv"))
-        marker_files = glob.glob(str(src_dir / "*/*_marker_api_trace.csv"))
-        (Path(workload_dir) / f"{fbase}").mkdir(parents=True, exist_ok=True)
-        # Expecting the files to be present
-        # Letting shutil.copyfile raise error if files not found
-        # Path: workload_dir/fbase/torch_trace_<src_basename> (discovered by
-        # process_torch_trace_output via glob **/torch_trace*_marker_api_trace.csv)
-        for src_counter in counter_files:
-            dst_counter = str(
-                Path(workload_dir)
-                / f"{fbase}"
-                / ("torch_trace_" + Path(src_counter).name)
-            )
-            shutil.copyfile(src_counter, dst_counter)
-            console_log("torch trace", f"Copied Counter Collection: {dst_counter}")
-        for src_marker in marker_files:
-            dst_marker = str(
-                Path(workload_dir)
-                / f"{fbase}"
-                / ("torch_trace_" + Path(src_marker).name)
-            )
-            shutil.copyfile(src_marker, dst_marker)
-            console_log("torch trace", f"Copied Marker API Trace: {dst_marker}")
-    else:
-        console_warning(
-            "torch trace",
-            f"Unknown output_format: {output_format} in save_torch_trace_inputs",
-        )
-
-
 @demarcate
 def process_torch_trace_output(
     workload_dir: str,
@@ -391,30 +331,6 @@ def process_torch_trace_output(
 
 
 @demarcate
-def process_kokkos_trace_output(workload_dir: str, fbase: str) -> None:
-    # marker api trace csv files are generated for each process
-    marker_api_trace_csvs = glob.glob(
-        f"{workload_dir}/out/pmc_1/*/*_marker_api_trace.csv"
-    )
-    existing_marker_files_csv = [f for f in marker_api_trace_csvs if Path(f).is_file()]
-
-    # concate and output marker api trace info
-    combined_results = pd.concat(
-        [pd.read_csv(f) for f in existing_marker_files_csv], ignore_index=True
-    )
-
-    combined_results.to_csv(
-        f"{workload_dir}/out/pmc_1/results_{fbase}_marker_api_trace.csv",
-        index=False,
-    )
-
-    if Path(f"{workload_dir}/out").exists():
-        shutil.copyfile(
-            f"{workload_dir}/out/pmc_1/results_{fbase}_marker_api_trace.csv",
-            f"{workload_dir}/{fbase}_marker_api_trace.csv",
-        )
-
-
 def is_workload_empty(path: str) -> None:
     """Peek workload directory to verify valid profiling output"""
     pmc_perf_path = Path(path) / "pmc_perf.csv"

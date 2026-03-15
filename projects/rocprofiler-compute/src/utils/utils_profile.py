@@ -40,20 +40,14 @@ not during analysis.
 
 import ctypes
 import glob
-import io
 import json
 import locale
 import logging
 import os
 import re
-import select
-import selectors
 import shlex
 import shutil
-import subprocess
-import sys
 import tempfile
-import threading
 import time
 import traceback
 from collections.abc import Generator
@@ -72,9 +66,9 @@ from utils.logger import (
     console_warning,
     demarcate,
 )
+from utils.utils_common import capture_subprocess_output, rocprof_cmd
 
-# Global variables for rocprof command and arguments
-rocprof_cmd = ""
+# Global variables for rocprof arguments
 rocprof_args = ""
 
 
@@ -314,130 +308,6 @@ def perform_attach_detach(new_env: dict[str, str], options: dict[str, Any]) -> N
                     )
             except Exception as e:
                 console_error(f"Error detaching from process {pid}: {e}")
-
-
-def capture_subprocess_output(
-    subprocess_args: list[str],
-    new_env: Optional[dict[str, str]] = None,
-    profileMode: bool = False,
-    enable_logging: bool = True,
-) -> tuple[bool, str]:
-    # Start subprocess
-    # bufsize = 1 means output is line buffered
-    # universal_newlines = True is required for line buffering
-    sanitized_env = (
-        None
-        if new_env is None
-        else {
-            k: ":".join(str(i) for i in v) if isinstance(v, list) else str(v)
-            for k, v in new_env.items()
-        }
-    )
-
-    process = (
-        subprocess.Popen(
-            subprocess_args,
-            bufsize=1,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
-        )
-        if sanitized_env == None
-        else subprocess.Popen(
-            subprocess_args,
-            bufsize=1,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
-            env=sanitized_env,
-        )
-    )
-
-    # Create callback function for process output
-    buf = io.StringIO()
-
-    def handle_output(stream: io.TextIOWrapper, _mask) -> None:
-        try:
-            # Because the process' output is line buffered, there's only ever one
-            # line to read when this function is called
-            line = stream.readline()
-            if not line:
-                return
-            buf.write(line)
-            if enable_logging:
-                if profileMode:
-                    console_log(rocprof_cmd, line.strip(), indent_level=1)
-                else:
-                    console_log(line.strip())
-        except UnicodeDecodeError:
-            # Skip this line
-            pass
-
-    # Register callback for an "available for read" event from subprocess' stdout stream
-    selector = selectors.DefaultSelector()
-    if process.stdout is not None:
-        selector.register(process.stdout, selectors.EVENT_READ, handle_output)
-
-    def forward_input() -> None:
-        """
-        Forward the keyboard input from the terminal to the inside subprocess
-        """
-
-        try:
-            sys.stdin.fileno()
-        except (io.UnsupportedOperation, AttributeError):
-            # Stdin can't be used in select; skip input forwarding
-            return
-
-        if sys.stdin.isatty():
-            for line in sys.stdin:
-                if process.poll() is not None:
-                    break
-                process.stdin.write(line)
-                process.stdin.flush()
-        else:
-            while process.poll() is None:
-                try:
-                    rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
-                except (io.UnsupportedOperation, AttributeError):
-                    break
-                if rlist:
-                    line = sys.stdin.readline()
-                    if not line:
-                        break
-                    process.stdin.write(line)
-                    process.stdin.flush()
-        try:
-            process.stdin.close()
-        except Exception:
-            console_warning("forward_input: the stdin did not close properly!")
-
-    input_thread = threading.Thread(target=forward_input, daemon=True)
-    input_thread.start()
-
-    # Loop until subprocess is terminated
-    while process.poll() is None:
-        # Wait for events and handle them with their registered callbacks
-        events = selector.select()
-        for key, mask in events:
-            callback = key.data
-            callback(key.fileobj, mask)
-
-    input_thread.join(timeout=1)
-
-    # Get process return code
-    return_code = process.wait()
-    selector.close()
-
-    success = return_code == 0
-
-    # Store buffered output
-    output = buf.getvalue()
-    buf.close()
-
-    return success, output
 
 
 def get_agent_dict(data: dict[str, Any]) -> dict[Any, Any]:
@@ -765,6 +635,89 @@ def parse_text(text_file: str) -> list[str]:
         ]
 
 
+def save_torch_trace_inputs(
+    workload_dir: str,
+    fbase: str,
+    output_format: str = "rocpd",
+) -> None:
+    """
+    Move counter_collection and marker_api_trace data to workload_dir,
+    for creation of PyTorch operator trace in Analyze mode.
+    """
+    src_dir = Path(workload_dir) / "out" / "pmc_1"
+    if output_format == "rocpd":
+        # Only one pair expected
+        src_counter = src_dir / f"{fbase}_counter_collection.csv"
+        src_marker = src_dir / f"{fbase}_marker_api_trace.csv"
+        dst_counter = Path(workload_dir) / f"torch_trace_{fbase}_counter_collection.csv"
+        dst_marker = Path(workload_dir) / f"torch_trace_{fbase}_marker_api_trace.csv"
+        # These files are expected to exist
+        # Letting shutil.copyfile raise error if files not found
+        shutil.copyfile(src_counter, dst_counter)
+        shutil.copyfile(src_marker, dst_marker)
+        console_log(
+            "torch trace",
+            "Moved counter collection and marker trace files "
+            "to workload dir for PyTorch trace creation.",
+        )
+        console_log("Counter Collection: ", str(dst_counter))
+        console_log("Marker API Trace: ", str(dst_marker))
+    elif output_format == "csv":
+        # Multiple pairs possible (one per PID/process)
+        counter_files = glob.glob(str(src_dir / "*/*_counter_collection.csv"))
+        marker_files = glob.glob(str(src_dir / "*/*_marker_api_trace.csv"))
+        (Path(workload_dir) / f"{fbase}").mkdir(parents=True, exist_ok=True)
+        # Expecting the files to be present
+        # Letting shutil.copyfile raise error if files not found
+        # Path: workload_dir/fbase/torch_trace_<src_basename> (discovered by
+        # process_torch_trace_output via glob **/torch_trace*_marker_api_trace.csv)
+        for src_counter in counter_files:
+            dst_counter = str(
+                Path(workload_dir)
+                / f"{fbase}"
+                / ("torch_trace_" + Path(src_counter).name)
+            )
+            shutil.copyfile(src_counter, dst_counter)
+            console_log("torch trace", f"Copied Counter Collection: {dst_counter}")
+        for src_marker in marker_files:
+            dst_marker = str(
+                Path(workload_dir)
+                / f"{fbase}"
+                / ("torch_trace_" + Path(src_marker).name)
+            )
+            shutil.copyfile(src_marker, dst_marker)
+            console_log("torch trace", f"Copied Marker API Trace: {dst_marker}")
+    else:
+        console_warning(
+            "torch trace",
+            f"Unknown output_format: {output_format} in save_torch_trace_inputs",
+        )
+
+
+def process_kokkos_trace_output(workload_dir: str, fbase: str) -> None:
+    # marker api trace csv files are generated for each process
+    marker_api_trace_csvs = glob.glob(
+        f"{workload_dir}/out/pmc_1/*/*_marker_api_trace.csv"
+    )
+    existing_marker_files_csv = [f for f in marker_api_trace_csvs if Path(f).is_file()]
+
+    # concate and output marker api trace info
+    combined_results = pd.concat(
+        [pd.read_csv(f) for f in existing_marker_files_csv], ignore_index=True
+    )
+
+    combined_results.to_csv(
+        f"{workload_dir}/out/pmc_1/results_{fbase}_marker_api_trace.csv",
+        index=False,
+    )
+
+    if Path(f"{workload_dir}/out").exists():
+        shutil.copyfile(
+            f"{workload_dir}/out/pmc_1/results_{fbase}_marker_api_trace.csv",
+            f"{workload_dir}/{fbase}_marker_api_trace.csv",
+        )
+
+
 def run_prof(
     fnames: Union[list[str], str],
     profiler_options: Union[list[str], dict[str, Union[str, list[str]]]],
@@ -962,9 +915,6 @@ def run_prof(
         combined_df.to_csv(workload_dir + f"/results_{fbase}.csv", index=False)
         if torch_trace_enabled:
             # move counter collection and marker trace to workload dir
-            # Import here to avoid circular dependency
-            from utils.utils_analysis import save_torch_trace_inputs
-
             save_torch_trace_inputs(workload_dir, fbase, format_rocprof_output)
         if retain_rocpd_output:
             for db_path in glob.glob(workload_dir + "/out/pmc_1/*/*.db"):
@@ -999,16 +949,10 @@ def run_prof(
             if "--kokkos-trace" in options:
                 # TODO: as rocprofv3 --kokkos-trace feature improves,
                 # rocprof-compute should make updates accordingly
-                # Import here to avoid circular dependency
-                from utils.utils_analysis import process_kokkos_trace_output
-
                 process_kokkos_trace_output(workload_dir, fbase)
         # Add torch operator trace processing
         if torch_trace_enabled:
             # move counter collection and marker trace to workload dir
-            # Import here to avoid circular dependency
-            from utils.utils_analysis import save_torch_trace_inputs
-
             save_torch_trace_inputs(workload_dir, fbase, format_rocprof_output)
         # Combine results into single CSV file
         if results_files:

@@ -41,7 +41,12 @@ import argparse
 import io
 import os
 import re
+import select
+import selectors
 import shutil
+import subprocess
+import sys
+import threading
 import uuid
 from pathlib import Path
 from typing import Any, Optional
@@ -49,17 +54,20 @@ from typing import Any, Optional
 import yaml
 
 import config
-from utils.logger import console_debug, console_error
+from utils.logger import console_debug, console_error, console_log, console_warning
 
 # Constants
 METRIC_ID_RE = re.compile(pattern=r"^\d{1,2}(?:\.\d{1,2}){0,2}$")
 NS_TO_MS = 1.0 / 1_000_000.0
 
+# Global state: rocprof command/version being used
+# Shared between profile and analyze modes
+rocprof_cmd = ""
+
 
 def detect_rocprof(args: argparse.Namespace) -> str:
     """Detect loaded rocprof version. Resolve path and set cmd globally."""
-    # Import here to avoid circular dependency
-    from utils import utils_profile
+    global rocprof_cmd
 
     # Default is rocprofiler-sdk
     if os.environ.get("ROCPROF", "rocprofiler-sdk") == "rocprofiler-sdk":
@@ -68,23 +76,147 @@ def detect_rocprof(args: argparse.Namespace) -> str:
                 "Could not find rocprofiler-sdk tool at "
                 f"{args.rocprofiler_sdk_tool_path}"
             )
-        utils_profile.rocprof_cmd = "rocprofiler-sdk"
-        console_debug(f"rocprof_cmd is {utils_profile.rocprof_cmd}")
+        rocprof_cmd = "rocprofiler-sdk"
+        console_debug(f"rocprof_cmd is {rocprof_cmd}")
         console_debug(f"rocprofiler_sdk_tool_path is {args.rocprofiler_sdk_tool_path}")
     else:
         # If ROCPROF is not set to rocprofiler-sdk
-        utils_profile.rocprof_cmd = os.environ["ROCPROF"]
-        rocprof_path = shutil.which(utils_profile.rocprof_cmd)
+        rocprof_cmd = os.environ["ROCPROF"]
+        rocprof_path = shutil.which(rocprof_cmd)
         if not rocprof_path:
             console_error(
-                f"Unable to resolve path to {utils_profile.rocprof_cmd} binary. "
+                f"Unable to resolve path to {rocprof_cmd} binary. "
                 "Please verify installation or set ROCPROF "
                 "environment variable with full path."
             )
         rocprof_path = str(Path(rocprof_path.rstrip("\n")).resolve())
-        console_debug(f"rocprof_cmd is {str(utils_profile.rocprof_cmd)}")
+        console_debug(f"rocprof_cmd is {str(rocprof_cmd)}")
         console_debug(f"ROC Profiler: {rocprof_path}")
-    return utils_profile.rocprof_cmd
+    return rocprof_cmd
+
+
+def capture_subprocess_output(
+    subprocess_args: list[str],
+    new_env: Optional[dict[str, str]] = None,
+    profileMode: bool = False,
+    enable_logging: bool = True,
+) -> tuple[bool, str]:
+    # Start subprocess
+    # bufsize = 1 means output is line buffered
+    # universal_newlines = True is required for line buffering
+    sanitized_env = (
+        None
+        if new_env is None
+        else {
+            k: ":".join(str(i) for i in v) if isinstance(v, list) else str(v)
+            for k, v in new_env.items()
+        }
+    )
+
+    process = (
+        subprocess.Popen(
+            subprocess_args,
+            bufsize=1,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+        )
+        if sanitized_env == None
+        else subprocess.Popen(
+            subprocess_args,
+            bufsize=1,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+            env=sanitized_env,
+        )
+    )
+
+    # Create callback function for process output
+    buf = io.StringIO()
+
+    def handle_output(stream: io.TextIOWrapper, _mask) -> None:
+        try:
+            # Because the process' output is line buffered, there's only ever one
+            # line to read when this function is called
+            line = stream.readline()
+            if not line:
+                return
+            buf.write(line)
+            if enable_logging:
+                if profileMode:
+                    console_log(rocprof_cmd, line.strip(), indent_level=1)
+                else:
+                    console_log(line.strip())
+        except UnicodeDecodeError:
+            # Skip this line
+            pass
+
+    # Register callback for an "available for read" event from subprocess' stdout stream
+    selector = selectors.DefaultSelector()
+    if process.stdout is not None:
+        selector.register(process.stdout, selectors.EVENT_READ, handle_output)
+
+    def forward_input() -> None:
+        """
+        Forward the keyboard input from the terminal to the inside subprocess
+        """
+
+        try:
+            sys.stdin.fileno()
+        except (io.UnsupportedOperation, AttributeError):
+            # Stdin can't be used in select; skip input forwarding
+            return
+
+        if sys.stdin.isatty():
+            for line in sys.stdin:
+                if process.poll() is not None:
+                    break
+                process.stdin.write(line)
+                process.stdin.flush()
+        else:
+            while process.poll() is None:
+                try:
+                    rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
+                except (io.UnsupportedOperation, AttributeError):
+                    break
+                if rlist:
+                    line = sys.stdin.readline()
+                    if not line:
+                        break
+                    process.stdin.write(line)
+                    process.stdin.flush()
+        try:
+            process.stdin.close()
+        except Exception:
+            console_warning("forward_input: the stdin did not close properly!")
+
+    input_thread = threading.Thread(target=forward_input, daemon=True)
+    input_thread.start()
+
+    # Loop until subprocess is terminated
+    while process.poll() is None:
+        # Wait for events and handle them with their registered callbacks
+        events = selector.select()
+        for key, mask in events:
+            callback = key.data
+            callback(key.fileobj, mask)
+
+    input_thread.join(timeout=1)
+
+    # Get process return code
+    return_code = process.wait()
+    selector.close()
+
+    success = return_code == 0
+
+    # Store buffered output
+    output = buf.getvalue()
+    buf.close()
+
+    return success, output
 
 
 def format_time(seconds: float) -> str:
@@ -165,9 +297,6 @@ def get_uuid(length: int = 8) -> str:
 
 def get_version(rocprof_compute_home: Path) -> dict[str, str]:
     """Return ROCm Compute Profiler versioning info"""
-    # Import here to avoid circular dependency
-    from utils.utils_profile import capture_subprocess_output
-
     # semantic version info - note that version file(s) can reside in
     # two locations depending on development vs formal install
     search_dirs = [rocprof_compute_home, rocprof_compute_home.parent]
