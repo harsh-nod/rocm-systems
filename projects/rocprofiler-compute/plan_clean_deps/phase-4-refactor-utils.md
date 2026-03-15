@@ -1,76 +1,140 @@
 # Phase 4: Refactor utils.py into Mode-Specific Modules
 
-**PR #4** | **Theme**: Organize stdlib-only utilities
-**Objective**: Split utils.py into clear profile vs analyze modules
-**Dependencies**: PR #2, #3 merged (pandas and yaml eliminated)
+**PR #4** | **Theme**: Organize utilities by code path usage
+**Objective**: Split utils.py based on which code path (profile vs analyze) calls each function
+**Dependencies**: PR #2, #3 merged (join_prof moved, PyYAML vendored)
 **Duration**: 2-3 days
-**Status**: Skeleton - Details TBD
+**Status**: Detailed implementation plan
+
+---
+
+## What Phase 4 IS and IS NOT
+
+### Phase 4 IS:
+- ✅ Organizing utils.py functions by **usage pattern** (which code path calls them)
+- ✅ Creating clear module boundaries: profile vs analyze vs common
+- ✅ Reducing confusion about what functions belong where
+- ✅ Making future maintenance easier
+- ✅ Setting up clean structure for Phase 5 validation
+
+### Phase 4 IS NOT:
+- ❌ Eliminating any dependencies (that's Phases 1-3's responsibility)
+- ❌ Validating dependency purity (that's Phase 5's responsibility)
+- ❌ Making profile code stdlib-only (that's the **combined** goal of all phases)
+- ❌ Changing any function behavior (purely organizational refactoring)
+
+---
+
+## Phase Responsibilities Recap
+
+**IMPORTANT**: No single phase eliminates all dependencies from profile - it's the **combination** of all phases that achieves this goal.
+
+- **Phase 1**: Moves roofline HTML generation to analyze mode
+- **Phase 2**: Moves `join_prof()` to analyze mode (defers pandas usage)
+- **Phase 3**: Vendors PyYAML for profile code path (profile uses `yaml_lib.py` instead of external PyYAML)
+- **Phase 4 (THIS PHASE)**: Re-organizes utils.py functions by usage pattern (which code path calls them)
+- **Phase 5**: Adds validation tests and removes dependency checking from build/profile startup
 
 ---
 
 ## Problem Statement
 
 `src/utils/utils.py` is 2251 lines with mixed profile and analyze functions:
-- Profile functions (stdlib-only after Phases 2-3)
-- Analyze functions (pandas, numpy, heavy dependencies)
-- Shared utilities (used by both modes)
+- Functions called from profile code path (may use vendored yaml_lib after Phase 3)
+- Functions called from analyze code path (use pandas, numpy, heavy dependencies)
+- Functions called from both code paths (common utilities)
 
-This creates confusion about what's safe to use in profile mode and makes it harder to maintain the stdlib-only guarantee.
+This creates confusion about what's used where and makes it harder to maintain clean separation between profile and analyze modes.
 
 ---
 
 ## Objective
 
-Split `utils/utils.py` into three focused modules:
+Split `utils/utils.py` into three focused modules **based on usage pattern** (which code path calls them):
 
-1. **`utils/utils_common.py`** - Shared stdlib utilities
-   - `format_time()`, `get_uuid()`, `print_status()`
-   - `capture_subprocess_output()`
-   - File I/O helpers
-   - Logging utilities
+1. **`utils/utils_common.py`** - Functions called by BOTH profile and analyze code paths (11 functions + 2 constants)
+   - Version/environment: `get_version()`, `get_version_display()`, `detect_rocprof()`
+   - Identifiers: `get_uuid()`, `get_rank()`, `replace_rank()`, `replace_env()`
+   - Config: `parse_sets_yaml()` - uses yaml (will use yaml_lib after Phase 3)
+   - Utilities: `format_time()`, `get_panel_alias()`, `get_submodules()`
+   - Constants: `METRIC_ID_RE`, `NS_TO_MS`
 
-2. **`utils/utils_profile.py`** - Profile-specific (stdlib only)
-   - `run_prof()` - Core profiling execution
-   - `pc_sampling_prof()` - PC sampling
-   - `gen_sysinfo()` - System info generation
-   - CSV utilities (from Phase 2)
+2. **`utils/utils_profile.py`** - Functions called ONLY by profile code path (22 functions)
+   - Core profiling: `run_prof()`, `pc_sampling_prof()`, `gen_sysinfo()`
+   - Process handling: `capture_subprocess_output()`, `perform_attach_detach()`, `print_status()`
+   - ROCProfV3 support: `v3_json_to_csv()`, `v3_counter_csv_to_v2_csv()`, `v3_json_get_counters()`, `v3_json_get_dispatches()`
+   - Counter/config: `add_counter_extra_config_input_yaml()`, `convert_metric_id_to_panel_info()`, `is_tcc_channel_counter()`
+   - Data conversion: `convert_native_counter_collection_csv()`, `process_rocprofv3_output()`
+   - **Note**: Currently uses pandas/yaml (will be eliminated in Phases 2-3)
 
-3. **`utils/utils_analysis.py`** - Analysis-specific (heavy deps OK)
-   - `impute_counters_iteration_multiplex()` - Pandas operations
-   - `merge_counters_spatial_multiplex()` - Pandas operations
-   - `process_torch_trace_output()` - Pandas operations
-   - Metric evaluation functions
+3. **`utils/utils_analysis.py`** - Functions called ONLY by analyze code path (14 functions)
+   - PyTorch trace: `process_torch_trace_output()`, `build_kernel_name_to_id()`, `sanitize_torch_operator_key()`
+   - Operator analysis: `compute_operator_prefix_stats()`, `get_unique_invocations()`
+   - Multiplexing: `impute_counters_iteration_multiplex()`, `merge_counters_spatial_multiplex()`, `reverse_multi_index_df_pmc()`
+   - Kokkos: `process_kokkos_trace_output()`
+   - Kernel names: `simplify_kernel_name()`
+   - Validation: `is_workload_empty()`
+   - I/O: `save_torch_trace_inputs()`, `load_yaml()`
+   - Formatting: `format_scientific_notation_if_needed()`
+   - **Note**: `join_prof()` will be added here in Phase 2
 
 ---
 
 ## Scope
 
 ### In Scope
-- Create three new utility modules
-- Move functions to appropriate modules
+- Analyze which code path (profile vs analyze) calls each function in utils.py
+- Create three new utility modules organized by usage pattern
+- Move functions to appropriate modules based on call graph analysis
 - Update all import statements across codebase
 - Tests to verify no import errors
 - Documentation of new module structure
+- Minimize merge conflicts with Phases 1-3 changes
 
 ### Out of Scope
 - Functional changes to utilities (keep behavior identical)
 - New utilities or features
 - Performance optimization
+- Eliminating dependencies (that's Phases 1-3's job, not Phase 4's)
+- Validation that profile code path has no external deps (that's Phase 5's job)
 
 ---
 
 ## Success Criteria
 
-- [ ] Three new modules created: `utils_common.py`, `utils_profile.py`, `utils_analysis.py`
-- [ ] `utils_profile.py` contains ONLY stdlib-only functions
-- [ ] `utils_analysis.py` clearly separated with heavy dependencies
+- [x] **Call graph analysis complete**: Each function categorized by code path usage ✅
+  - Profile code path: 22 functions identified
+  - Analyze code path: 14 functions identified
+  - Common (both paths): 11 functions + 2 constants identified
+
+- [ ] Three new modules created with correct function distribution:
+  - `utils_common.py`: 11 functions + 2 constants (~280 lines)
+  - `utils_profile.py`: 22 functions (~1,360 lines)
+  - `utils_analysis.py`: 14 functions (~760 lines)
+
+- [ ] Imports correctly distributed in each module:
+  - `utils_common.py`: stdlib + yaml (will use yaml_lib after Phase 3)
+  - `utils_profile.py`: stdlib + pandas + yaml (until Phases 2-3 complete)
+  - `utils_analysis.py`: stdlib + pandas + numpy + yaml
+
 - [ ] All ~100 import statements updated across codebase
+  - rocprof_compute_base.py: 10 imports
+  - Profile files: ~8 imports total
+  - Analyze files: ~11 imports total
+  - SoC base: 9 imports (split across modules)
+  - Test files: ~60+ imports
+
 - [ ] Compatibility shim (`utils/utils.py`) works during migration
 - [ ] **All existing tests pass** with new module structure ✅
 - [ ] No circular import dependencies
 - [ ] No new tests added (Phase 4 is refactoring only)
+- [ ] Merge conflicts minimized by understanding Phase 1-3 changes
 
-**Note**: Stdlib-only validation tests are added in Phase 5, not Phase 4.
+**Critical Clarifications**:
+1. This phase does NOT validate dependency purity - it organizes by usage pattern
+2. Phase 5 adds validation that profile code path has no external dependencies
+3. utils_profile.py will still import pandas/yaml until Phases 2-3 are merged
+4. After Phases 1-3 merge, utils_profile.py should have no external deps
 
 ---
 
@@ -84,8 +148,8 @@ Split `utils/utils.py` into three focused modules:
 
 - All files importing from `utils.utils` (update import paths)
 - `src/rocprof_compute_profile/profiler_base.py`
-- `src/analysis_base.py`
-- `src/analysis_cli.py`
+- `src/rocprof_compute_analyze/analysis_base.py`
+- `src/rocprof_compute_analyze/analysis_cli.py`
 - `src/roofline.py`
 - Many others (comprehensive import update)
 
@@ -112,48 +176,320 @@ Split `utils/utils.py` into three focused modules:
 
 ### Step 1: Analyze Current utils.py Usage
 
-**Scan all imports** across codebase:
-```bash
-grep -r "from utils import\|from utils.utils import" src/ tests/ --include="*.py" | wc -l
-# Expected: 100+ files
-```
+**COMPLETED**: Call graph analysis has been performed. See detailed categorization below.
 
-Categorize all ~150 functions in `utils/utils.py` into:
-- Common (used by both modes, stdlib only)
-- Profile-specific (stdlib only)
-- Analysis-specific (can use pandas/numpy)
+#### Summary of utils.py
+
+**Total functions in utils.py**: 47 functions
+**Global imports**: numpy, pandas, yaml (non-stdlib dependencies)
+**Global constants**: `METRIC_ID_RE`, `NS_TO_MS`
+
+#### Code Path Analysis Results
+
+**Profile Code Path Entry Points**:
+1. `src/rocprof_compute_base.py` (both modes)
+2. `src/rocprof_compute_profile/profiler_base.py`
+3. `src/rocprof_compute_profile/profiler_rocprof_v3.py`
+4. `src/rocprof_compute_profile/profiler_rocprofiler_sdk.py`
+5. `src/rocprof_compute_soc/soc_base.py` (called during profile)
+
+**Analyze Code Path Entry Points**:
+1. `src/rocprof_compute_base.py` (both modes)
+2. `src/rocprof_compute_analyze/analysis_base.py`
+3. `src/rocprof_compute_analyze/analysis_cli.py`
+4. `src/rocprof_compute_analyze/analysis_db.py`
+5. `src/rocprof_compute_analyze/analysis_webui.py`
+6. `src/rocprof_compute_tui/tui_app.py`
+7. `src/roofline.py`
+8. `src/rocprof_compute_soc/soc_base.py` (called during analyze)
+
+#### Functions Using Non-Stdlib Dependencies
+
+**Functions using pandas (15 functions)**:
+- `v3_json_to_csv`, `v3_counter_csv_to_v2_csv`, `run_prof`, `convert_native_counter_collection_csv`
+- `get_unique_invocations`, `compute_operator_prefix_stats`, `build_kernel_name_to_id`
+- `process_torch_trace_output`, `process_kokkos_trace_output`, `is_workload_empty`
+- `reverse_multi_index_df_pmc`, `impute_counters_iteration_multiplex`, `merge_counters_spatial_multiplex`
+
+**Functions using numpy (1 function)**:
+- `impute_counters_iteration_multiplex`
+
+**Functions using yaml (3 functions)**:
+- `run_prof`, `parse_sets_yaml`, `load_yaml`
 
 ---
 
 ### Step 2: Create Three New Modules
 
-**File**: `src/utils/utils_common.py`
+**COMPLETED ANALYSIS**: Function categorization based on actual call graph analysis.
 
-Move shared stdlib utilities (~40 functions):
-- `format_time()`, `get_uuid()`, `print_status()`
-- `capture_subprocess_output()`
-- `get_version()`, `get_build_info()`
-- File I/O helpers: `load_yaml()`, path utilities
-- Logging utilities
+#### Detailed Function Categorization
 
-**File**: `src/utils/utils_profile.py`
+**Total: 47 functions + 2 constants**
 
-Move profile-specific utilities (~30 functions):
-- `run_prof()` - Core profiling execution
-- `pc_sampling_prof()` - PC sampling
-- `gen_sysinfo()` - System info generation
-- `add_counter_extra_config_input_yaml()` - Counter definition builder
-- Perfmon helpers
+---
 
-**File**: `src/utils/utils_analysis.py`
+#### **CATEGORY 1: utils_common.py (BOTH Profile and Analyze)** - 11 functions + 2 constants
 
-Move analysis-specific utilities (~80 functions):
-- `impute_counters_iteration_multiplex()` - Pandas operations
-- `merge_counters_spatial_multiplex()` - Pandas operations
-- `create_df_pmc()` - DataFrame creation
-- `process_torch_trace_output()` - Pandas operations
-- Metric evaluation functions
-- All pandas/numpy dependent code
+Functions called by BOTH code paths:
+
+1. **`detect_rocprof(args)`** - line 274
+   - Used by: rocprof_compute_base.py (profile mode)
+   - Dependencies: subprocess, stdlib
+
+2. **`format_time(seconds)`** - line 2066
+   - Used by: profiler_base.py, analysis modules
+   - Dependencies: stdlib only
+
+3. **`get_panel_alias()`** - line 2192
+   - Used by: rocprof_compute_base.py, soc_base.py
+   - Dependencies: stdlib only
+
+4. **`get_rank()`** - line 2201
+   - Used by: rocprof_compute_base.py, profiler_base.py
+   - Dependencies: stdlib (os.environ)
+
+5. **`get_submodules(package_name)`** - line 1723
+   - Used by: rocprof_compute_base.py
+   - Dependencies: stdlib (pkgutil, importlib)
+
+6. **`get_uuid(length=8)`** - line 2107
+   - Used by: analysis_base.py, analysis_db.py
+   - Dependencies: stdlib (uuid)
+
+7. **`get_version(rocprof_compute_home)`** - line 216
+   - Used by: rocprof_compute_base.py, analysis_db.py, tui_app.py
+   - Dependencies: stdlib (subprocess, git)
+
+8. **`get_version_display(version, sha, mode)`** - line 264
+   - Used by: rocprof_compute_base.py
+   - Dependencies: stdlib only
+
+9. **`parse_sets_yaml(arch)`** - line 2085
+   - Used by: rocprof_compute_base.py, soc_base.py
+   - Dependencies: **yaml** (will use yaml_lib after Phase 3)
+
+10. **`replace_env(name)`** - line 2236
+    - Used by: rocprof_compute_base.py
+    - Dependencies: stdlib (os.environ, re)
+
+11. **`replace_rank(name)`** - line 2222
+    - Used by: rocprof_compute_base.py
+    - Dependencies: stdlib (calls get_rank)
+
+**Constants:**
+- **`METRIC_ID_RE`** - line 66 - Regex pattern for metric IDs
+- **`NS_TO_MS`** - line 67 - Nanosecond to millisecond conversion
+
+---
+
+#### **CATEGORY 2: utils_profile.py (Profile Code Path ONLY)** - 22 functions
+
+Functions called ONLY by profile code path:
+
+1. **`add_counter_extra_config_input_yaml(...)`** - line 140
+   - Used by: soc_base.py (during profile)
+   - Dependencies: **yaml** (will use yaml_lib after Phase 3)
+
+2. **`capture_subprocess_output(...)`** - line 399
+   - Used by: profiler_base.py
+   - Dependencies: stdlib (subprocess, select, threading)
+
+3. **`convert_metric_id_to_panel_info(...)`** - line 2018
+   - Used by: soc_base.py
+   - Dependencies: stdlib only
+
+4. **`convert_native_counter_collection_csv(workload_dir)`** - line 1216
+   - Used by: profiler_base.py
+   - Dependencies: **pandas**
+
+5. **`gen_sysinfo(...)`** - line 1701
+   - Used by: profiler_base.py
+   - Dependencies: stdlib (platform, socket, subprocess)
+
+6. **`get_agent_dict(data)`** - line 523
+   - Used by: v3 JSON processing (profile)
+   - Dependencies: stdlib only
+
+7. **`get_gpuid_dict(data)`** - line 535
+   - Used by: v3 JSON processing (profile)
+   - Dependencies: stdlib only
+
+8. **`is_tcc_channel_counter(counter)`** - line 136
+   - Used by: soc_base.py (during profile)
+   - Dependencies: stdlib only (string check)
+
+9. **`normalize_filter_to_str_list(value)`** - line 2247
+   - Used by: profiler_base.py
+   - Dependencies: stdlib only
+
+10. **`parse_text(text_file)`** - line 819
+    - Used by: profiler classes
+    - Dependencies: stdlib only
+
+11. **`pc_sampling_prof(...)`** - line 1148
+    - Used by: profiler_base.py
+    - Dependencies: **pandas** (for CSV reading)
+
+12. **`perform_attach_detach(new_env, options)`** - line 304
+    - Used by: profiler execution
+    - Dependencies: stdlib (subprocess, time)
+
+13. **`print_status(msg)`** - line 1756
+    - Used by: profiler_base.py
+    - Dependencies: stdlib (logger)
+
+14. **`process_rocprofv3_output(workload_dir, using_native_tool)`** - line 1284
+    - Used by: profiler processing
+    - Dependencies: stdlib only
+
+15. **`resolve_rocm_library_path(library_path)`** - line 81
+    - Used by: profiler_rocprofiler_sdk.py, soc_base.py
+    - Dependencies: stdlib (os, Path)
+
+16. **`run_prof(...)`** - line 848
+    - Used by: profiler_base.py (main profiling execution)
+    - Dependencies: **pandas, yaml** (CSV processing and YAML config)
+
+17. **`set_locale_encoding()`** - line 1766
+    - Used by: rocprof_compute_base.py (during init)
+    - Dependencies: stdlib (locale, ctypes)
+
+18. **`v3_counter_csv_to_v2_csv(...)`** - line 684
+    - Used by: rocprofv3 processing
+    - Dependencies: **pandas**
+
+**Helper functions for v3 JSON processing:**
+- **`v3_json_get_counters(data)`** - line 562
+- **`v3_json_get_dispatches(data)`** - line 575
+- **`v3_json_to_csv(json_file_path, csv_file_path)`** - line 587 (uses pandas)
+
+**Version helper:**
+- **`version_to_numeric(version_parts, max_len)`** - line 73
+
+---
+
+#### **CATEGORY 3: utils_analysis.py (Analyze Code Path ONLY)** - 14 functions
+
+Functions called ONLY by analyze code path:
+
+1. **`build_kernel_name_to_id(dfs, kernel_verbose)`** - line 1502
+   - Used by: analysis_base.py
+   - Dependencies: **pandas**
+
+2. **`compute_operator_prefix_stats(df, metric_names)`** - line 1471
+   - Used by: analysis_base.py
+   - Dependencies: **pandas**
+
+3. **`format_scientific_notation_if_needed(...)`** - line 2111
+   - Used by: analysis output formatting
+   - Dependencies: stdlib only
+
+4. **`get_unique_invocations(df)`** - line 1435
+   - Used by: analysis processing
+   - Dependencies: **pandas**
+
+5. **`impute_counters_iteration_multiplex(...)`** - line 1816
+   - Used by: soc_base.py (during analyze), analysis_base.py
+   - Dependencies: **pandas, numpy**
+
+6. **`is_workload_empty(path)`** - line 1741
+   - Used by: analysis_base.py
+   - Dependencies: **pandas** (reads CSVs to check)
+
+7. **`load_yaml(filepath)`** - line 2186
+   - Used by: analysis configuration loading
+   - Dependencies: **yaml**
+
+8. **`merge_counters_spatial_multiplex(df_multi_index)`** - line 1916
+   - Used by: soc_base.py (during analyze), analysis_base.py
+   - Dependencies: **pandas**
+
+9. **`process_kokkos_trace_output(workload_dir, fbase)`** - line 1676
+   - Used by: analysis_base.py
+   - Dependencies: **pandas**
+
+10. **`process_torch_trace_output(...)`** - line 1525
+    - Used by: analysis_base.py
+    - Dependencies: **pandas**
+
+11. **`reverse_multi_index_df_pmc(...)`** - line 1787
+    - Used by: analysis processing
+    - Dependencies: **pandas**
+
+12. **`sanitize_torch_operator_key(name)`** - line 1426
+    - Used by: analysis_cli.py
+    - Dependencies: stdlib only
+
+13. **`save_torch_trace_inputs(...)`** - line 1340
+    - Used by: analysis processing
+    - Dependencies: stdlib (file I/O)
+
+14. **`simplify_kernel_name(full_kernel_name)`** - line 1399
+    - Used by: analysis kernel name processing
+    - Dependencies: stdlib (uses kernel_name_shortener)
+
+**Note**: Some functions like `impute_counters_iteration_multiplex` and `merge_counters_spatial_multiplex` are imported by `soc_base.py`, but based on code analysis, they are ONLY called during the analyze code path when soc_base processes analysis data, NOT during profiling.
+
+---
+
+#### Special Considerations
+
+**SoC Base Usage Pattern:**
+- `soc_base.py` imports some functions that look like they could be used in profile
+- However, call graph analysis shows these are only invoked during analyze mode:
+  - `impute_counters_iteration_multiplex()` - analyze only
+  - `merge_counters_spatial_multiplex()` - analyze only
+
+**Functions Currently in Profile That Will Move in Phase 2:**
+- None yet - Phase 2 hasn't been implemented, so all pandas usage is still in current utils.py
+
+**Functions That Will Change in Phase 3 (PyYAML Vendoring):**
+- `run_prof()` - will use yaml_lib instead of yaml
+- `parse_sets_yaml()` - will use yaml_lib instead of yaml
+- `load_yaml()` - will use yaml_lib instead of yaml
+- `add_counter_extra_config_input_yaml()` - will use yaml_lib instead of yaml
+
+---
+
+**Implementation based on COMPLETED call graph analysis above.**
+
+**File**: `src/utils/utils_common.py` (~280 lines)
+
+Functions called by BOTH profile and analyze (11 functions + 2 constants):
+- `detect_rocprof(args)`, `format_time(seconds)`, `get_panel_alias()`
+- `get_rank()`, `get_submodules(package_name)`, `get_uuid(length=8)`
+- `get_version(rocprof_compute_home)`, `get_version_display(version, sha, mode)`
+- `parse_sets_yaml(arch)` - uses yaml (will use yaml_lib after Phase 3)
+- `replace_env(name)`, `replace_rank(name)`
+- Constants: `METRIC_ID_RE`, `NS_TO_MS`
+
+**File**: `src/utils/utils_profile.py` (~1,360 lines)
+
+Functions called ONLY by profile code path (22 functions):
+- Core profiling: `run_prof()`, `pc_sampling_prof()`, `gen_sysinfo()`
+- Counter/config: `add_counter_extra_config_input_yaml()`, `convert_metric_id_to_panel_info()`
+- Process handling: `capture_subprocess_output()`, `perform_attach_detach()`
+- ROCProfV3 support: `v3_json_to_csv()`, `v3_counter_csv_to_v2_csv()`, `v3_json_get_counters()`, `v3_json_get_dispatches()`
+- Data conversion: `convert_native_counter_collection_csv()`, `process_rocprofv3_output()`
+- Utilities: `is_tcc_channel_counter()`, `normalize_filter_to_str_list()`, `parse_text()`
+- System: `resolve_rocm_library_path()`, `set_locale_encoding()`, `print_status()`
+- Helpers: `get_agent_dict()`, `get_gpuid_dict()`, `version_to_numeric()`
+
+**Note**: Still uses pandas/yaml until Phases 2-3 complete
+
+**File**: `src/utils/utils_analysis.py` (~760 lines)
+
+Functions called ONLY by analyze code path (14 functions):
+- PyTorch trace: `process_torch_trace_output()`, `build_kernel_name_to_id()`
+- Operator stats: `compute_operator_prefix_stats()`, `get_unique_invocations()`
+- Multiplexing: `impute_counters_iteration_multiplex()`, `merge_counters_spatial_multiplex()`
+- DataFrame: `reverse_multi_index_df_pmc()`
+- Kokkos: `process_kokkos_trace_output()`
+- Kernel names: `simplify_kernel_name()`, `sanitize_torch_operator_key()`
+- Validation: `is_workload_empty()`
+- I/O: `save_torch_trace_inputs()`, `load_yaml()`
+- Formatting: `format_scientific_notation_if_needed()`
 
 ---
 
@@ -217,50 +553,207 @@ find src/ tests/ -name "*.py" -exec grep -l "from utils" {} \;
 
 ---
 
-### Step 5: Update Tests
+### Step 5: Update Test Files
 
-**File**: `tests/test_utils.py` (264KB file!)
+**COMPLETED ANALYSIS**: Test import updates categorized by test type.
 
-This massive test file likely tests ALL utils functions. Need to:
+#### Test File Overview
 
-1. **Split test file** to mirror new structure:
-   - `tests/test_utils_common.py`
-   - `tests/test_utils_profile.py`
-   - `tests/test_utils_analysis.py`
+Total test files: 15 Python files in `/tests` directory
 
-2. **Update imports** in each test file:
+**Test files importing from utils.utils**:
+1. `test_utils.py` - 7,940 lines, 216 test functions (massive!)
+2. `test_profile_general.py` - imports `compute_operator_prefix_stats`
+3. `test_torch_trace.py` - imports `process_torch_trace_output`
+
+**Other test files** (no direct utils.utils imports but may be affected):
+- `test_analyze_commands.py` - uses utils.parser, utils.tty
+- `test_analyze_workloads.py` - profile/analyze integration tests
+- `test_data_imputation.py` - may test imputation functions
+- `test_roofline_calc_ai_analyze.py` - uses utils.roofline_calc
+- `test_gpu_specs.py` - uses utils.specs
+- `test_metric_validation.py` - metric validation tests
+- `test_TCP_counters.py` - counter-specific tests
+- `test_autogen_config.py` - config generation tests
+- `test_tui_components.py` - TUI component tests
+- `conftest.py` - test fixtures and helpers
+
+---
+
+#### Strategy 1: Keep test_utils.py Monolithic (RECOMMENDED)
+
+**Approach**: DO NOT split test_utils.py, just update imports to use compatibility shim.
+
+**Rationale**:
+- test_utils.py is a test helper library, not just test functions
+- Splitting would be complex and error-prone
+- Compatibility shim allows all tests to continue working
+- Can be split later if needed (separate PR)
+
+**Implementation**:
+1. **Keep test_utils.py as-is** during Phase 4
+2. **Rely on compatibility shim** (`utils/utils.py`) to re-export all functions
+3. **Update only the 3 explicit imports**:
+
 ```python
-# test_utils_profile.py
-from utils.utils_profile import run_prof, gen_sysinfo
-import pytest
+# test_utils.py - Update these specific imports
+# OLD:
+from utils.utils import parse_sets_yaml
+from utils.utils import version_to_numeric
+from utils.utils import resolve_rocm_library_path
 
-def test_run_prof():
-    # Test profile utilities
-    pass
-
-# test_utils_analysis.py
-from utils.utils_analysis import create_df_pmc, impute_counters_iteration_multiplex
-import pandas as pd
-import pytest
-
-def test_create_df_pmc():
-    # Test analysis utilities
-    pass
+# NEW (or keep using shim):
+from utils.utils_common import parse_sets_yaml  # Common function
+from utils.utils_profile import version_to_numeric, resolve_rocm_library_path  # Profile functions
 ```
 
-3. **Update test_utils.py helper file**:
+4. **Update other test files**:
+
 ```python
-# tests/test_utils.py (test helper, not tests)
-# Update imports used by test helpers
-from utils.utils_common import format_time, get_uuid
-# etc.
+# test_profile_general.py
+# OLD:
+from utils.utils import compute_operator_prefix_stats
+
+# NEW:
+from utils.utils_analysis import compute_operator_prefix_stats
+
+# test_torch_trace.py
+# OLD:
+from utils.utils import process_torch_trace_output
+
+# NEW:
+from utils.utils_analysis import process_torch_trace_output
 ```
 
-**Other test files** (~12 files):
-- `test_profile_general.py` - Update to use `utils_profile`
-- `test_analyze_commands.py` - Update to use `utils_analysis`
-- `test_data_imputation.py` - Update to use `utils_analysis`
-- etc.
+**Files to update**:
+- `test_utils.py` - 3 import statements (optional if using shim)
+- `test_profile_general.py` - 1 import statement
+- `test_torch_trace.py` - 1 import statement
+
+**Total: 3 test files, 5 import statements**
+
+---
+
+#### Strategy 2: Split test_utils.py (Alternative - NOT RECOMMENDED for Phase 4)
+
+**Approach**: Split test_utils.py into three test modules mirroring the utils split.
+
+**Analysis of test_utils.py functions tested**:
+- Profile-related tests (~50 tests): v3_json, v3_counter, get_agent, get_gpuid, capture_subprocess, run_prof, pc_sampling
+- Analyze-related tests (~6 tests): process_torch, impute_counter, merge_counter, build_kernel, compute_operator
+- Common tests (~30 tests): get_version, detect_rocprof, format_time, get_rank, parse_sets_yaml
+- Other helper tests (~130 tests): amdsmi, noise filtering, resource allocation, file patterns, etc.
+
+**Why NOT recommended**:
+- Very large file (7,940 lines) with complex interdependencies
+- Many helper functions and fixtures used across tests
+- High risk of breaking existing test infrastructure
+- Better done as separate cleanup PR after Phase 4 complete
+- Test splitting doesn't block Phase 4 goals
+
+**If we do split** (future work):
+```python
+# tests/test_utils_common.py (~2,000 lines)
+from utils.utils_common import (
+    detect_rocprof, format_time, get_panel_alias, get_rank,
+    get_version, get_version_display, parse_sets_yaml, etc.
+)
+# ~30 test functions for common utilities
+
+# tests/test_utils_profile.py (~3,500 lines)
+from utils.utils_profile import (
+    run_prof, pc_sampling_prof, gen_sysinfo,
+    v3_json_to_csv, v3_counter_csv_to_v2_csv,
+    capture_subprocess_output, etc.
+)
+# ~50 test functions for profile utilities
+
+# tests/test_utils_analysis.py (~1,500 lines)
+from utils.utils_analysis import (
+    process_torch_trace_output, impute_counters_iteration_multiplex,
+    merge_counters_spatial_multiplex, build_kernel_name_to_id, etc.
+)
+# ~6 test functions for analysis utilities
+
+# tests/test_utils_helpers.py (~1,000 lines)
+# All the amdsmi, noise, resource allocation helper tests
+```
+
+---
+
+#### Recommended Test Update Plan for Phase 4
+
+**Step 5.1**: Update explicit imports in test files (5 minutes)
+```bash
+# test_profile_general.py - line 3578
+sed -i 's/from utils.utils import compute_operator_prefix_stats/from utils.utils_analysis import compute_operator_prefix_stats/' tests/test_profile_general.py
+
+# test_torch_trace.py - line 38
+sed -i 's/from utils.utils import process_torch_trace_output/from utils.utils_analysis import process_torch_trace_output/' tests/test_torch_trace.py
+
+# test_utils.py - lines 6872, 7721, 7750
+# Can use compatibility shim OR update to:
+# from utils.utils_common import parse_sets_yaml
+# from utils.utils_profile import version_to_numeric, resolve_rocm_library_path
+```
+
+**Step 5.2**: Verify all tests still pass (critical!)
+```bash
+pytest tests/test_utils.py -v
+pytest tests/test_profile_general.py -v
+pytest tests/test_torch_trace.py -v
+```
+
+**Step 5.3**: Keep compatibility shim active
+- DO NOT remove `utils/utils.py` until ALL imports verified
+- Shim allows gradual migration
+- Other test files continue working unchanged
+
+**Step 5.4**: Document test file split as future work
+- Add TODO comment in test_utils.py
+- Create follow-up issue for test organization
+- Not critical for Phase 4 success
+
+---
+
+#### Test Impact Summary
+
+| Test File | Imports to Update | Complexity | Required for Phase 4? |
+|-----------|-------------------|------------|----------------------|
+| test_utils.py | 3 imports | Low (can use shim) | Optional |
+| test_profile_general.py | 1 import | Low | Yes |
+| test_torch_trace.py | 1 import | Low | Yes |
+| **Other 12 test files** | 0 imports | None | No changes needed |
+| **Total** | **5 imports** | **Low** | **Minimal effort** |
+
+**Key Insight**: Test updates are much simpler than anticipated. Most test files don't directly import from utils.utils, and the compatibility shim handles the rest.
+
+---
+
+#### Additional Test Considerations
+
+**conftest.py** (test fixtures):
+- **No changes needed** - doesn't import from utils.utils
+- Contains `binary_handler_profile_rocprof_compute` and `binary_handler_analyze_rocprof_compute` fixtures
+- These fixtures are used by profile and analyze tests respectively
+- Phase 5 will add import guards to profile fixture
+
+**Test execution verification**:
+```bash
+# Run full test suite to ensure nothing breaks
+pytest tests/ -v
+
+# Run specific test categories
+pytest tests/test_utils.py -v              # Utils tests
+pytest tests/test_profile_general.py -v    # Profile tests
+pytest tests/test_analyze_commands.py -v   # Analyze tests
+pytest tests/test_torch_trace.py -v        # Torch trace tests
+```
+
+**Test file that might need attention** (indirect imports):
+- `test_data_imputation.py` - may test imputation functions (imported via analysis_base)
+- `test_analyze_commands.py` - uses parser which may import utils functions
+- These work through compatibility shim, no direct changes needed
 
 ---
 
@@ -296,28 +789,51 @@ pytest tests/ -v
 
 ## Implementation Details
 
-### Function Categorization (Examples)
+### Function Categorization Summary
 
-**Common** (stdlib only, used by both):
-- `format_time()` - time formatting
-- `get_uuid()` - UUID generation
-- `capture_subprocess_output()` - subprocess handling
-- `console_log()`, `console_error()` - logging
-- `get_version()` - version info
+**CRITICAL**: Categorization is by USAGE (which code path calls it), not by dependency type.
 
-**Profile** (stdlib only, profile-specific):
-- `run_prof()` - rocprof execution
-- `pc_sampling_prof()` - PC sampling
-- `gen_sysinfo()` - system info
-- `add_counter_extra_config_input_yaml()` - counter defs
-- Perfmon file generation helpers
+**Common** (11 functions - called by BOTH profile and analyze):
+- Version/environment: `get_version()`, `get_version_display()`, `detect_rocprof()`
+- Identifiers: `get_uuid()`, `get_rank()`, `replace_rank()`, `replace_env()`
+- Config: `parse_sets_yaml()` - uses yaml (will use yaml_lib after Phase 3)
+- Utilities: `format_time()`, `get_panel_alias()`, `get_submodules()`
+- Constants: `METRIC_ID_RE`, `NS_TO_MS`
 
-**Analysis** (heavy deps OK, analysis-specific):
-- `create_df_pmc()` - DataFrame creation (pandas)
-- `impute_counters_iteration_multiplex()` - data imputation (pandas)
-- `merge_counters_spatial_multiplex()` - merging (pandas)
-- `process_torch_trace_output()` - trace processing (pandas)
-- All metric evaluation functions
+**Profile** (22 functions - called ONLY by profile code path):
+- **Core execution**: `run_prof()`, `pc_sampling_prof()`, `gen_sysinfo()`
+  - Dependencies: pandas (CSV I/O), yaml (config)
+  - Phase 2 will eliminate pandas from run_prof
+  - Phase 3 will vendor yaml → yaml_lib
+- **Process handling**: `capture_subprocess_output()`, `perform_attach_detach()`
+- **Counter/config**: `add_counter_extra_config_input_yaml()`, `convert_metric_id_to_panel_info()`
+- **ROCProfV3**: `v3_json_to_csv()`, `v3_counter_csv_to_v2_csv()`, `v3_json_get_counters()`, `v3_json_get_dispatches()`
+  - Dependencies: pandas (all v3 JSON→CSV functions)
+- **Data conversion**: `convert_native_counter_collection_csv()`, `process_rocprofv3_output()`
+- **Utilities**: `is_tcc_channel_counter()`, `normalize_filter_to_str_list()`, `parse_text()`, `print_status()`
+- **System**: `resolve_rocm_library_path()`, `set_locale_encoding()`
+- **Helpers**: `get_agent_dict()`, `get_gpuid_dict()`, `version_to_numeric()`
+
+**Analysis** (14 functions - called ONLY by analyze code path):
+- **PyTorch trace**: `process_torch_trace_output()`, `build_kernel_name_to_id()`
+  - Dependencies: pandas
+- **Operator analysis**: `compute_operator_prefix_stats()`, `get_unique_invocations()`
+  - Dependencies: pandas
+- **Multiplexing**: `impute_counters_iteration_multiplex()`, `merge_counters_spatial_multiplex()`
+  - Dependencies: pandas, numpy
+  - **Note**: Imported by soc_base.py but only called during analyze mode
+- **DataFrame ops**: `reverse_multi_index_df_pmc()`
+- **Kokkos**: `process_kokkos_trace_output()`
+- **Kernel names**: `simplify_kernel_name()`, `sanitize_torch_operator_key()`
+- **Validation**: `is_workload_empty()` - uses pandas to check CSV files
+- **I/O**: `save_torch_trace_inputs()`, `load_yaml()`
+- **Formatting**: `format_scientific_notation_if_needed()`
+
+**Key Observations**:
+1. utils_profile.py currently has pandas/yaml deps (will be eliminated in Phases 2-3)
+2. utils_analysis.py will keep all heavy dependencies (pandas, numpy, yaml)
+3. utils_common.py has minimal yaml usage (will use yaml_lib after Phase 3)
+4. Some functions in soc_base.py imports look profile-related but are analyze-only
 
 ### Test File Impact
 
@@ -331,9 +847,114 @@ pytest tests/ -v
 
 ---
 
+#### Summary Statistics
+
+| Module | Functions | Lines (Est.) | Non-Stdlib Deps | Notes |
+|--------|-----------|--------------|-----------------|-------|
+| **utils_common.py** | 11 + 2 constants | ~280 | yaml (Phase 3 will vendor) | Both code paths |
+| **utils_profile.py** | 22 | ~1,360 | pandas, yaml (until Phases 2-3) | Profile only |
+| **utils_analysis.py** | 14 | ~760 | pandas, numpy, yaml | Analyze only |
+| **Total** | **47** | **~2,400** | | Original: 2,251 lines, Growth: ~150 lines (duplicate imports) |
+
+**Import Update Impact:**
+- rocprof_compute_base.py: Update 10 imports from utils.utils → utils_common
+- profiler_base.py: Update 7 imports → utils_profile
+- profiler_rocprofiler_sdk.py: Update 1 import → utils_profile
+- soc_base.py: Update 9 imports → split between common/profile/analysis
+- analysis_base.py: Update 7 imports → utils_analysis
+- analysis_cli.py: Update 1 import → utils_analysis
+- analysis_db.py: Update 2 imports → utils_analysis + utils_common
+- tui_app.py: Update 1 import → utils_common
+- Plus ~80 other files across tests and other modules
+
+**Total files needing import updates: ~100 files**
+
+---
+
+## Merge Conflict Reduction Strategy
+
+**Since this phase rebases on top of Phases 1-3**, we need to minimize conflicts:
+
+1. **Understand Phase 1-3 changes FIRST**:
+   - Phase 1: Review roofline.py changes and any utils.py impacts
+   - Phase 2: Review join_prof() move and pandas-related function changes
+   - Phase 3: Review yaml_lib vendoring and YAML function updates
+
+2. **Coordinate function moves** with prior changes:
+   - Functions modified in Phases 1-3 should be moved carefully
+   - Document which functions were touched by previous phases
+   - Test that moved functions retain Phase 1-3 changes
+
+3. **Use compatibility shim** during migration:
+   - Keep utils.py as re-export shim initially
+   - Update imports incrementally
+   - Remove shim only after all imports updated
+
+---
+
 ## Notes
 
-- Cleanup/organizational phase after major refactoring
-- Low risk (behavior unchanged, just reorganization)
-- Makes stdlib-only guarantee clear and maintainable
-- Easier code review for future changes
+- **Organizational phase** - no functional changes, just reorganization by usage pattern
+- **Low risk** - behavior unchanged, existing tests verify correctness
+- **Not about dependency purity** - Phase 4 organizes by call graph, Phase 5 validates purity
+- **Respects prior work** - rebases on Phases 1-3, minimizes merge conflicts
+- **Easier maintenance** - clear boundaries between profile and analyze utilities
+- **Easier code review** - reviewers can see which code paths use which utilities
+
+---
+
+## Quick Reference: Function Allocation
+
+### utils_common.py (11 functions + 2 constants)
+```
+detect_rocprof, format_time, get_panel_alias, get_rank, get_submodules,
+get_uuid, get_version, get_version_display, parse_sets_yaml, replace_env,
+replace_rank, METRIC_ID_RE, NS_TO_MS
+```
+
+### utils_profile.py (22 functions)
+```
+add_counter_extra_config_input_yaml, capture_subprocess_output,
+convert_metric_id_to_panel_info, convert_native_counter_collection_csv,
+gen_sysinfo, get_agent_dict, get_gpuid_dict, is_tcc_channel_counter,
+normalize_filter_to_str_list, parse_text, pc_sampling_prof,
+perform_attach_detach, print_status, process_rocprofv3_output,
+resolve_rocm_library_path, run_prof, set_locale_encoding,
+v3_counter_csv_to_v2_csv, v3_json_get_counters, v3_json_get_dispatches,
+v3_json_to_csv, version_to_numeric
+```
+
+### utils_analysis.py (14 functions)
+```
+build_kernel_name_to_id, compute_operator_prefix_stats,
+format_scientific_notation_if_needed, get_unique_invocations,
+impute_counters_iteration_multiplex, is_workload_empty, load_yaml,
+merge_counters_spatial_multiplex, process_kokkos_trace_output,
+process_torch_trace_output, reverse_multi_index_df_pmc,
+sanitize_torch_operator_key, save_torch_trace_inputs, simplify_kernel_name
+```
+
+---
+
+## Implementation Checklist
+
+- [ ] **Step 1**: Analyze Phase 1-3 changes to utils.py ✅ (analysis complete)
+- [ ] **Step 2**: Create three new module files with proper imports
+- [ ] **Step 3**: Create compatibility shim (utils/utils.py temporary re-export)
+- [ ] **Step 4**: Update imports in source files (~100 files)
+  - [ ] rocprof_compute_base.py (10 imports)
+  - [ ] profiler_base.py (7 imports)
+  - [ ] profiler_rocprofiler_sdk.py (1 import)
+  - [ ] soc_base.py (9 imports, split across modules)
+  - [ ] analysis_base.py (7 imports)
+  - [ ] analysis_cli.py (1 import)
+  - [ ] analysis_db.py (2 imports)
+  - [ ] tui_app.py (1 import)
+  - [ ] ~80 other files
+- [ ] **Step 5**: Update test files (5 imports total)
+  - [ ] test_profile_general.py (1 import)
+  - [ ] test_torch_trace.py (1 import)
+  - [ ] test_utils.py (3 imports - optional if using shim)
+- [ ] **Step 6**: Remove compatibility shim after all imports updated
+- [ ] **Step 7**: Run full test suite and verify all tests pass
+- [ ] **Step 8**: Document new module structure in code comments/docstrings
