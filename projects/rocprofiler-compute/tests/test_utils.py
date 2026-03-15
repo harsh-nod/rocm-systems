@@ -40,7 +40,20 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-import utils.utils as utils
+import utils.utils_common as utils_common
+import utils.utils_profile as utils_profile
+
+
+# For backward compatibility in tests, create a namespace object
+class utils:
+    """Namespace object for utils functions used in tests."""
+
+    # Common
+    get_version = utils_common.get_version
+    detect_rocprof = utils_common.detect_rocprof
+    # Profile
+    capture_subprocess_output = utils_profile.capture_subprocess_output
+
 
 SUPPORTED_ARCHS = {
     "gfx908": {"mi100": ["MI100"]},
@@ -6869,7 +6882,7 @@ def test_pc_sampling_prof_empty_appcmd(
 
 
 def test_set_parser():
-    from utils.utils import parse_sets_yaml
+    from utils.utils_common import parse_sets_yaml
 
     result = parse_sets_yaml("gfx90a")
 
@@ -7718,7 +7731,7 @@ def test_experimental_action_help_suppression():
 @pytest.mark.misc
 def test_version_to_numeric():
     """Test version_to_numeric helper function."""
-    from utils.utils import version_to_numeric
+    from utils.utils_profile import version_to_numeric
 
     # Test normalized to max_len=3
     max_len = 3
@@ -7747,7 +7760,7 @@ def test_version_to_numeric():
 @pytest.mark.misc
 def test_resolve_rocm_library_path(tmp_path):
     """Test resolve_rocm_library_path with various scenarios."""
-    from utils.utils import resolve_rocm_library_path
+    from utils.utils_profile import resolve_rocm_library_path
 
     # Test case 1: Empty path returns as-is
     assert resolve_rocm_library_path("") == ""

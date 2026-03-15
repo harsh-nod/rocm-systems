@@ -36,6 +36,7 @@ from textual.widgets import TextArea
 
 import config
 from utils import schema
+from utils.utils_profile import convert_metric_id_to_panel_info
 
 
 class LogLevel(str, Enum):

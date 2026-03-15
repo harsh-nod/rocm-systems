@@ -3575,7 +3575,7 @@ if __name__ == "__main__":
     # 14. Descending duration sort order — recompute the same sort key used by
     #     list_torch_operators (sum of root-prefix durations per CSV) and verify
     #     the CLI output lists operators in that order.
-    from utils.utils import compute_operator_prefix_stats
+    from utils.utils_analysis import compute_operator_prefix_stats
 
     csv_sort_keys: list[tuple[str, float]] = []
     for op_file in operator_csv_files:

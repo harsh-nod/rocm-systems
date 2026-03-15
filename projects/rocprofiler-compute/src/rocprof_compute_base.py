@@ -47,7 +47,7 @@ from utils.logger import (
 )
 from utils.mi_gpu_spec import mi_gpu_specs
 from utils.specs import MachineSpecs, generate_machine_specs
-from utils.utils import (
+from utils.utils_common import (
     detect_rocprof,
     get_panel_alias,
     get_rank,
@@ -57,6 +57,8 @@ from utils.utils import (
     parse_sets_yaml,
     replace_env,
     replace_rank,
+)
+from utils.utils_profile import (
     resolve_rocm_library_path,
     set_locale_encoding,
 )

@@ -26,7 +26,7 @@
 import pandas as pd
 import pytest
 
-import utils.utils as utils
+from utils.utils_analysis import impute_counters_iteration_multiplex
 
 
 def make_multilevel_df(data: dict) -> "pd.DataFrame":
@@ -67,7 +67,7 @@ def test_impute_multiplex_kernel_policy():
 
     df = make_multilevel_df(data)
 
-    result = utils.impute_counters_iteration_multiplex(df, "kernel")
+    result = impute_counters_iteration_multiplex(df, "kernel")
 
     # Sort by Dispatch_ID to ensure consistent order
     result = result.sort_values(by=("file1", "Dispatch_ID"))
@@ -102,7 +102,7 @@ def test_impute_multiplex_kernel_launch_params_policy():
 
     df = make_multilevel_df(data)
 
-    result = utils.impute_counters_iteration_multiplex(df, "kernel_launch_params")
+    result = impute_counters_iteration_multiplex(df, "kernel_launch_params")
 
     # Sort by Dispatch_ID to ensure consistent order
     result = result.sort_values(by=("file1", "Dispatch_ID"))
@@ -138,7 +138,7 @@ def test_impute_multiplex_kernel_launch_params_no_imputation():
 
     df = make_multilevel_df(data)
 
-    result = utils.impute_counters_iteration_multiplex(df, "kernel_launch_params")
+    result = impute_counters_iteration_multiplex(df, "kernel_launch_params")
 
     # Sort by Dispatch_ID to ensure consistent order
     result = result.sort_values(by=("file1", "Dispatch_ID"))
@@ -175,7 +175,7 @@ def test_impute_multiplex_multi_kernel_kernel_policy():
 
     df = make_multilevel_df(data)
 
-    result = utils.impute_counters_iteration_multiplex(df, "kernel")
+    result = impute_counters_iteration_multiplex(df, "kernel")
 
     # Sort by Dispatch_ID to ensure consistent order
     result = result.sort_values(by=("file1", "Dispatch_ID"))
@@ -211,7 +211,7 @@ def test_impute_multiplex_multi_kernel_kernel_launch_params_no_imputation():
 
     df = make_multilevel_df(data)
 
-    result = utils.impute_counters_iteration_multiplex(df, "kernel_launch_params")
+    result = impute_counters_iteration_multiplex(df, "kernel_launch_params")
 
     # Sort by Dispatch_ID to ensure consistent order
     result = result.sort_values(by=("file1", "Dispatch_ID"))
@@ -254,7 +254,7 @@ def test_fewer_dispatches_single_kernel():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel")
+    result = impute_counters_iteration_multiplex(df, "kernel")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -299,7 +299,7 @@ def test_fewer_dispatches_multiple_kernels_both_incomplete():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel")
+    result = impute_counters_iteration_multiplex(df, "kernel")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -356,7 +356,7 @@ def test_fewer_dispatches_one_incomplete_one_complete():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel")
+    result = impute_counters_iteration_multiplex(df, "kernel")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -417,7 +417,7 @@ def test_fewer_dispatches_same_kernel_different_launch_params():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel_launch_params")
+    result = impute_counters_iteration_multiplex(df, "kernel_launch_params")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -475,7 +475,7 @@ def test_fewer_dispatches_same_kernel_one_incomplete_one_complete():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel_launch_params")
+    result = impute_counters_iteration_multiplex(df, "kernel_launch_params")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -528,7 +528,7 @@ def test_incomplete_last_group_single_kernel():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel")
+    result = impute_counters_iteration_multiplex(df, "kernel")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -604,7 +604,7 @@ def test_incomplete_last_group_multiple_kernels_both_incomplete():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel")
+    result = impute_counters_iteration_multiplex(df, "kernel")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -718,7 +718,7 @@ def test_incomplete_last_group_one_incomplete_other_complete():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel")
+    result = impute_counters_iteration_multiplex(df, "kernel")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -799,7 +799,7 @@ def test_incomplete_last_group_same_kernel_different_launch_params():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel_launch_params")
+    result = impute_counters_iteration_multiplex(df, "kernel_launch_params")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -859,7 +859,7 @@ def test_incomplete_last_group_same_kernel_one_incomplete_one_complete():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel_launch_params")
+    result = impute_counters_iteration_multiplex(df, "kernel_launch_params")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -912,7 +912,7 @@ def test_complete_last_group_single_kernel():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel")
+    result = impute_counters_iteration_multiplex(df, "kernel")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -1063,7 +1063,7 @@ def test_complete_last_group_multiple_kernels_both_complete():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel")
+    result = impute_counters_iteration_multiplex(df, "kernel")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -1152,7 +1152,7 @@ def test_complete_last_group_same_kernel_different_launch_params():
     }
 
     df = make_multilevel_df(data)
-    result = utils.impute_counters_iteration_multiplex(df, "kernel_launch_params")
+    result = impute_counters_iteration_multiplex(df, "kernel_launch_params")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)
@@ -1192,7 +1192,7 @@ def test_impute_counters_iteration_multiplex_incorrect_structure():
         "C1": [10],
     })
     with pytest.raises(ValueError, match="multi-index"):
-        utils.impute_counters_iteration_multiplex(flat_df, "kernel")
+        impute_counters_iteration_multiplex(flat_df, "kernel")
 
 
 def test_impute_counters_iteration_multiplex_single_level_multiindex():
@@ -1207,7 +1207,7 @@ def test_impute_counters_iteration_multiplex_single_level_multiindex():
         ["Dispatch_ID", "Kernel_Name", "C1"]
     ])
     with pytest.raises(ValueError, match="multi-index"):
-        utils.impute_counters_iteration_multiplex(single_level_df, "kernel")
+        impute_counters_iteration_multiplex(single_level_df, "kernel")
 
 
 def test_impute_counters_iteration_multiplex_missing_kernel_name():
@@ -1234,7 +1234,7 @@ def test_impute_counters_iteration_multiplex_missing_kernel_name():
     }
     df_no_kn = make_multilevel_df(data_no_kernel_name)
     with pytest.raises(KeyError):
-        utils.impute_counters_iteration_multiplex(df_no_kn, "kernel")
+        impute_counters_iteration_multiplex(df_no_kn, "kernel")
 
 
 def test_impute_counters_iteration_multiplex_empty_dataframe():
@@ -1258,7 +1258,7 @@ def test_impute_counters_iteration_multiplex_empty_dataframe():
         ("file1", "C2"): [],
     }
     df_empty = make_multilevel_df(data_empty)
-    result = utils.impute_counters_iteration_multiplex(df_empty, "kernel")
+    result = impute_counters_iteration_multiplex(df_empty, "kernel")
 
     # Result is a fallback DataFrame, not actual data.
     # It has a single column ("file1", 0) containing 15 column name strings.
@@ -1295,7 +1295,7 @@ def test_impute_counters_iteration_multiplex_all_counters_nan():
         ("file1", "C2"): [None, None, None],
     }
     df_all_nan = make_multilevel_df(data_all_nan)
-    result = utils.impute_counters_iteration_multiplex(df_all_nan, "kernel")
+    result = impute_counters_iteration_multiplex(df_all_nan, "kernel")
 
     # Group was dropped (no valid counters) -- fallback DataFrame returned.
     assert isinstance(result, pd.DataFrame)
@@ -1332,7 +1332,7 @@ def test_impute_counters_iteration_multiplex_no_counter_columns():
         ("file1", "Kernel_ID"): [1, 1],
     }
     df_no_counters = make_multilevel_df(data_no_counters)
-    result = utils.impute_counters_iteration_multiplex(df_no_counters, "kernel")
+    result = impute_counters_iteration_multiplex(df_no_counters, "kernel")
 
     # Group was dropped (no counter columns exist) -- fallback DataFrame returned.
     assert isinstance(result, pd.DataFrame)
@@ -1369,12 +1369,8 @@ def test_impute_counters_iteration_multiplex_unrecognized_policy():
         ("file1", "C2"): [None, 500, 300],
     }
     df_policy = make_multilevel_df(data_policy)
-    result_invalid = utils.impute_counters_iteration_multiplex(
-        df_policy, "invalid_policy"
-    )
-    result_klp = utils.impute_counters_iteration_multiplex(
-        df_policy, "kernel_launch_params"
-    )
+    result_invalid = impute_counters_iteration_multiplex(df_policy, "invalid_policy")
+    result_klp = impute_counters_iteration_multiplex(df_policy, "kernel_launch_params")
     assert isinstance(result_invalid, pd.DataFrame)
     pd.testing.assert_frame_equal(
         result_invalid.sort_values(by=("file1", "Dispatch_ID")).reset_index(drop=True),
@@ -1423,7 +1419,7 @@ def test_impute_counters_iteration_multiplex_multi_file():
         ("file2", "C2"): [None, 60],
     }
     df_multi_file = make_multilevel_df(data_multi_file)
-    result = utils.impute_counters_iteration_multiplex(df_multi_file, "kernel")
+    result = impute_counters_iteration_multiplex(df_multi_file, "kernel")
     result = result.sort_values(by=("file1", "Dispatch_ID"))
 
     assert isinstance(result, pd.DataFrame)

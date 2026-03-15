@@ -27,7 +27,7 @@ from rocprof_compute_analyze.analysis_base import OmniAnalyze_Base
 from utils import file_io, parser, tty
 from utils.kernel_name_shortener import kernel_name_shortener
 from utils.logger import console_error, console_log, demarcate
-from utils.utils import sanitize_torch_operator_key
+from utils.utils_analysis import sanitize_torch_operator_key
 
 
 class cli_analysis(OmniAnalyze_Base):

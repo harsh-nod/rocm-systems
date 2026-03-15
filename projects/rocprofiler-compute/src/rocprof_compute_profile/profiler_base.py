@@ -45,11 +45,10 @@ from utils.logger import (
     console_warning,
     demarcate,
 )
-from utils.utils import (
+from utils.utils_common import format_time, get_rank
+from utils.utils_profile import (
     capture_subprocess_output,
-    format_time,
     gen_sysinfo,
-    get_rank,
     pc_sampling_prof,
     print_status,
     run_prof,

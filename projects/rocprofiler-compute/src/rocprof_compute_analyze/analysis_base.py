@@ -45,15 +45,15 @@ from utils.logger import (
     demarcate,
 )
 from utils.roofline_calc import validate_roofline_csv
-from utils.utils import (
+from utils.utils_analysis import (
     build_kernel_name_to_id,
     compute_operator_prefix_stats,
-    get_uuid,
     impute_counters_iteration_multiplex,
     is_workload_empty,
     merge_counters_spatial_multiplex,
     process_torch_trace_output,
 )
+from utils.utils_common import get_uuid
 
 # the build-in config to list kernel names purpose only
 TOP_STATS_BUILD_IN_CONFIG: OrderedDict[int, dict[str, Any]] = OrderedDict([

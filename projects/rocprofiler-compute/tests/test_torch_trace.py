@@ -35,7 +35,7 @@ from utils.rocpd_data import (
     MARKER_API_TRACE_QUERY,
     convert_dbs_to_csv,
 )
-from utils.utils import process_torch_trace_output
+from utils.utils_analysis import process_torch_trace_output
 
 GUID = "abc-1234-def"
 

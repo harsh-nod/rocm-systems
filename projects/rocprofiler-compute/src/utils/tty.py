@@ -40,15 +40,9 @@ from utils.kernel_name_shortener import (
     process_single_kernel_name,
 )
 from utils.logger import console_error, console_log, console_warning
-from utils.utils import (
-    METRIC_ID_RE,
-    NS_TO_MS,
-    compute_operator_prefix_stats,
-    convert_metric_id_to_panel_info,
-    get_panel_alias,
-    get_uuid,
-    simplify_kernel_name,
-)
+from utils.utils_analysis import compute_operator_prefix_stats, simplify_kernel_name
+from utils.utils_common import METRIC_ID_RE, NS_TO_MS, get_panel_alias, get_uuid
+from utils.utils_profile import convert_metric_id_to_panel_info
 
 KERNEL_NAME_WRAP_WIDTH = 40
 

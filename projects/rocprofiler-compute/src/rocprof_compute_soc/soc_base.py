@@ -50,15 +50,19 @@ from utils.parser import BUILD_IN_VARS, SUPPORTED_DENOM, apply_filters
 from utils.roofline_calc import validate_roofline_csv
 from utils.schema import Workload
 from utils.specs import MachineSpecs
-from utils.utils import (
+from utils.utils_analysis import (
+    impute_counters_iteration_multiplex,
+    merge_counters_spatial_multiplex,
+)
+from utils.utils_common import (
     METRIC_ID_RE,
+    get_panel_alias,
+    parse_sets_yaml,
+)
+from utils.utils_profile import (
     add_counter_extra_config_input_yaml,
     convert_metric_id_to_panel_info,
-    get_panel_alias,
-    impute_counters_iteration_multiplex,
     is_tcc_channel_counter,
-    merge_counters_spatial_multiplex,
-    parse_sets_yaml,
     resolve_rocm_library_path,
 )
 

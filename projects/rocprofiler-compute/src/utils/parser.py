@@ -38,7 +38,7 @@ import pandas as pd
 from utils import schema
 from utils.logger import console_debug, console_error, console_warning, demarcate
 from utils.specs import MachineSpecs
-from utils.utils import normalize_filter_to_str_list
+from utils.utils_profile import normalize_filter_to_str_list
 
 # ------------------------------------------------------------------------------
 # Internal global definitions
