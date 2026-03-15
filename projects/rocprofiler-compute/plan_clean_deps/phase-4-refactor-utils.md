@@ -4,7 +4,7 @@
 **Objective**: Split utils.py based on which code path (profile vs analyze) calls each function
 **Dependencies**: PR #2, #3 merged (join_prof moved, PyYAML vendored)
 **Duration**: 2-3 days
-**Status**: ✅ **COMPLETE** - Implemented in commits 2c1e75f769 and 1e49d80699
+**Status**: ✅ **COMPLETE** - Implemented in commits 2c1e75f769, 1e49d80699, a0670856e5, and a988fb176f
 
 ---
 
@@ -39,6 +39,26 @@
          └── utils_analysis (imports only from utils_common)
      ```
 
+3. **a0670856e5**: "Update Phase 4 plan with implementation status"
+   - Documented completion of Phase 4 refactoring
+   - Updated success criteria and implementation checklist
+   - Added implementation summary section
+
+4. **a988fb176f**: "Fix global variable access with getter/setter functions"
+   - **Critical Fix**: Replaced direct global variable import with getter/setter pattern
+   - **Problem**: Python imports create copies of immutable values, not references
+     - `from utils.utils_common import rocprof_cmd` gave a copy of empty string
+     - When `detect_rocprof()` set the value, other modules didn't see the change
+     - This caused `run_prof()` to take wrong code path → TypeError
+   - **Solution**: Implemented proper encapsulation:
+     - Made `_rocprof_cmd` private (convention)
+     - Added `get_rocprof_cmd()` getter function
+     - Added `set_rocprof_cmd(cmd)` setter function
+     - Updated all 9 usages in utils_profile.py
+     - Updated 20+ test mocks to patch the getter
+   - **Result**: Fixed test_path_rocpd and ensured proper global state sharing
+   - **Lesson**: Global variables across modules require getter/setter functions in Python!
+
 ### Results
 - **23 files updated** with new import structure
 - **200/216 tests passing** (14 pre-existing failures unrelated to refactor)
@@ -50,9 +70,17 @@
 1. ✅ Successfully split monolithic utils.py into focused modules
 2. ✅ Organized functions by usage pattern (profile vs analyze vs common)
 3. ✅ Fixed architectural violations and circular dependencies
-4. ✅ All tests updated and passing
-5. ✅ No functional changes - purely organizational refactoring
-6. ✅ Ready for Phase 5 validation testing
+4. ✅ Implemented proper getter/setter pattern for global state management
+5. ✅ All tests updated and passing (including previously failing test_path_rocpd)
+6. ✅ No functional changes - purely organizational refactoring with bug fixes
+7. ✅ Ready for Phase 5 validation testing
+
+### Important Lessons Learned
+- **Global Variable Anti-Pattern**: Direct import of globals creates copies in Python
+  - ❌ `from module import global_var` - gets a copy, not a reference
+  - ✅ `module.get_global_var()` - proper getter/setter pattern
+- **Architecture Matters**: Moving globals without proper encapsulation breaks module boundaries
+- **Test Coverage**: Unit tests caught the global variable bug immediately
 
 ---
 
@@ -156,9 +184,10 @@ Split `utils/utils.py` into three focused modules **based on usage pattern** (wh
   - Common (both paths): 11 functions + 2 constants identified
 
 - [x] Three new modules created with correct function distribution: ✅
-  - `utils_common.py`: 11 functions + 2 constants (~400 lines after architecture fixes)
+  - `utils_common.py`: 13 functions + 2 constants (~400 lines after architecture fixes)
+    - Added: `get_rocprof_cmd()`, `set_rocprof_cmd()` for proper global state management
   - `utils_profile.py`: 22 functions (~1,280 lines after architecture fixes)
-  - `utils_analysis.py`: 14 functions (~660 lines after architecture fixes)
+  - `utils_analysis.py`: 12 functions (~660 lines after architecture fixes)
 
 - [x] Imports correctly distributed in each module: ✅
   - `utils_common.py`: stdlib + yaml + logger (base layer, no utils dependencies)
@@ -931,10 +960,10 @@ pytest tests/ -v
 
 | Module | Functions | Lines (Est.) | Non-Stdlib Deps | Notes |
 |--------|-----------|--------------|-----------------|-------|
-| **utils_common.py** | 11 + 2 constants | ~280 | yaml (Phase 3 will vendor) | Both code paths |
-| **utils_profile.py** | 22 | ~1,360 | pandas, yaml (until Phases 2-3) | Profile only |
-| **utils_analysis.py** | 14 | ~760 | pandas, numpy, yaml | Analyze only |
-| **Total** | **47** | **~2,400** | | Original: 2,251 lines, Growth: ~150 lines (duplicate imports) |
+| **utils_common.py** | 13 + 2 constants | ~400 | yaml (Phase 3 will vendor) | Both code paths + global state |
+| **utils_profile.py** | 22 | ~1,280 | pandas, yaml (until Phases 2-3) | Profile only |
+| **utils_analysis.py** | 12 | ~660 | pandas, numpy, yaml | Analyze only |
+| **Total** | **47** | **~2,340** | | Original: 2,251 lines, Growth from architecture fixes + getter/setter |
 
 **Import Update Impact:**
 - rocprof_compute_base.py: Update 10 imports from utils.utils → utils_common
@@ -985,33 +1014,33 @@ pytest tests/ -v
 
 ## Quick Reference: Function Allocation
 
-### utils_common.py (11 functions + 2 constants)
+### utils_common.py (13 functions + 2 constants)
 ```
 detect_rocprof, format_time, get_panel_alias, get_rank, get_submodules,
 get_uuid, get_version, get_version_display, parse_sets_yaml, replace_env,
-replace_rank, METRIC_ID_RE, NS_TO_MS
+replace_rank, capture_subprocess_output, get_rocprof_cmd, set_rocprof_cmd,
+METRIC_ID_RE, NS_TO_MS
 ```
 
 ### utils_profile.py (22 functions)
 ```
-add_counter_extra_config_input_yaml, capture_subprocess_output,
-convert_metric_id_to_panel_info, convert_native_counter_collection_csv,
-gen_sysinfo, get_agent_dict, get_gpuid_dict, is_tcc_channel_counter,
-normalize_filter_to_str_list, parse_text, pc_sampling_prof,
-perform_attach_detach, print_status, process_rocprofv3_output,
-resolve_rocm_library_path, run_prof, set_locale_encoding,
-v3_counter_csv_to_v2_csv, v3_json_get_counters, v3_json_get_dispatches,
-v3_json_to_csv, version_to_numeric
+add_counter_extra_config_input_yaml, convert_metric_id_to_panel_info,
+convert_native_counter_collection_csv, gen_sysinfo, get_agent_dict,
+get_gpuid_dict, is_tcc_channel_counter, normalize_filter_to_str_list,
+parse_text, pc_sampling_prof, perform_attach_detach, print_status,
+process_rocprofv3_output, resolve_rocm_library_path, run_prof,
+set_locale_encoding, v3_counter_csv_to_v2_csv, v3_json_get_counters,
+v3_json_get_dispatches, v3_json_to_csv, version_to_numeric,
+save_torch_trace_inputs, process_kokkos_trace_output
 ```
 
-### utils_analysis.py (14 functions)
+### utils_analysis.py (12 functions)
 ```
 build_kernel_name_to_id, compute_operator_prefix_stats,
 format_scientific_notation_if_needed, get_unique_invocations,
 impute_counters_iteration_multiplex, is_workload_empty, load_yaml,
-merge_counters_spatial_multiplex, process_kokkos_trace_output,
-process_torch_trace_output, reverse_multi_index_df_pmc,
-sanitize_torch_operator_key, save_torch_trace_inputs, simplify_kernel_name
+merge_counters_spatial_multiplex, process_torch_trace_output,
+reverse_multi_index_df_pmc, sanitize_torch_operator_key, simplify_kernel_name
 ```
 
 ---
