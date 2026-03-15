@@ -66,7 +66,7 @@ from utils.logger import (
     console_warning,
     demarcate,
 )
-from utils.utils_common import capture_subprocess_output, rocprof_cmd
+from utils.utils_common import capture_subprocess_output, get_rocprof_cmd
 
 # Global variables for rocprof arguments
 rocprof_args = ""
@@ -761,7 +761,7 @@ def run_prof(
     )
 
     # standard rocprof options
-    if rocprof_cmd == "rocprofiler-sdk":
+    if get_rocprof_cmd() == "rocprofiler-sdk":
         options = cast(dict[str, Union[str, list[str]]], profiler_options).copy()
         if multiple_files:
             options["ROCPROF_COUNTERS"] = ", ".join([
@@ -818,7 +818,7 @@ def run_prof(
     output_path = Path(workload_dir + "/out/pmc_1")
     output_path.mkdir(parents=True, exist_ok=True)
 
-    if rocprof_cmd == "rocprofiler-sdk":
+    if get_rocprof_cmd() == "rocprofiler-sdk":
         app_cmd = options.pop("APP_CMD") if "APP_CMD" in options else None
         for key, value in options.items():
             new_env[key] = value
@@ -839,10 +839,10 @@ def run_prof(
             )
     else:
         # print in readable format using shlex
-        console_debug(f"rocprof command: {shlex.join([rocprof_cmd] + options)}")
+        console_debug(f"rocprof command: {shlex.join([get_rocprof_cmd()] + options)}")
         # profile the app
         success, output = capture_subprocess_output(
-            [rocprof_cmd] + options, new_env=new_env, profileMode=True
+            [get_rocprof_cmd()] + options, new_env=new_env, profileMode=True
         )
 
     time_2 = time.time()
@@ -866,7 +866,7 @@ def run_prof(
     if format_rocprof_output == "rocpd":
         # If using native tool for counter collection
         if (
-            rocprof_cmd == "rocprofiler-sdk"
+            get_rocprof_cmd() == "rocprofiler-sdk"
             and options["ROCPROF_COUNTER_COLLECTION"] == "0"
         ):
             for db_name in glob.glob(workload_dir + "/out/pmc_1/*/*.db"):
@@ -931,7 +931,7 @@ def run_prof(
         shutil.rmtree(workload_dir + "/" + "out")
         return
     elif format_rocprof_output == "csv":
-        if rocprof_cmd == "rocprofiler-sdk":
+        if get_rocprof_cmd() == "rocprofiler-sdk":
             # rocprofv3 requires additional processing for each process
             results_files = process_rocprofv3_output(
                 workload_dir,
@@ -1034,7 +1034,7 @@ def pc_sampling_prof(
 
     unit = "time" if method == "host_trap" else "cycles"
 
-    if rocprof_cmd == "rocprofiler-sdk":
+    if get_rocprof_cmd() == "rocprofiler-sdk":
         options = cast(dict[str, Union[str, list[str]]], profiler_options).copy()
         options.update({
             # no counter collection for pc sampling
@@ -1078,10 +1078,10 @@ def pc_sampling_prof(
             cast(str, profiler_options[-1]),  # app command
         ]
 
-        console_debug(f"rocprof command: {shlex.join([rocprof_cmd] + options)}")
+        console_debug(f"rocprof command: {shlex.join([get_rocprof_cmd()] + options)}")
         # profile the app
         success, output = capture_subprocess_output(
-            [rocprof_cmd] + options, new_env=os.environ.copy(), profileMode=True
+            [get_rocprof_cmd()] + options, new_env=os.environ.copy(), profileMode=True
         )
 
     if not success:

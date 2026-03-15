@@ -2493,7 +2493,7 @@ def test_run_prof_success_v3(tmp_path, monkeypatch):
 
     mspec = MockSpec()
 
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprofv3")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprofv3")
     monkeypatch.setattr(
         "utils.utils_common.capture_subprocess_output",
         lambda *a, **k: (True, "success"),
@@ -2538,7 +2538,7 @@ def test_run_prof_success_v3_csv(tmp_path, monkeypatch):
 
     csv_files = [workload_dir + "/out/pmc_1/converted.csv"]
 
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprofv3")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprofv3")
     monkeypatch.setattr(
         "utils.utils_common.capture_subprocess_output",
         lambda *a, **k: (True, "success"),
@@ -2597,7 +2597,7 @@ def test_run_prof_success_rocprofiler_sdk(tmp_path, monkeypatch):
         "librocprofiler-sdk-tool.so",
     }
 
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprofiler-sdk")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprofiler-sdk")
     monkeypatch.setattr(
         "utils.utils_common.capture_subprocess_output",
         lambda *a, **k: (True, "success"),
@@ -2641,7 +2641,7 @@ def test_run_prof_with_yaml_config(tmp_path, monkeypatch):
 
     mspec = MockSpec()
 
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprofv3")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprofv3")
     monkeypatch.setattr(
         "utils.utils_common.capture_subprocess_output",
         lambda *a, **k: (True, "success"),
@@ -2685,7 +2685,7 @@ def test_run_prof_failure_subprocess(tmp_path, monkeypatch):
 
     mspec = MockSpec()
 
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprofv3")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprofv3")
     monkeypatch.setattr(
         "utils.utils_common.capture_subprocess_output",
         lambda *a, **k: (False, "error output"),
@@ -2736,7 +2736,7 @@ def test_run_prof_mi300_environment_setup(tmp_path, monkeypatch):
             captured_env.update(new_env)
         return (True, "success")
 
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprofv3")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprofv3")
     monkeypatch.setattr(
         "utils.utils_common.capture_subprocess_output", mock_capture_subprocess_output
     )
@@ -2790,7 +2790,7 @@ def test_run_prof_timestamps_special_case(tmp_path, monkeypatch):
 
     csv_files = [workload_dir + "/kernel_trace.csv"]
 
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprofv3")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprofv3")
     monkeypatch.setattr(
         "utils.utils_common.capture_subprocess_output",
         lambda *a, **k: (True, "success"),
@@ -2843,7 +2843,7 @@ def test_run_prof_no_results_files(tmp_path, monkeypatch):
 
     mspec = MockSpec()
 
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprofv2")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprofv2")
     monkeypatch.setattr(
         "utils.utils_common.capture_subprocess_output",
         lambda *a, **k: (True, "success"),
@@ -2893,7 +2893,7 @@ def test_run_prof_header_standardization(tmp_path, monkeypatch):
     with open(workload_dir + "/out/pmc_1/results_test.csv", "w") as f:
         f.write(csv_content)
 
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprofv3")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprofv3")
     monkeypatch.setattr(
         "utils.utils_common.capture_subprocess_output",
         lambda *a, **k: (True, "success"),
@@ -2948,7 +2948,7 @@ def test_run_prof_tcc_flattening_mi300(tmp_path, monkeypatch):
     mspec = MockSpec()
 
     # Mock functions
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprofv3")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprofv3")
     monkeypatch.setattr(
         "utils.utils_common.capture_subprocess_output",
         lambda *a, **k: (True, "success"),
@@ -2982,7 +2982,7 @@ def test_run_prof_sdk_creates_new_env_copy(tmp_path, monkeypatch):
     Path(fname_str).touch()
     workload_dir_str = str(tmp_path)
 
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprofiler-sdk")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprofiler-sdk")
     monkeypatch.setattr(
         "utils.utils_profile.process_rocprofv3_output", lambda *a, **k: []
     )
@@ -3197,7 +3197,7 @@ def test_run_prof_v3_cli_calls_kokkos_trace_processing(tmp_path, monkeypatch):
     loglevel = logging.INFO
     format_rocprof_output = "csv"
 
-    monkeypatch.setattr("utils.utils_profile.rocprof_cmd", "rocprof_cli_v3")
+    monkeypatch.setattr("utils.utils_common.get_rocprof_cmd", lambda: "rocprof_cli_v3")
 
     profiler_options_cli_kokkos = ["--kokkos-trace", "--other-opt"]
     kokkos_trace_called_with = None
@@ -6883,7 +6883,9 @@ def test_pc_sampling_prof_sdk_path_nonexistent_librocprofiler_sdk_tool(
     file existence before `capture_subprocess_output` is not in the provided snippet,
     but we test the path construction.
     """
-    with mock.patch("utils.utils_profile.rocprof_cmd", "rocprofiler-sdk"):
+    with mock.patch(
+        "utils.utils_common.get_rocprof_cmd", return_value="rocprofiler-sdk"
+    ):
         method = "host_trap"
         interval = 1000
         workload_dir = str(tmp_path)
@@ -6924,7 +6926,9 @@ def test_pc_sampling_prof_subprocess_fails(
     Edge Case: The capture_subprocess_output returns success=False.
     This should trigger the console_error("PC sampling failed.").
     """
-    with mock.patch("utils.utils_profile.rocprof_cmd", "rocprof_cli_tool"):
+    with mock.patch(
+        "utils.utils_common.get_rocprof_cmd", return_value="rocprof_cli_tool"
+    ):
         method = "stochastic"
         interval = 5000
         workload_dir = str(tmp_path)
@@ -6940,7 +6944,9 @@ def test_pc_sampling_prof_subprocess_fails(
 
     mock_capture_subprocess.reset_mock()
     mock_console_error.reset_mock()
-    with mock.patch("utils.utils_profile.rocprof_cmd", "rocprofiler-sdk"):
+    with mock.patch(
+        "utils.utils_common.get_rocprof_cmd", return_value="rocprofiler-sdk"
+    ):
         options = {"APP_CMD": "another_app"}
         sdk_lib_dir = tmp_path / "rocm_sdk_fail" / "lib"
         sdk_lib_dir.mkdir(parents=True, exist_ok=True)
@@ -6973,7 +6979,9 @@ def test_pc_sampling_prof_empty_appcmd(
     The function should still attempt to run it. The behavior of
     capture_subprocess_output with an empty command is external to this function.
     """
-    with mock.patch("utils.utils_profile.rocprof_cmd", "rocprof_cli_tool"):
+    with mock.patch(
+        "utils.utils_common.get_rocprof_cmd", return_value="rocprof_cli_tool"
+    ):
         method = "host_trap"
         interval = 100
         workload_dir = str(tmp_path)
@@ -6991,7 +6999,9 @@ def test_pc_sampling_prof_empty_appcmd(
 
     mock_capture_subprocess.reset_mock()
     mock_console_error.reset_mock()
-    with mock.patch("utils.utils_profile.rocprof_cmd", "rocprofiler-sdk"):
+    with mock.patch(
+        "utils.utils_common.get_rocprof_cmd", return_value="rocprofiler-sdk"
+    ):
         sdk_lib_dir = tmp_path / "rocm_sdk_empty" / "lib"
         sdk_lib_dir.mkdir(parents=True, exist_ok=True)
         rocprofiler_sdk_tool_path_sdk = str(sdk_lib_dir / "librocprofiler_sdk.so")

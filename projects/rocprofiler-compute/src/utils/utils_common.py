@@ -62,13 +62,22 @@ NS_TO_MS = 1.0 / 1_000_000.0
 
 # Global state: rocprof command/version being used
 # Shared between profile and analyze modes
-rocprof_cmd = ""
+_rocprof_cmd = ""
+
+
+def get_rocprof_cmd() -> str:
+    """Get the current rocprof command."""
+    return _rocprof_cmd
+
+
+def set_rocprof_cmd(cmd: str) -> None:
+    """Set the rocprof command."""
+    global _rocprof_cmd
+    _rocprof_cmd = cmd
 
 
 def detect_rocprof(args: argparse.Namespace) -> str:
     """Detect loaded rocprof version. Resolve path and set cmd globally."""
-    global rocprof_cmd
-
     # Default is rocprofiler-sdk
     if os.environ.get("ROCPROF", "rocprofiler-sdk") == "rocprofiler-sdk":
         if not Path(args.rocprofiler_sdk_tool_path).exists():
@@ -76,23 +85,25 @@ def detect_rocprof(args: argparse.Namespace) -> str:
                 "Could not find rocprofiler-sdk tool at "
                 f"{args.rocprofiler_sdk_tool_path}"
             )
-        rocprof_cmd = "rocprofiler-sdk"
-        console_debug(f"rocprof_cmd is {rocprof_cmd}")
+        cmd = "rocprofiler-sdk"
+        set_rocprof_cmd(cmd)
+        console_debug(f"rocprof_cmd is {cmd}")
         console_debug(f"rocprofiler_sdk_tool_path is {args.rocprofiler_sdk_tool_path}")
     else:
         # If ROCPROF is not set to rocprofiler-sdk
-        rocprof_cmd = os.environ["ROCPROF"]
-        rocprof_path = shutil.which(rocprof_cmd)
+        cmd = os.environ["ROCPROF"]
+        rocprof_path = shutil.which(cmd)
         if not rocprof_path:
             console_error(
-                f"Unable to resolve path to {rocprof_cmd} binary. "
+                f"Unable to resolve path to {cmd} binary. "
                 "Please verify installation or set ROCPROF "
                 "environment variable with full path."
             )
         rocprof_path = str(Path(rocprof_path.rstrip("\n")).resolve())
-        console_debug(f"rocprof_cmd is {str(rocprof_cmd)}")
+        set_rocprof_cmd(cmd)
+        console_debug(f"rocprof_cmd is {cmd}")
         console_debug(f"ROC Profiler: {rocprof_path}")
-    return rocprof_cmd
+    return get_rocprof_cmd()
 
 
 def capture_subprocess_output(
@@ -147,7 +158,7 @@ def capture_subprocess_output(
             buf.write(line)
             if enable_logging:
                 if profileMode:
-                    console_log(rocprof_cmd, line.strip(), indent_level=1)
+                    console_log(get_rocprof_cmd(), line.strip(), indent_level=1)
                 else:
                     console_log(line.strip())
         except UnicodeDecodeError:
