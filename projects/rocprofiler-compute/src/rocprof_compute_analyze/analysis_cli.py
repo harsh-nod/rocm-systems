@@ -199,6 +199,7 @@ class cli_analysis(OmniAnalyze_Base):
                                 arch_config=arch_config,
                             )
 
+                            # NOTE: using default data type
                             roof_plot = roof_obj.cli_generate_plot(
                                 dtype=roof_obj.get_dtype()[0],
                                 ai_data=ai_data,

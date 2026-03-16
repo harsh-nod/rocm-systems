@@ -1050,6 +1050,14 @@ class Roofline:
 
         self.__ai_data = ai_data
 
+        workload_dir = self.__run_parameters.get("workload_dir", "")
+        if not (Path(workload_dir) / "roofline.csv").is_file():
+            console_log(
+                "roofline",
+                f"{workload_dir}/roofline.csv does not exist",
+            )
+            return None
+
         self.__ceiling_data = construct_roof(
             roofline_parameters=self.__run_parameters, dtype=dtype
         )
@@ -1096,6 +1104,8 @@ class Roofline:
 
         for cache_level in cache_hierarchy:
             cache_key = cache_level.lower()
+            if self.__ceiling_data[cache_key][0] is None:
+                continue
             plt.plot(
                 self.__ceiling_data[cache_key][0],
                 self.__ceiling_data[cache_key][1],
@@ -1121,7 +1131,7 @@ class Roofline:
             )
 
         # Plot VALU and MFMA Peak
-        if dtype in PEAK_OPS_DATATYPES:
+        if dtype in PEAK_OPS_DATATYPES and self.__ceiling_data["valu"][0] is not None:
             plt.plot(
                 self.__ceiling_data["valu"][0],
                 [
@@ -1151,7 +1161,7 @@ class Roofline:
         else:
             console_warning(f"No PEAK measurement available for {dtype}")
 
-        if dtype in MFMA_DATATYPES:
+        if dtype in MFMA_DATATYPES and self.__ceiling_data["mfma"][0] is not None:
             plt.plot(
                 self.__ceiling_data["mfma"][0],
                 [
