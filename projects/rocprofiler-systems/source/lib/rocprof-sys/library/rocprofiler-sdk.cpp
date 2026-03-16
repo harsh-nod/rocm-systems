@@ -82,11 +82,11 @@ namespace rocprofiler_sdk
 {
 namespace
 {
-using tool_agent_vec_t                       = std::vector<tool_agent>;
-client_data*                  tool_data      = new client_data{};
-std::shared_ptr<roctx_client> g_roctx_client = {};
+using tool_agent_vec_t                         = std::vector<tool_agent>;
+client_data*                    tool_data      = new client_data{};
+std::shared_ptr<roctx_client<>> g_roctx_client = {};
 
-std::shared_ptr<roctx_client>
+std::shared_ptr<roctx_client<>>
 get_roctx_client()
 {
     if(!g_roctx_client)
@@ -101,10 +101,11 @@ get_roctx_client()
              std::find(_domains.begin(), _domains.end(), "roctx") != _domains.end());
         const auto roctx_traced_regions = config::get_trace_region();
 
-        const auto roctx_config =
-            roctx_client_config{ roctx_write_enabled, config::get_use_perfetto(),
-                                 config::get_use_timemory(), roctx_traced_regions };
-        g_roctx_client = std::make_shared<roctx_client>(roctx_config);
+        const auto roctx_config = roctx_client_config{
+            roctx_write_enabled, config::get_use_perfetto(), config::get_use_timemory(),
+            config::get_perfetto_annotations(), roctx_traced_regions
+        };
+        g_roctx_client = std::make_shared<roctx_client<>>(roctx_config);
     }
 
     return g_roctx_client;
