@@ -1238,7 +1238,7 @@ def test_roof_invalid_data_type(
         "--roofline-data-type",
         "INVALID_TYPE",
     ])
-    assert code >= 0
+    assert code != 0, "Invalid datatype should be rejected by argparser"
 
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
@@ -1511,39 +1511,6 @@ def test_roofline_kernel_filter(binary_handler_profile_rocprof_compute):
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
 
-@pytest.mark.roofline_1
-def test_roofline_unsupported_datatype_error(
-    binary_handler_profile_rocprof_compute,
-    binary_handler_analyze_rocprof_compute,
-):
-    """Unsupported datatype should be caught during analyze, not profile."""
-    if soc in ("MI100"):
-        pytest.skip("Skipping roofline test for MI100")
-
-    options = ["--device", "0", "--roof-only"]
-    workload_dir = test_utils.get_output_dir()
-
-    returncode = binary_handler_profile_rocprof_compute(
-        config, workload_dir, options, check_success=False, roof=True
-    )
-    assert returncode == 0
-    assert (Path(workload_dir) / "roofline.csv").exists()
-
-    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
-    assert len(html_files) == 0, "Profile should NOT generate HTML files"
-
-    code = binary_handler_analyze_rocprof_compute([
-        "analyze",
-        "--path",
-        workload_dir,
-        "--roofline-data-type",
-        "UNSUPPORTED_TYPE",
-    ])
-    assert code >= 0
-
-    test_utils.clean_output_dir(config["cleanup"], workload_dir)
-
-
 @pytest.mark.roofline_2
 @pytest.mark.parametrize(
     "analyze_options,test_id",
@@ -1584,6 +1551,9 @@ def test_roof_plot_modes(
         + analyze_options
     )
     assert code == 0
+
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) > 0, "Analyze should generate roofline HTML files"
 
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
@@ -2225,6 +2195,9 @@ def test_roof_sort_dispatches(
     ])
     assert code == 0
 
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) > 0, "Analyze should generate roofline HTML files"
+
     validate(inspect.stack()[0][3], workload_dir, file_dict)
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
@@ -2259,6 +2232,9 @@ def test_roof_sort_kernels(
         "kernels",
     ])
     assert code == 0
+
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) > 0, "Analyze should generate roofline HTML files"
 
     validate(inspect.stack()[0][3], workload_dir, file_dict)
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
@@ -2295,6 +2271,9 @@ def test_roof_mem_levels_vL1D(
     ])
     assert code == 0
 
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) > 0, "Analyze should generate roofline HTML files"
+
     validate(inspect.stack()[0][3], workload_dir, file_dict)
     test_utils.clean_output_dir(config["cleanup"], workload_dir)
 
@@ -2329,6 +2308,9 @@ def test_roof_mem_levels_LDS(
         "LDS",
     ])
     assert code == 0
+
+    html_files = list(Path(workload_dir).glob("empirRoof_*.html"))
+    assert len(html_files) > 0, "Analyze should generate roofline HTML files"
 
     validate(inspect.stack()[0][3], workload_dir, file_dict)
     test_utils.clean_output_dir(config["cleanup"], workload_dir)

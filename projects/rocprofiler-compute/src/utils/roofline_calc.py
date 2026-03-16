@@ -471,8 +471,6 @@ def calc_ai_analyze(
     return plot_points.__dict__
 
 
-
-
 def validate_roofline_csv(workload_dir: Union[str, Path, list]) -> tuple[bool, str]:
     """
     Validate roofline.csv exists and has consistent structure.

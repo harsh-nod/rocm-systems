@@ -34,6 +34,8 @@ import test_utils
 
 config = {}
 config["cleanup"] = True if "PYTEST_XDIST_WORKER_COUNT" in os.environ else False
+config["app_1"] = ["./tests/vcopy", "-n", "1048576", "-b", "256", "-i", "3"]
+config["kernel_name_1"] = "vecCopy"
 
 indirs = [
     "tests/workloads/vcopy/MI100",
@@ -1732,7 +1734,7 @@ def test_list_torch_operators_no_trace_data(binary_handler_analyze_rocprof_compu
 # Roofline analyze tests (Phase 1: HTML generation moved from profile to analyze)
 # =============================================================================
 
-soc = test_utils.gpu_soc()
+roofline_soc = test_utils.gpu_soc()
 
 
 @pytest.mark.roofline_1
@@ -1744,18 +1746,13 @@ def test_analyze_generates_roofline_html(
     Full workflow: profile creates roofline.csv, analyze generates HTML.
     Verifies the two-step roofline pipeline works end-to-end.
     """
-    if soc in ("MI100"):
+    if roofline_soc in ("MI100"):
         pytest.skip("Roofline not supported on MI100")
 
-    profile_config = {
-        "app_1": ["./tests/vcopy", "-n", "1048576", "-b", "256", "-i", "3"],
-        "kernel_name_1": "vecCopy",
-        "cleanup": config["cleanup"],
-    }
     workload_dir = test_utils.get_output_dir()
 
     returncode = binary_handler_profile_rocprof_compute(
-        profile_config,
+        config,
         workload_dir,
         ["--device", "0", "--roof-only"],
         check_success=False,
@@ -1791,18 +1788,13 @@ def test_analyze_roofline_multiple_datatypes(
     Profile then analyze with multiple data types.
     Verifies each datatype can be requested independently.
     """
-    if soc in ("MI100"):
+    if roofline_soc in ("MI100"):
         pytest.skip("Roofline not supported on MI100")
 
-    profile_config = {
-        "app_1": ["./tests/vcopy", "-n", "1048576", "-b", "256", "-i", "3"],
-        "kernel_name_1": "vecCopy",
-        "cleanup": config["cleanup"],
-    }
     workload_dir = test_utils.get_output_dir()
 
     returncode = binary_handler_profile_rocprof_compute(
-        profile_config,
+        config,
         workload_dir,
         ["--device", "0", "--roof-only"],
         check_success=False,
@@ -1861,18 +1853,13 @@ def test_analyze_roofline_idempotent(
     Running analyze twice on the same profiling output should produce
     consistent results without errors.
     """
-    if soc in ("MI100"):
+    if roofline_soc in ("MI100"):
         pytest.skip("Roofline not supported on MI100")
 
-    profile_config = {
-        "app_1": ["./tests/vcopy", "-n", "1048576", "-b", "256", "-i", "3"],
-        "kernel_name_1": "vecCopy",
-        "cleanup": config["cleanup"],
-    }
     workload_dir = test_utils.get_output_dir()
 
     returncode = binary_handler_profile_rocprof_compute(
-        profile_config,
+        config,
         workload_dir,
         ["--device", "0", "--roof-only"],
         check_success=False,
@@ -1924,5 +1911,5 @@ def test_analyze_corrupted_roofline_csv_graceful(
                     "--path",
                     workload_dir,
                 ])
-                assert code >= 0
+                assert code == 0
             break
