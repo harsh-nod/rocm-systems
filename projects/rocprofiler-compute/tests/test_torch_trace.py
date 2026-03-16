@@ -35,7 +35,11 @@ from utils.rocpd_data import (
     MARKER_API_TRACE_QUERY,
     convert_dbs_to_csv,
 )
-from utils.utils import process_torch_trace_output
+from utils.utils import (
+    build_torch_trace_call_trees,
+    process_torch_trace_output,
+    write_torch_trace_operator_csvs,
+)
 
 GUID = "abc-1234-def"
 
@@ -390,8 +394,17 @@ def test_torch_trace_output_same_for_rocpd_and_csv():
     write_csv_layout(csv_dir)
 
     kernel_top_df = build_kernel_top_df()
-    process_torch_trace_output(rocpd_dir, kernel_top_df)
-    process_torch_trace_output(csv_dir, kernel_top_df)
+    rocpd_output = process_torch_trace_output(rocpd_dir)
+    csv_output = process_torch_trace_output(csv_dir)
+    assert rocpd_output is not None
+    assert csv_output is not None
+    rocpd_df, rocpd_trace_path = rocpd_output
+    csv_df, csv_trace_path = csv_output
+
+    write_torch_trace_operator_csvs(rocpd_df, rocpd_trace_path)
+    write_torch_trace_operator_csvs(csv_df, csv_trace_path)
+    build_torch_trace_call_trees(rocpd_df, kernel_top_df)
+    build_torch_trace_call_trees(csv_df, kernel_top_df)
 
     rocpd_results = read_operator_csvs(Path(rocpd_dir) / "torch_trace")
     csv_results = read_operator_csvs(Path(csv_dir) / "torch_trace")

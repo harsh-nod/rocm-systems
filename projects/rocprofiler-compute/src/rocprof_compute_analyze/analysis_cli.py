@@ -43,6 +43,12 @@ def parse_torch_operator_patterns(args) -> list[str]:
     for op in operator_args:
         pattern_list.extend(o.strip() for o in str(op).split(",") if o.strip())
     return pattern_list
+from utils.logger import console_error, console_log, demarcate
+from utils.utils import (
+    build_torch_trace_call_trees,
+    process_torch_trace_output,
+    write_torch_trace_operator_csvs,
+)
 
 
 class cli_analysis(OmniAnalyze_Base):
@@ -94,15 +100,17 @@ class cli_analysis(OmniAnalyze_Base):
             )
 
             if getattr(args, "list_torch_operators", False):
-                kernel_top_df = pd.read_csv(
-                    Path(path_info[0]) / "pmc_kernel_top.csv"
+                kernel_top_df = pd.read_csv(Path(path_info[0]) / "pmc_kernel_top.csv")
+                consolidated_df, torch_trace_path = process_torch_trace_output(
+                    path_info[0]
                 )
-                file_data = process_torch_trace_output(
-                    path_info[0],
+                write_torch_trace_operator_csvs(consolidated_df, torch_trace_path)
+                call_trees = build_torch_trace_call_trees(
+                    consolidated_df,
                     kernel_top_df=kernel_top_df,
                     kernel_verbose=args.kernel_verbose,
                 )
-                tty.list_torch_operators(path_info[0], file_data)
+                tty.list_torch_operators(path_info[0], call_trees)
                 sys.exit(0)
 
             # demangle and overwrite original 'Kernel_Name'
