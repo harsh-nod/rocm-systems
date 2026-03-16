@@ -205,9 +205,12 @@ class cli_analysis(OmniAnalyze_Base):
         kernel_top_csv = pd.read_csv(
             str(pathlib.Path(workload_path) / "pmc_kernel_top.csv")
         )
+        kernel_name_values = [
+            str(name).strip() for name in kernel_top_csv["Kernel_Name"].tolist()
+        ]
         name_to_id: dict[str, int] = {
-            str(row["Kernel_Name"]).strip(): idx
-            for idx, row in kernel_top_csv.iterrows()
+            kernel_name: idx
+            for idx, kernel_name in enumerate(kernel_name_values)
         }
 
         kernel_names: set[str] = set()
@@ -261,9 +264,12 @@ class cli_analysis(OmniAnalyze_Base):
             and not kernel_top_df.empty
             and "Kernel_Name" in kernel_top_df.columns
         ):
+            kernel_name_values = [
+                str(name).strip() for name in kernel_top_df["Kernel_Name"].tolist()
+            ]
             name_to_id = {
-                str(row["Kernel_Name"]).strip(): idx
-                for idx, row in kernel_top_df.iterrows()
+                kernel_name: idx
+                for idx, kernel_name in enumerate(kernel_name_values)
             }
 
         kernel_names: set[str] = set()
