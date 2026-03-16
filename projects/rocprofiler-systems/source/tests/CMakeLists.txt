@@ -9,6 +9,7 @@ add_executable(
     $<TARGET_OBJECTS:logger-tests>
     $<TARGET_OBJECTS:lib-components-tests>
     $<$<TARGET_EXISTS:rccl-unit-tests>:$<TARGET_OBJECTS:rccl-unit-tests>>
+    $<$<TARGET_EXISTS:roctx-client-tests>:$<TARGET_OBJECTS:roctx-client-tests>>
 )
 
 target_link_libraries(
