@@ -20,23 +20,25 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-
-#include <iostream>
+#include "overdrive_read_write.h"
 
 #include <gtest/gtest.h>
+
+#include <cstdint>
+#include <iostream>
+
 #include "amd_smi/amdsmi.h"
 #include "overdrive_read_write.h"
 #include "../test_common.h"
 
 TestOverdriveReadWrite::TestOverdriveReadWrite() : TestBase() {
   set_title("AMDSMI Overdrive Read/Write Test");
-  set_description("The Fan Read tests verifies that the overdrive settings "
-                                      "can be read and controlled properly.");
+  set_description(
+      "The Fan Read tests verifies that the overdrive settings "
+      "can be read and controlled properly.");
 }
 
-TestOverdriveReadWrite::~TestOverdriveReadWrite(void) {
-}
+TestOverdriveReadWrite::~TestOverdriveReadWrite(void) {}
 
 void TestOverdriveReadWrite::SetUp(void) {
   TestBase::SetUp();
@@ -44,9 +46,7 @@ void TestOverdriveReadWrite::SetUp(void) {
   return;
 }
 
-void TestOverdriveReadWrite::DisplayTestInfo(void) {
-  TestBase::DisplayTestInfo();
-}
+void TestOverdriveReadWrite::DisplayTestInfo(void) { TestBase::DisplayTestInfo(); }
 
 void TestOverdriveReadWrite::DisplayResults(void) const {
   TestBase::DisplayResults();
@@ -58,7 +58,6 @@ void TestOverdriveReadWrite::Close() {
   // amdsmi_shut_down(), so it should be done after other hsa cleanup
   TestBase::Close();
 }
-
 
 void TestOverdriveReadWrite::Run(void) {
   amdsmi_status_t ret;
@@ -111,8 +110,6 @@ void TestOverdriveReadWrite::Run(void) {
     ret = amdsmi_get_gpu_overdrive_level(processor_handles_[dv_ind], &val);
     DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret, AMDSMI_STATUS_SUCCESS);
     CHK_ERR_ASRT(ret)
-    IF_VERB(STANDARD) {
-      std::cout << "\t**New OverDrive Level:" << val << std::endl;
-    }
+    IF_VERB(STANDARD) { std::cout << "\t**New OverDrive Level:" << val << std::endl; }
   }
 }

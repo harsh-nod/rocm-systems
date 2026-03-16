@@ -20,28 +20,28 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-
-#include <iostream>
-#include <bitset>
-#include <string>
-#include <algorithm>
+#include "frequencies_read_write.h"
 
 #include <gtest/gtest.h>
+
+#include <algorithm>
+#include <bitset>
+#include <cstdint>
+#include <iostream>
+#include <string>
+
+#include "../test_common.h"
 #include "amd_smi/amdsmi.h"
 #include "amd_smi/impl/amd_smi_utils.h"
-#include "frequencies_read_write.h"
-#include "../test_common.h"
-
 
 TestFrequenciesReadWrite::TestFrequenciesReadWrite() : TestBase() {
   set_title("AMDSMI Frequencies Read/Write Test");
-  set_description("The Frequencies tests verify that the frequency "
-                       "settings can be read and controlled properly.");
+  set_description(
+      "The Frequencies tests verify that the frequency "
+      "settings can be read and controlled properly.");
 }
 
-TestFrequenciesReadWrite::~TestFrequenciesReadWrite(void) {
-}
+TestFrequenciesReadWrite::~TestFrequenciesReadWrite(void) {}
 
 void TestFrequenciesReadWrite::SetUp(void) {
   TestBase::SetUp();
@@ -49,9 +49,7 @@ void TestFrequenciesReadWrite::SetUp(void) {
   return;
 }
 
-void TestFrequenciesReadWrite::DisplayTestInfo(void) {
-  TestBase::DisplayTestInfo();
-}
+void TestFrequenciesReadWrite::DisplayTestInfo(void) { TestBase::DisplayTestInfo(); }
 
 void TestFrequenciesReadWrite::DisplayResults(void) const {
   TestBase::DisplayResults();
@@ -64,23 +62,17 @@ void TestFrequenciesReadWrite::Close() {
   TestBase::Close();
 }
 
-
 void TestFrequenciesReadWrite::Run(void) {
   amdsmi_status_t ret;
   amdsmi_frequencies_t f;
   uint32_t freq_bitmask;
   amdsmi_clk_type_t amdsmi_clk;
   const std::map<amdsmi_clk_type_t, std::string> clk_type_map = {
-      {AMDSMI_CLK_TYPE_SYS, "SYS"},
-      {AMDSMI_CLK_TYPE_GFX, "GFX"},
-      {AMDSMI_CLK_TYPE_DF, "DF"},
-      {AMDSMI_CLK_TYPE_DCEF, "DCEF"},
-      {AMDSMI_CLK_TYPE_SOC, "SOC"},
-      {AMDSMI_CLK_TYPE_MEM, "MEM"},
-      {AMDSMI_CLK_TYPE_PCIE, "PCIE"},
-      {AMDSMI_CLK_TYPE_VCLK0, "VCLK0"},
-      {AMDSMI_CLK_TYPE_VCLK1, "VCLK1"},
-      {AMDSMI_CLK_TYPE_DCLK0, "DCLK0"},
+      {AMDSMI_CLK_TYPE_SYS, "SYS"},     {AMDSMI_CLK_TYPE_GFX, "GFX"},
+      {AMDSMI_CLK_TYPE_DF, "DF"},       {AMDSMI_CLK_TYPE_DCEF, "DCEF"},
+      {AMDSMI_CLK_TYPE_SOC, "SOC"},     {AMDSMI_CLK_TYPE_MEM, "MEM"},
+      {AMDSMI_CLK_TYPE_PCIE, "PCIE"},   {AMDSMI_CLK_TYPE_VCLK0, "VCLK0"},
+      {AMDSMI_CLK_TYPE_VCLK1, "VCLK1"}, {AMDSMI_CLK_TYPE_DCLK0, "DCLK0"},
       {AMDSMI_CLK_TYPE_DCLK1, "DCLK1"},
   };
 
@@ -113,23 +105,23 @@ void TestFrequenciesReadWrite::Run(void) {
           std::cout << ": " << smi_amdgpu_get_status_string(ret, false) << std::endl;
         }
 
-        if (ret == AMDSMI_STATUS_NOT_SUPPORTED ||
-            ret == AMDSMI_STATUS_NOT_YET_IMPLEMENTED) {
-          std::cout << "\t**Set " << FreqEnumToStr(amdsmi_clk) <<
-                               ": Not supported on this machine" << std::endl;
+        if (ret == AMDSMI_STATUS_NOT_SUPPORTED || ret == AMDSMI_STATUS_NOT_YET_IMPLEMENTED) {
+          std::cout << "\t**Set " << FreqEnumToStr(amdsmi_clk) << ": Not supported on this machine"
+                    << std::endl;
           return false;
         }
 
         // special driver issue, shouldn't normally occur
         if (ret == AMDSMI_STATUS_UNEXPECTED_DATA) {
-          std::cerr << "WARN: Clock file [" << FreqEnumToStr(amdsmi_clk) << "] exists on device [" << dv_ind << "] but empty!" << std::endl;
+          std::cerr << "WARN: Clock file [" << FreqEnumToStr(amdsmi_clk) << "] exists on device ["
+                    << dv_ind << "] but empty!" << std::endl;
           std::cerr << "      Likely a driver issue!" << std::endl;
         }
 
         // CHK_ERR_ASRT(ret)
         IF_VERB(STANDARD) {
-          std::cout << "Initial frequency for clock " <<
-              FreqEnumToStr(amdsmi_clk) << " is " << f.current << std::endl;
+          std::cout << "Initial frequency for clock " << FreqEnumToStr(amdsmi_clk) << " is "
+                    << f.current << std::endl;
         }
         return true;
       };
@@ -138,21 +130,17 @@ void TestFrequenciesReadWrite::Run(void) {
         // Set clocks to something other than the usual default of the lowest
         // frequency.
         // Skip AMDSMI_CLK_TYPE_PCIE, which does not supported in rocm-smi.
-        if (amdsmi_clk == AMDSMI_CLK_TYPE_PCIE)
-          return;
+        if (amdsmi_clk == AMDSMI_CLK_TYPE_PCIE) return;
 
         freq_bitmask = 0b01100;  // Try the 3rd and 4th clocks
 
-        std::string freq_bm_str =
-              std::bitset<AMDSMI_MAX_NUM_FREQUENCIES>(freq_bitmask).to_string();
+        std::string freq_bm_str = std::bitset<AMDSMI_MAX_NUM_FREQUENCIES>(freq_bitmask).to_string();
 
-        freq_bm_str.erase(0, std::min(freq_bm_str.find_first_not_of('0'),
-                                                       freq_bm_str.size()-1));
+        freq_bm_str.erase(0, std::min(freq_bm_str.find_first_not_of('0'), freq_bm_str.size() - 1));
 
         IF_VERB(STANDARD) {
-        std::cout << "Setting frequency mask for " <<
-            FreqEnumToStr(amdsmi_clk) << " to 0b" << freq_bm_str << " ..." <<
-                                                                    std::endl;
+          std::cout << "Setting frequency mask for " << FreqEnumToStr(amdsmi_clk) << " to 0b"
+                    << freq_bm_str << " ..." << std::endl;
         }
         DISPLAY_AMDSMI_API("amdsmi_set_clk_freq", "gpu="+std::to_string(dv_ind), VERB(STANDARD));
         ret =  amdsmi_set_clk_freq(processor_handles_[dv_ind], amdsmi_clk, freq_bitmask);
@@ -163,8 +151,8 @@ void TestFrequenciesReadWrite::Run(void) {
         // Sometimes setting clock frequencies is completely not supported
         if ((ret == AMDSMI_STATUS_NO_PERM && geteuid() == 0) ||
             (ret == AMDSMI_STATUS_NOT_SUPPORTED)) {
-          std::cout << "\t**Set " << FreqEnumToStr(amdsmi_clk) <<
-                              ": Not supported on this machine. Skipping..." << std::endl;
+          std::cout << "\t**Set " << FreqEnumToStr(amdsmi_clk)
+                    << ": Not supported on this machine. Skipping..." << std::endl;
           ret = AMDSMI_STATUS_SUCCESS;
           return;
         }

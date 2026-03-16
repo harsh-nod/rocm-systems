@@ -20,13 +20,15 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include "sys_info_read.h"
+
 #include <gtest/gtest.h>
 
+#include <cstdint>
 #include <iomanip>
 #include <iostream>
-#include <string>
 #include <limits>
+#include <string>
 
 #include "amd_smi/amdsmi.h"
 #include "sys_info_read.h"
@@ -34,14 +36,14 @@
 
 TestSysInfoRead::TestSysInfoRead() : TestBase() {
   set_title("AMDSMI System Info Read Test");
-  set_description("This test verifies that system information such as the "
-             "BDFID, AMDSMI version, VBIOS version, "
-             "vendor_id, unique_id, target_gfx_version, kfd_id, node_id, etc. "
-             "can be read properly.");
+  set_description(
+      "This test verifies that system information such as the "
+      "BDFID, AMDSMI version, VBIOS version, "
+      "vendor_id, unique_id, target_gfx_version, kfd_id, node_id, etc. "
+      "can be read properly.");
 }
 
-TestSysInfoRead::~TestSysInfoRead(void) {
-}
+TestSysInfoRead::~TestSysInfoRead(void) {}
 
 void TestSysInfoRead::SetUp(void) {
   TestBase::SetUp();
@@ -49,9 +51,7 @@ void TestSysInfoRead::SetUp(void) {
   return;
 }
 
-void TestSysInfoRead::DisplayTestInfo(void) {
-  TestBase::DisplayTestInfo();
-}
+void TestSysInfoRead::DisplayTestInfo(void) { TestBase::DisplayTestInfo(); }
 
 void TestSysInfoRead::DisplayResults(void) const {
   TestBase::DisplayResults();
@@ -63,7 +63,6 @@ void TestSysInfoRead::Close() {
   // amdsmi_shut_down(), so it should be done after other hsa cleanup
   TestBase::Close();
 }
-
 
 void TestSysInfoRead::Run(void) {
   amdsmi_status_t err;
@@ -88,8 +87,7 @@ void TestSysInfoRead::Run(void) {
     if (err != AMDSMI_STATUS_SUCCESS) {
       if ((err == AMDSMI_STATUS_FILE_ERROR) || (err == AMDSMI_STATUS_NOT_SUPPORTED)) {
         IF_VERB(STANDARD) {
-          std::cout << "\t**VBIOS read: Not supported on this machine"
-                                                                << std::endl;
+          std::cout << "\t**VBIOS read: Not supported on this machine" << std::endl;
         }
         // Verify api support checking functionality is working
         DISPLAY_AMDSMI_API("amdsmi_get_gpu_vbios_info", "gpu="+std::to_string(i), VERB(STANDARD));
@@ -106,10 +104,7 @@ void TestSysInfoRead::Run(void) {
         CHK_ERR_ASRT(err)
       }
     } else {
-      IF_VERB(STANDARD) {
-        std::cout << "\t**VBIOS Version: "
-                << vbios_info.version << std::endl;
-      }
+      IF_VERB(STANDARD) { std::cout << "\t**VBIOS Version: " << vbios_info.version << std::endl; }
     }
 
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_bdf_id", "gpu="+std::to_string(i), VERB(STANDARD));
@@ -132,7 +127,7 @@ void TestSysInfoRead::Run(void) {
     DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS);
     if (err == AMDSMI_STATUS_NOT_SUPPORTED) {
       ASSERT_EQ(err, AMDSMI_STATUS_NOT_SUPPORTED);
-    } else  {
+    } else {
       CHK_ERR_ASRT(err)
       IF_VERB(STANDARD) {
         std::cout << "\t**NUMA NODE: 0x" << std::hex << val_i32;
@@ -152,94 +147,86 @@ void TestSysInfoRead::Run(void) {
     unsigned int cpu_aff_length = sizeof(cpu_aff_data);
     err = amdsmi_get_gpu_topo_cpu_affinity(processor_handles_[i], &cpu_aff_length, cpu_aff_data);
     if (err == AMDSMI_STATUS_NOT_SUPPORTED) {
-        std::cout <<
-            "\t**amdsmi_get_gpu_topo_cpu_affinity() is not supported"
-            " on this machine" << std::endl;
+      std::cout << "\t**amdsmi_get_gpu_topo_cpu_affinity() is not supported"
+                   " on this machine"
+                << std::endl;
     } else {
-        CHK_ERR_ASRT(err)
-        IF_VERB(STANDARD) {
-            std::cout << "\t**CPU AFFINITY: " << cpu_aff_data << std::endl;
-        }
+      CHK_ERR_ASRT(err)
+      IF_VERB(STANDARD) { std::cout << "\t**CPU AFFINITY: " << cpu_aff_data << std::endl; }
     }
 
     // nic_topo_numa_affinity
     int32_t numa_node = -1;
     err = amdsmi_get_nic_topo_numa_affinity(processor_handles_[i], &numa_node);
     if (err == AMDSMI_STATUS_NOT_SUPPORTED) {
-        std::cout <<
-            "\t**amdsmi_get_nic_topo_numa_affinity() is not supported"
-            " on this machine" << std::endl;
+      std::cout << "\t**amdsmi_get_nic_topo_numa_affinity() is not supported"
+                   " on this machine"
+                << std::endl;
     } else {
-        CHK_ERR_ASRT(err)
-        IF_VERB(STANDARD) {
-            std::cout << "\t**NUMA NODE (NIC): " << numa_node << std::endl;
-        }
+      CHK_ERR_ASRT(err)
+      IF_VERB(STANDARD) { std::cout << "\t**NUMA NODE (NIC): " << numa_node << std::endl; }
     }
 
     // nic_topo_cpu_affinity
     char nic_cpu_aff_data[1024] = {};
     unsigned int nic_cpu_aff_length = sizeof(cpu_aff_data);
-    err = amdsmi_get_nic_topo_cpu_affinity(processor_handles_[i], &nic_cpu_aff_length, nic_cpu_aff_data);
+    err = amdsmi_get_nic_topo_cpu_affinity(processor_handles_[i], &nic_cpu_aff_length,
+                                           nic_cpu_aff_data);
     if (err == AMDSMI_STATUS_NOT_SUPPORTED) {
-        std::cout <<
-            "\t**amdsmi_get_nic_topo_cpu_affinity() is not supported"
-            " on this machine" << std::endl;
+      std::cout << "\t**amdsmi_get_nic_topo_cpu_affinity() is not supported"
+                   " on this machine"
+                << std::endl;
     } else {
-        CHK_ERR_ASRT(err)
-        IF_VERB(STANDARD) {
-            std::cout << "\t**CPU AFFINITY (NIC): " << nic_cpu_aff_data << std::endl;
-        }
+      CHK_ERR_ASRT(err)
+      IF_VERB(STANDARD) {
+        std::cout << "\t**CPU AFFINITY (NIC): " << nic_cpu_aff_data << std::endl;
+      }
     }
 
     // switch_topo_numa_affinity
     int32_t switch_numa_node = -1;
     err = amdsmi_get_switch_topo_numa_affinity(processor_handles_[i], &switch_numa_node);
     if (err == AMDSMI_STATUS_NOT_SUPPORTED) {
-        std::cout <<
-            "\t**amdsmi_get_switch_topo_numa_affinity() is not supported"
-            " on this machine" << std::endl;
+      std::cout << "\t**amdsmi_get_switch_topo_numa_affinity() is not supported"
+                   " on this machine"
+                << std::endl;
     } else {
-        CHK_ERR_ASRT(err)
-        IF_VERB(STANDARD) {
-            std::cout << "\t**NUMA NODE (SWITCH): " << switch_numa_node << std::endl;
-        }
+      CHK_ERR_ASRT(err)
+      IF_VERB(STANDARD) {
+        std::cout << "\t**NUMA NODE (SWITCH): " << switch_numa_node << std::endl;
+      }
     }
-    
+
     // switch_topo_cpu_affinity
     char switch_cpu_aff_data[1024] = {};
     size_t switch_cpu_aff_length = sizeof(switch_cpu_aff_data);
-    err = amdsmi_get_switch_topo_cpu_affinity(processor_handles_[i],
-                                              &switch_cpu_aff_length,
+    err = amdsmi_get_switch_topo_cpu_affinity(processor_handles_[i], &switch_cpu_aff_length,
                                               switch_cpu_aff_data);
     if (err == AMDSMI_STATUS_NOT_SUPPORTED) {
-        std::cout <<
-            "\t**amdsmi_get_switch_topo_cpu_affinity() is not supported"
-            " on this machine" << std::endl;
+      std::cout << "\t**amdsmi_get_switch_topo_cpu_affinity() is not supported"
+                   " on this machine"
+                << std::endl;
     } else {
-        CHK_ERR_ASRT(err)
-        IF_VERB(STANDARD) {
-            std::cout << "\t**CPU AFFINITY (SWITCH): "
-                      << switch_cpu_aff_data << std::endl;
-        }
+      CHK_ERR_ASRT(err)
+      IF_VERB(STANDARD) {
+        std::cout << "\t**CPU AFFINITY (SWITCH): " << switch_cpu_aff_data << std::endl;
+      }
     }
 
     // nic_gpu_topo_info
     char nic_gpu_topo_info[1024] = {};
     size_t nic_gpu_topo_info_length = sizeof(nic_gpu_topo_info);
-    err = amdsmi_get_nic_gpu_topo_info(processor_handles_[i],
-                                       processor_handles_[i],
-                                       &nic_gpu_topo_info_length,
-                                       nic_gpu_topo_info);
+    err = amdsmi_get_nic_gpu_topo_info(processor_handles_[i], processor_handles_[i],
+                                       &nic_gpu_topo_info_length, nic_gpu_topo_info);
     if (err == AMDSMI_STATUS_NOT_SUPPORTED) {
-        std::cout <<
-            "\t**amdsmi_get_nic_gpu_topo_info() is not supported"
-            " on this machine" << std::endl;
+      std::cout << "\t**amdsmi_get_nic_gpu_topo_info() is not supported"
+                   " on this machine"
+                << std::endl;
     } else {
-        CHK_ERR_ASRT(err)
-        IF_VERB(STANDARD) {
-            std::cout << "\t**NIC_GPU_TOPO_INFO: "
-                      << nic_gpu_topo_info << std::endl;
-        }
+      CHK_ERR_ASRT(err)
+      IF_VERB(STANDARD) {
+        std::cout << "\t**NIC_GPU_TOPO_INFO: " << nic_gpu_topo_info << std::endl;
+      }
     }
 #endif  // BRCM_NIC
     // vendor_id, unique_id, target_gfx_version
@@ -282,22 +269,20 @@ void TestSysInfoRead::Run(void) {
     err = amdsmi_get_gpu_kfd_info(processor_handles_[i], &kfd_info);
     DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS);
     if (err != AMDSMI_STATUS_SUCCESS) {
-        EXPECT_EQ(kfd_info.kfd_id, std::numeric_limits<uint64_t>::max());
-        EXPECT_EQ(kfd_info.node_id, std::numeric_limits<uint32_t>::max());
-        EXPECT_EQ(kfd_info.current_partition_id, std::numeric_limits<uint32_t>::max());
+      EXPECT_EQ(kfd_info.kfd_id, std::numeric_limits<uint64_t>::max());
+      EXPECT_EQ(kfd_info.node_id, std::numeric_limits<uint32_t>::max());
+      EXPECT_EQ(kfd_info.current_partition_id, std::numeric_limits<uint32_t>::max());
     } else {
-          IF_VERB(STANDARD) {
-            std::cout << "\t**KFD ID: " << std::dec
-                      << kfd_info.kfd_id << "\n";
-            std::cout << "\t**Node ID: " << std::dec
-                      << kfd_info.node_id << "\n";
-            std::cout << "\t**Current Parition ID: " << std::dec
-                      << kfd_info.current_partition_id << "\n";
-          }
-          EXPECT_EQ(err, AMDSMI_STATUS_SUCCESS);
-          EXPECT_NE(kfd_info.kfd_id, std::numeric_limits<uint64_t>::max());
-          EXPECT_NE(kfd_info.node_id, std::numeric_limits<uint32_t>::max());
-          EXPECT_NE(kfd_info.current_partition_id, std::numeric_limits<uint32_t>::max());
+      IF_VERB(STANDARD) {
+        std::cout << "\t**KFD ID: " << std::dec << kfd_info.kfd_id << "\n";
+        std::cout << "\t**Node ID: " << std::dec << kfd_info.node_id << "\n";
+        std::cout << "\t**Current Parition ID: " << std::dec << kfd_info.current_partition_id
+                  << "\n";
+      }
+      EXPECT_EQ(err, AMDSMI_STATUS_SUCCESS);
+      EXPECT_NE(kfd_info.kfd_id, std::numeric_limits<uint64_t>::max());
+      EXPECT_NE(kfd_info.node_id, std::numeric_limits<uint32_t>::max());
+      EXPECT_NE(kfd_info.current_partition_id, std::numeric_limits<uint32_t>::max());
     }
     // Verify api support checking functionality is working
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_kfd_info", "gpu="+std::to_string(i), VERB(STANDARD));
@@ -331,7 +316,7 @@ void TestSysInfoRead::Run(void) {
         DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
         ASSERT_EQ(err, AMDSMI_STATUS_NOT_SUPPORTED);
     } else {
-        CHK_ERR_ASRT(err)
+      CHK_ERR_ASRT(err)
     }
   }
 }

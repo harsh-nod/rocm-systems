@@ -1,0 +1,664 @@
+Missing file, c_unit_test=/home/josnarlo/tmp/test/_c_unit_test.log
+Using header, /home/josnarlo/work/git/rocm-systems/projects/amdsmi/include/amd_smi/amdsmi.h
+Using file, c_integration=/home/josnarlo/tmp/test/_amdsmitst.log
+Using file, py_unit_test=/home/josnarlo/tmp/test/_unit_test.log
+Using file, py_integration=/home/josnarlo/tmp/test/_integration_test.log
+amdsmi APIs = 226
+	func: amdsmi_clean_gpu_local_data
+	func: amdsmi_cpu_apb_disable
+	func: amdsmi_cpu_apb_enable
+	func: amdsmi_first_online_core_on_cpu_socket
+	func: amdsmi_get_afids_from_cper
+	func: amdsmi_get_clk_freq
+	func: amdsmi_get_clock_info
+	func: amdsmi_get_cpu_affinity_with_scope
+	func: amdsmi_get_cpu_cc6_enable
+	func: amdsmi_get_cpu_cclk_limit
+	func: amdsmi_get_cpu_core_boostlimit
+	func: amdsmi_get_cpu_core_ccd_power
+	func: amdsmi_get_cpu_core_current_freq_limit
+	func: amdsmi_get_cpu_core_eff_floor_freq_limit
+	func: amdsmi_get_cpu_core_energy
+	func: amdsmi_get_cpu_core_floor_freq_limit
+	func: amdsmi_get_cpu_cores_per_socket
+	func: amdsmi_get_cpu_current_io_bandwidth
+	func: amdsmi_get_cpu_current_xgmi_bw
+	func: amdsmi_get_cpu_ddr_bw
+	func: amdsmi_get_cpu_dfc_ctrl
+	func: amdsmi_get_cpu_dimm_power_consumption
+	func: amdsmi_get_cpu_dimm_sb_reg
+	func: amdsmi_get_cpu_dimm_temp_range_and_refresh_rate
+	func: amdsmi_get_cpu_dimm_thermal_sensor
+	func: amdsmi_get_cpu_eff_floor_freq_limit
+	func: amdsmi_get_cpu_enabled_commands
+	func: amdsmi_get_cpu_family
+	func: amdsmi_get_cpu_fclk_mclk
+	func: amdsmi_get_cpu_floor_freq_limit
+	func: amdsmi_get_cpu_freq_range
+	func: amdsmi_get_cpu_handles
+	func: amdsmi_get_cpu_hsmp_driver_version
+	func: amdsmi_get_cpu_hsmp_proto_ver
+	func: amdsmi_get_cpu_model
+	func: amdsmi_get_cpu_model_name
+	func: amdsmi_get_cpu_pc6_enable
+	func: amdsmi_get_cpu_prochot_status
+	func: amdsmi_get_cpu_pwr_efficiency_mode
+	func: amdsmi_get_cpu_pwr_svi_telemetry_all_rails
+	func: amdsmi_get_cpu_rail_isofreq_policy
+	func: amdsmi_get_cpu_sdps_limit
+	func: amdsmi_get_cpu_smu_fw_version
+	func: amdsmi_get_cpu_socket_c0_residency
+	func: amdsmi_get_cpu_socket_count
+	func: amdsmi_get_cpu_socket_current_active_freq_limit
+	func: amdsmi_get_cpu_socket_energy
+	func: amdsmi_get_cpu_socket_freq_range
+	func: amdsmi_get_cpu_socket_lclk_dpm_level
+	func: amdsmi_get_cpu_socket_power
+	func: amdsmi_get_cpu_socket_power_cap
+	func: amdsmi_get_cpu_socket_power_cap_max
+	func: amdsmi_get_cpu_socket_temperature
+	func: amdsmi_get_cpu_svi3_vr_controller_temp
+	func: amdsmi_get_cpu_tdelta
+	func: amdsmi_get_cpu_xgmi_pstate_range
+	func: amdsmi_get_cpucore_handles
+	func: amdsmi_get_energy_count
+	func: amdsmi_get_esmi_err_msg
+	func: amdsmi_get_fw_info
+	func: amdsmi_get_gpu_accelerator_partition_profile
+	func: amdsmi_get_gpu_accelerator_partition_profile_config
+	func: amdsmi_get_gpu_activity
+	func: amdsmi_get_gpu_asic_info
+	func: amdsmi_get_gpu_available_counters
+	func: amdsmi_get_gpu_bad_page_info
+	func: amdsmi_get_gpu_bad_page_threshold
+	func: amdsmi_get_gpu_bdf_id
+	func: amdsmi_get_gpu_board_info
+	func: amdsmi_get_gpu_busy_percent
+	func: amdsmi_get_gpu_cache_info
+	func: amdsmi_get_gpu_compute_partition
+	func: amdsmi_get_gpu_compute_process_gpus
+	func: amdsmi_get_gpu_compute_process_info
+	func: amdsmi_get_gpu_compute_process_info_by_pid
+	func: amdsmi_get_gpu_cper_entries
+	func: amdsmi_get_gpu_device_bdf
+	func: amdsmi_get_gpu_device_uuid
+	func: amdsmi_get_gpu_driver_info
+	func: amdsmi_get_gpu_ecc_count
+	func: amdsmi_get_gpu_ecc_enabled
+	func: amdsmi_get_gpu_ecc_status
+	func: amdsmi_get_gpu_enumeration_info
+	func: amdsmi_get_gpu_event_notification
+	func: amdsmi_get_gpu_fan_rpms
+	func: amdsmi_get_gpu_fan_speed
+	func: amdsmi_get_gpu_fan_speed_max
+	func: amdsmi_get_gpu_id
+	func: amdsmi_get_gpu_kfd_info
+	func: amdsmi_get_gpu_mem_overdrive_level
+	func: amdsmi_get_gpu_memory_partition
+	func: amdsmi_get_gpu_memory_partition_config
+	func: amdsmi_get_gpu_memory_reserved_pages
+	func: amdsmi_get_gpu_memory_total
+	func: amdsmi_get_gpu_memory_usage
+	func: amdsmi_get_gpu_metrics_header_info
+	func: amdsmi_get_gpu_metrics_info
+	func: amdsmi_get_gpu_od_volt_curve_regions
+	func: amdsmi_get_gpu_od_volt_info
+	func: amdsmi_get_gpu_overdrive_level
+	func: amdsmi_get_gpu_partition_metrics_info
+	func: amdsmi_get_gpu_pci_bandwidth
+	func: amdsmi_get_gpu_pci_replay_counter
+	func: amdsmi_get_gpu_pci_throughput
+	func: amdsmi_get_gpu_perf_level
+	func: amdsmi_get_gpu_pm_metrics_info
+	func: amdsmi_get_gpu_power_profile_presets
+	func: amdsmi_get_gpu_process_isolation
+	func: amdsmi_get_gpu_process_list
+	func: amdsmi_get_gpu_ptl_formats
+	func: amdsmi_get_gpu_ptl_state
+	func: amdsmi_get_gpu_ras_block_features_enabled
+	func: amdsmi_get_gpu_ras_feature_info
+	func: amdsmi_get_gpu_reg_table_info
+	func: amdsmi_get_gpu_revision
+	func: amdsmi_get_gpu_subsystem_id
+	func: amdsmi_get_gpu_subsystem_name
+	func: amdsmi_get_gpu_topo_numa_affinity
+	func: amdsmi_get_gpu_total_ecc_count
+	func: amdsmi_get_gpu_vbios_info
+	func: amdsmi_get_gpu_vendor_name
+	func: amdsmi_get_gpu_virtualization_mode
+	func: amdsmi_get_gpu_volt_metric
+	func: amdsmi_get_gpu_vram_info
+	func: amdsmi_get_gpu_vram_usage
+	func: amdsmi_get_gpu_vram_vendor
+	func: amdsmi_get_gpu_xcd_counter
+	func: amdsmi_get_gpu_xgmi_link_status
+	func: amdsmi_get_hsmp_metrics_table
+	func: amdsmi_get_hsmp_metrics_table_version
+	func: amdsmi_get_lib_version
+	func: amdsmi_get_link_metrics
+	func: amdsmi_get_link_topology_nearest
+	func: amdsmi_get_minmax_bandwidth_between_processors
+	func: amdsmi_get_nic_asic_info
+	func: amdsmi_get_nic_bus_info
+	func: amdsmi_get_nic_driver_info
+	func: amdsmi_get_nic_numa_info
+	func: amdsmi_get_nic_port_info
+	func: amdsmi_get_nic_rdma_dev_info
+	func: amdsmi_get_nic_rdma_port_statistics
+	func: amdsmi_get_node_handle
+	func: amdsmi_get_npm_info
+	func: amdsmi_get_pcie_info
+	func: amdsmi_get_power_cap_info
+	func: amdsmi_get_power_info
+	func: amdsmi_get_processor_count_from_handles
+	func: amdsmi_get_processor_handle_from_bdf
+	func: amdsmi_get_processor_handles
+	func: amdsmi_get_processor_handles_by_type
+	func: amdsmi_get_processor_info
+	func: amdsmi_get_processor_type
+	func: amdsmi_get_soc_pstate
+	func: amdsmi_get_socket_handles
+	func: amdsmi_get_socket_info
+	func: amdsmi_get_supported_power_cap
+	func: amdsmi_get_temp_metric
+	func: amdsmi_get_threads_per_core
+	func: amdsmi_get_utilization_count
+	func: amdsmi_get_violation_status
+	func: amdsmi_get_xgmi_info
+	func: amdsmi_get_xgmi_plpd
+	func: amdsmi_gpu_control_counter
+	func: amdsmi_gpu_counter_group_supported
+	func: amdsmi_gpu_create_counter
+	func: amdsmi_gpu_destroy_counter
+	func: amdsmi_gpu_driver_reload
+	func: amdsmi_gpu_read_counter
+	func: amdsmi_gpu_validate_ras_eeprom
+	func: amdsmi_gpu_xgmi_error_status
+	func: amdsmi_init
+	func: amdsmi_init_gpu_event_notification
+	func: amdsmi_is_P2P_accessible
+	func: amdsmi_is_gpu_power_management_enabled
+	func: amdsmi_reset_gpu
+	func: amdsmi_reset_gpu_fan
+	func: amdsmi_reset_gpu_xgmi_error
+	func: amdsmi_set_clk_freq
+	func: amdsmi_set_cpu_cc6_enable
+	func: amdsmi_set_cpu_core_boostlimit
+	func: amdsmi_set_cpu_core_floor_freq_limit
+	func: amdsmi_set_cpu_core_msr_floor_freq_limit
+	func: amdsmi_set_cpu_df_pstate_range
+	func: amdsmi_set_cpu_dfc_ctrl
+	func: amdsmi_set_cpu_dimm_sb_reg
+	func: amdsmi_set_cpu_floor_freq_limit
+	func: amdsmi_set_cpu_gmi3_link_width_range
+	func: amdsmi_set_cpu_msr_floor_freq_limit
+	func: amdsmi_set_cpu_pc6_enable
+	func: amdsmi_set_cpu_pcie_link_rate
+	func: amdsmi_set_cpu_pwr_efficiency_mode
+	func: amdsmi_set_cpu_rail_isofreq_policy
+	func: amdsmi_set_cpu_sdps_limit
+	func: amdsmi_set_cpu_socket_boostlimit
+	func: amdsmi_set_cpu_socket_lclk_dpm_level
+	func: amdsmi_set_cpu_socket_power_cap
+	func: amdsmi_set_cpu_xgmi_pstate_range
+	func: amdsmi_set_cpu_xgmi_width
+	func: amdsmi_set_gpu_accelerator_partition_profile
+	func: amdsmi_set_gpu_clk_limit
+	func: amdsmi_set_gpu_clk_range
+	func: amdsmi_set_gpu_compute_partition
+	func: amdsmi_set_gpu_event_notification_mask
+	func: amdsmi_set_gpu_fan_speed
+	func: amdsmi_set_gpu_memory_partition
+	func: amdsmi_set_gpu_memory_partition_mode
+	func: amdsmi_set_gpu_od_clk_info
+	func: amdsmi_set_gpu_od_volt_info
+	func: amdsmi_set_gpu_overdrive_level
+	func: amdsmi_set_gpu_pci_bandwidth
+	func: amdsmi_set_gpu_perf_determinism_mode
+	func: amdsmi_set_gpu_perf_level
+	func: amdsmi_set_gpu_power_profile
+	func: amdsmi_set_gpu_process_isolation
+	func: amdsmi_set_gpu_ptl_formats
+	func: amdsmi_set_gpu_ptl_state
+	func: amdsmi_set_power_cap
+	func: amdsmi_set_soc_pstate
+	func: amdsmi_set_xgmi_plpd
+	func: amdsmi_shut_down
+	func: amdsmi_status_code_to_string
+	func: amdsmi_stop_gpu_event_notification
+	func: amdsmi_topo_get_link_type
+	func: amdsmi_topo_get_link_weight
+	func: amdsmi_topo_get_numa_node_number
+	func: amdsmi_topo_get_p2p_status
+Tested c_integration funcs = 68
+	amdsmi_get_lib_version()
+	amdsmi_get_gpu_fan_speed()
+	amdsmi_get_gpu_fan_speed_max()
+	amdsmi_get_gpu_fan_rpms()
+	amdsmi_get_temp_metric()
+	amdsmi_get_gpu_volt_metric()
+	amdsmi_get_gpu_od_volt_info()
+	amdsmi_get_gpu_perf_level()
+	amdsmi_get_gpu_overdrive_level()
+	amdsmi_get_clk_freq()
+	amdsmi_get_gpu_pci_bandwidth()
+	amdsmi_get_gpu_vbios_info()
+	amdsmi_get_gpu_bdf_id()
+	amdsmi_get_gpu_topo_numa_affinity()
+	amdsmi_get_gpu_asic_info()
+	amdsmi_get_gpu_kfd_info()
+	amdsmi_get_fw_info()
+	amdsmi_get_gpu_busy_percent()
+	amdsmi_get_power_cap_info()
+	amdsmi_get_gpu_ecc_enabled()
+	amdsmi_get_gpu_memory_total()
+	amdsmi_get_gpu_memory_usage()
+	amdsmi_get_gpu_id()
+	amdsmi_get_gpu_board_info()
+	amdsmi_get_gpu_vram_vendor()
+	amdsmi_get_gpu_vram_info()
+	amdsmi_get_gpu_vendor_name()
+	amdsmi_get_gpu_subsystem_id()
+	amdsmi_get_gpu_subsystem_name()
+	amdsmi_get_gpu_virtualization_mode()
+	amdsmi_get_gpu_compute_process_info()
+	amdsmi_topo_get_numa_node_number()
+	amdsmi_topo_get_link_type()
+	amdsmi_topo_get_p2p_status()
+	amdsmi_topo_get_link_weight()
+	amdsmi_is_P2P_accessible()
+	amdsmi_get_link_topology_nearest()
+	amdsmi_get_gpu_device_bdf()
+	amdsmi_get_gpu_metrics_info()
+	amdsmi_get_gpu_xcd_counter()
+	amdsmi_get_gpu_partition_metrics_info()
+	amdsmi_get_energy_count()
+	amdsmi_get_utilization_count()
+	amdsmi_get_gpu_memory_reserved_pages()
+	amdsmi_get_gpu_cache_info()
+	amdsmi_set_gpu_perf_level()
+	amdsmi_set_gpu_overdrive_level()
+	amdsmi_set_clk_freq()
+	amdsmi_get_gpu_pci_replay_counter()
+	amdsmi_get_gpu_pci_throughput()
+	amdsmi_get_gpu_power_profile_presets()
+	amdsmi_set_gpu_power_profile()
+	amdsmi_get_supported_power_cap()
+	amdsmi_set_power_cap()
+	amdsmi_gpu_counter_group_supported()
+	amdsmi_get_gpu_compute_partition()
+	amdsmi_get_gpu_accelerator_partition_profile()
+	amdsmi_get_gpu_accelerator_partition_profile_config()
+	amdsmi_set_gpu_accelerator_partition_profile()
+	amdsmi_get_gpu_memory_partition()
+	amdsmi_init_gpu_event_notification()
+	amdsmi_set_gpu_event_notification_mask()
+	amdsmi_get_gpu_event_notification()
+	amdsmi_stop_gpu_event_notification()
+	amdsmi_get_gpu_uma_carveout_info()
+	amdsmi_get_ttm_info()
+	amdsmi_set_ttm_pages_limit()
+	amdsmi_reset_ttm_pages_limit()
+Tested py_unit_test funcs = 100
+	amdsmi_clean_gpu_local_data()
+	amdsmi_cpu_apb_disable()
+	amdsmi_cpu_apb_enable()
+	amdsmi_get_cpu_cclk_limit()
+	amdsmi_get_cpu_core_current_freq_limit()
+	amdsmi_get_cpu_current_io_bandwidth()
+	amdsmi_get_cpu_ddr_bw()
+	amdsmi_get_cpu_dimm_power_consumption()
+	amdsmi_get_cpu_fclk_mclk()
+	amdsmi_get_cpu_handles()
+	amdsmi_get_cpu_prochot_status()
+	amdsmi_get_cpu_pwr_svi_telemetry_all_rails()
+	amdsmi_get_cpu_smu_fw_version()
+	amdsmi_get_cpu_socket_c0_residency()
+	amdsmi_get_cpu_socket_current_active_freq_limit()
+	amdsmi_get_cpu_socket_freq_range()
+	amdsmi_get_cpu_socket_lclk_dpm_level()
+	amdsmi_get_cpu_socket_power()
+	amdsmi_get_cpu_socket_power_cap()
+	amdsmi_get_cpu_socket_power_cap_max()
+	amdsmi_get_cpu_socket_temperature()
+	amdsmi_get_fw_info()
+	amdsmi_get_gpu_accelerator_partition_profile()
+	amdsmi_get_gpu_accelerator_partition_profile_config()
+	amdsmi_get_gpu_asic_info()
+	amdsmi_get_gpu_available_counters()
+	amdsmi_get_gpu_bad_page_info()
+	amdsmi_get_gpu_bad_page_threshold()
+	amdsmi_get_gpu_bdf_id()
+	amdsmi_get_gpu_board_info()
+	amdsmi_get_gpu_busy_percent()
+	amdsmi_get_gpu_cache_info()
+	amdsmi_get_gpu_compute_partition()
+	amdsmi_get_gpu_compute_process_info()
+	amdsmi_get_gpu_device_bdf()
+	amdsmi_get_gpu_device_uuid()
+	amdsmi_get_gpu_driver_info()
+	amdsmi_get_gpu_ecc_count()
+	amdsmi_get_gpu_ecc_enabled()
+	amdsmi_get_gpu_enumeration_info()
+	amdsmi_get_gpu_fan_rpms()
+	amdsmi_get_gpu_id()
+	amdsmi_get_gpu_kfd_info()
+	amdsmi_get_gpu_mem_overdrive_level()
+	amdsmi_get_gpu_memory_partition()
+	amdsmi_get_gpu_memory_reserved_pages()
+	amdsmi_get_gpu_memory_total()
+	amdsmi_get_gpu_memory_usage()
+	amdsmi_get_gpu_metrics_header_info()
+	amdsmi_get_gpu_od_volt_curve_regions()
+	amdsmi_get_gpu_od_volt_info()
+	amdsmi_get_gpu_overdrive_level()
+	amdsmi_get_gpu_pci_replay_counter()
+	amdsmi_get_gpu_pci_throughput()
+	amdsmi_get_gpu_perf_level()
+	amdsmi_get_gpu_pm_metrics_info()
+	amdsmi_get_gpu_power_profile_presets()
+	amdsmi_get_gpu_process_isolation()
+	amdsmi_get_gpu_process_list()
+	amdsmi_get_gpu_ras_block_features_enabled()
+	amdsmi_get_gpu_ras_feature_info()
+	amdsmi_get_gpu_revision()
+	amdsmi_get_gpu_subsystem_id()
+	amdsmi_get_gpu_subsystem_name()
+	amdsmi_get_gpu_topo_numa_affinity()
+	amdsmi_get_gpu_total_ecc_count()
+	amdsmi_get_gpu_vbios_info()
+	amdsmi_get_gpu_vendor_name()
+	amdsmi_get_gpu_virtualization_mode()
+	amdsmi_get_gpu_volt_metric()
+	amdsmi_get_gpu_vram_info()
+	amdsmi_get_gpu_vram_usage()
+	amdsmi_get_gpu_vram_vendor()
+	amdsmi_get_hsmp_metrics_table()
+	amdsmi_get_hsmp_metrics_table_version()
+	amdsmi_get_lib_version()
+	amdsmi_get_link_topology_nearest()
+	amdsmi_get_minmax_bandwidth_between_processors()
+	amdsmi_get_power_cap_info()
+	amdsmi_get_power_info()
+	amdsmi_get_processor_count_from_handles()
+	amdsmi_get_processor_handles()
+	amdsmi_get_processor_info()
+	amdsmi_get_processor_type()
+	amdsmi_get_socket_handles()
+	amdsmi_get_xgmi_info()
+	amdsmi_gpu_counter_group_supported()
+	amdsmi_init()
+	amdsmi_is_P2P_accessible()
+	amdsmi_is_gpu_power_management_enabled()
+	amdsmi_reset_gpu_fan()
+	amdsmi_set_cpu_pwr_efficiency_mode()
+	amdsmi_set_gpu_clk_range()
+	amdsmi_set_gpu_power_profile()
+	amdsmi_set_gpu_process_isolation()
+	amdsmi_shut_down()
+	amdsmi_topo_get_link_type()
+	amdsmi_topo_get_link_weight()
+	amdsmi_topo_get_numa_node_number()
+	amdsmi_topo_get_p2p_status()
+Tested py_integration funcs = 27
+	amdsmi_init()
+	amdsmi_shut_down()
+	amdsmi_get_gpu_device_bdf()
+	amdsmi_get_processor_handle_from_bdf()
+	amdsmi_get_processor_handles_by_type()
+	amdsmi_get_socket_handles()
+	amdsmi_get_socket_info()
+	amdsmi_gpu_counter_group_supported()
+	amdsmi_get_gpu_available_counters()
+	amdsmi_gpu_create_counter()
+	amdsmi_gpu_control_counter()
+	amdsmi_gpu_read_counter()
+	amdsmi_gpu_destroy_counter()
+	amdsmi_set_gpu_fan_speed()
+	amdsmi_get_gpu_fan_speed()
+	amdsmi_get_gpu_fan_speed_max()
+	amdsmi_get_supported_power_cap()
+	amdsmi_get_power_cap_info()
+	amdsmi_set_power_cap()
+	amdsmi_get_gpu_overdrive_level()
+	amdsmi_get_gpu_perf_level()
+	amdsmi_set_gpu_perf_level()
+	amdsmi_get_soc_pstate()
+	amdsmi_get_ttm_info()
+	amdsmi_set_ttm_pages_limit()
+	amdsmi_reset_ttm_pages_limit()
+	amdsmi_get_gpu_uma_carveout_info()
+func amdsmi_get_gpu_uma_carveout_info tested but not in amdsmi.h
+func amdsmi_get_ttm_info tested but not in amdsmi.h
+func amdsmi_set_ttm_pages_limit tested but not in amdsmi.h
+func amdsmi_reset_ttm_pages_limit tested but not in amdsmi.h
+func amdsmi_get_ttm_info tested but not in amdsmi.h
+func amdsmi_set_ttm_pages_limit tested but not in amdsmi.h
+func amdsmi_reset_ttm_pages_limit tested but not in amdsmi.h
+func amdsmi_get_gpu_uma_carveout_info tested but not in amdsmi.h
+ Tested: amdsmi_clean_gpu_local_data: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_cpu_apb_disable: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_cpu_apb_enable: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_first_online_core_on_cpu_socket: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_afids_from_cper: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_clk_freq: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_clock_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_affinity_with_scope: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_cc6_enable: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_cclk_limit: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_core_boostlimit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_core_ccd_power: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_core_current_freq_limit: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_core_eff_floor_freq_limit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_core_energy: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_core_floor_freq_limit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_cores_per_socket: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_current_io_bandwidth: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_current_xgmi_bw: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_ddr_bw: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_dfc_ctrl: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_dimm_power_consumption: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_dimm_sb_reg: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_dimm_temp_range_and_refresh_rate: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_dimm_thermal_sensor: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_eff_floor_freq_limit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_enabled_commands: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_family: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_fclk_mclk: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_floor_freq_limit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_freq_range: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_handles: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_hsmp_driver_version: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_hsmp_proto_ver: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_model: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_model_name: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_pc6_enable: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_prochot_status: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_pwr_efficiency_mode: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_pwr_svi_telemetry_all_rails: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_rail_isofreq_policy: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_sdps_limit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_smu_fw_version: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_cpu_socket_c0_residency: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_socket_count: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_socket_current_active_freq_limit: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_socket_energy: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_cpu_socket_freq_range: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_cpu_socket_lclk_dpm_level: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_cpu_socket_power: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_cpu_socket_power_cap: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_cpu_socket_power_cap_max: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_cpu_socket_temperature: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_cpu_svi3_vr_controller_temp: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_tdelta: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpu_xgmi_pstate_range: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_cpucore_handles: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_energy_count: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_esmi_err_msg: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_fw_info: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_accelerator_partition_profile: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_accelerator_partition_profile_config: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_gpu_activity: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_gpu_asic_info: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_available_counters: C(any=0 unit=0 int=0) py(any=1 unit=1 int=1)
+ Tested: amdsmi_get_gpu_bad_page_info: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_bad_page_threshold: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_bdf_id: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_board_info: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_busy_percent: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_cache_info: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_compute_partition: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_gpu_compute_process_gpus: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_gpu_compute_process_info: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_gpu_compute_process_info_by_pid: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_gpu_cper_entries: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_gpu_device_bdf: C(any=1 unit=0 int=1) py(any=1 unit=1 int=1)
+ Tested: amdsmi_get_gpu_device_uuid: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_driver_info: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_ecc_count: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_ecc_enabled: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_gpu_ecc_status: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_gpu_enumeration_info: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_event_notification: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_gpu_fan_rpms: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_fan_speed: C(any=1 unit=0 int=1) py(any=1 unit=0 int=1)
+ Tested: amdsmi_get_gpu_fan_speed_max: C(any=1 unit=0 int=1) py(any=1 unit=0 int=1)
+ Tested: amdsmi_get_gpu_id: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_kfd_info: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_mem_overdrive_level: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_memory_partition: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_gpu_memory_partition_config: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_gpu_memory_reserved_pages: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_memory_total: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_memory_usage: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_metrics_header_info: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_metrics_info: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_gpu_od_volt_curve_regions: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_od_volt_info: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_overdrive_level: C(any=1 unit=0 int=1) py(any=1 unit=1 int=1)
+ Tested: amdsmi_get_gpu_partition_metrics_info: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_gpu_pci_bandwidth: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_gpu_pci_replay_counter: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_pci_throughput: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_perf_level: C(any=1 unit=0 int=1) py(any=1 unit=1 int=1)
+ Tested: amdsmi_get_gpu_pm_metrics_info: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_power_profile_presets: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_process_isolation: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_process_list: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_gpu_ptl_formats: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_gpu_ptl_state: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_gpu_ras_block_features_enabled: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_ras_feature_info: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_gpu_reg_table_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_gpu_revision: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_subsystem_id: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_subsystem_name: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_topo_numa_affinity: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_total_ecc_count: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_vbios_info: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_vendor_name: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_virtualization_mode: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_volt_metric: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_vram_info: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_vram_usage: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_vram_vendor: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_gpu_xcd_counter: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_gpu_xgmi_link_status: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_hsmp_metrics_table: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_hsmp_metrics_table_version: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_lib_version: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_link_metrics: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_link_topology_nearest: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_minmax_bandwidth_between_processors: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_nic_asic_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_nic_bus_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_nic_driver_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_nic_numa_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_nic_port_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_nic_rdma_dev_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_nic_rdma_port_statistics: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_node_handle: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_npm_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_pcie_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_power_cap_info: C(any=1 unit=0 int=1) py(any=1 unit=1 int=1)
+ Tested: amdsmi_get_power_info: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_processor_count_from_handles: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_processor_handle_from_bdf: C(any=0 unit=0 int=0) py(any=1 unit=0 int=1)
+ Tested: amdsmi_get_processor_handles: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_processor_handles_by_type: C(any=0 unit=0 int=0) py(any=1 unit=0 int=1)
+ Tested: amdsmi_get_processor_info: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_processor_type: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+ Tested: amdsmi_get_soc_pstate: C(any=0 unit=0 int=0) py(any=1 unit=0 int=1)
+ Tested: amdsmi_get_socket_handles: C(any=0 unit=0 int=0) py(any=1 unit=1 int=1)
+ Tested: amdsmi_get_socket_info: C(any=0 unit=0 int=0) py(any=1 unit=0 int=1)
+ Tested: amdsmi_get_supported_power_cap: C(any=1 unit=0 int=1) py(any=1 unit=0 int=1)
+ Tested: amdsmi_get_temp_metric: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_threads_per_core: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_utilization_count: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+Missing: amdsmi_get_violation_status: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_get_xgmi_info: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_get_xgmi_plpd: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_gpu_control_counter: C(any=0 unit=0 int=0) py(any=1 unit=0 int=1)
+ Tested: amdsmi_gpu_counter_group_supported: C(any=1 unit=0 int=1) py(any=1 unit=1 int=1)
+ Tested: amdsmi_gpu_create_counter: C(any=0 unit=0 int=0) py(any=1 unit=0 int=1)
+ Tested: amdsmi_gpu_destroy_counter: C(any=0 unit=0 int=0) py(any=1 unit=0 int=1)
+Missing: amdsmi_gpu_driver_reload: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_gpu_read_counter: C(any=0 unit=0 int=0) py(any=1 unit=0 int=1)
+Missing: amdsmi_gpu_validate_ras_eeprom: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_gpu_xgmi_error_status: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_init: C(any=0 unit=0 int=0) py(any=1 unit=1 int=1)
+ Tested: amdsmi_init_gpu_event_notification: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+ Tested: amdsmi_is_P2P_accessible: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_is_gpu_power_management_enabled: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_reset_gpu: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_reset_gpu_fan: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_reset_gpu_xgmi_error: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_set_clk_freq: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_cc6_enable: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_core_boostlimit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_core_floor_freq_limit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_core_msr_floor_freq_limit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_df_pstate_range: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_dfc_ctrl: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_dimm_sb_reg: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_floor_freq_limit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_gmi3_link_width_range: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_msr_floor_freq_limit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_pc6_enable: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_pcie_link_rate: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_set_cpu_pwr_efficiency_mode: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_set_cpu_rail_isofreq_policy: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_sdps_limit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_socket_boostlimit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_socket_lclk_dpm_level: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_socket_power_cap: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_xgmi_pstate_range: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_cpu_xgmi_width: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_set_gpu_accelerator_partition_profile: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_gpu_clk_limit: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_set_gpu_clk_range: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_set_gpu_compute_partition: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_set_gpu_event_notification_mask: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+ Tested: amdsmi_set_gpu_fan_speed: C(any=0 unit=0 int=0) py(any=1 unit=0 int=1)
+Missing: amdsmi_set_gpu_memory_partition: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_gpu_memory_partition_mode: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_gpu_od_clk_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_gpu_od_volt_info: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_set_gpu_overdrive_level: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_gpu_pci_bandwidth: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_gpu_perf_determinism_mode: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_set_gpu_perf_level: C(any=1 unit=0 int=1) py(any=1 unit=0 int=1)
+ Tested: amdsmi_set_gpu_power_profile: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_set_gpu_process_isolation: C(any=0 unit=0 int=0) py(any=1 unit=1 int=0)
+Missing: amdsmi_set_gpu_ptl_formats: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_gpu_ptl_state: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_set_power_cap: C(any=1 unit=0 int=1) py(any=1 unit=0 int=1)
+Missing: amdsmi_set_soc_pstate: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+Missing: amdsmi_set_xgmi_plpd: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_shut_down: C(any=0 unit=0 int=0) py(any=1 unit=1 int=1)
+Missing: amdsmi_status_code_to_string: C(any=0 unit=0 int=0) py(any=0 unit=0 int=0)
+ Tested: amdsmi_stop_gpu_event_notification: C(any=1 unit=0 int=1) py(any=0 unit=0 int=0)
+ Tested: amdsmi_topo_get_link_type: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_topo_get_link_weight: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_topo_get_numa_node_number: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)
+ Tested: amdsmi_topo_get_p2p_status: C(any=1 unit=0 int=1) py(any=1 unit=1 int=0)

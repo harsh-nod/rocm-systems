@@ -171,7 +171,9 @@ void TestMemoryReadWrite::Run(void) {
       err = amdsmi_set_gpu_uma_carveout(processor_handles_[i], uma_info.current_index);
       DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS);
       CHK_ERR_ASRT(err)
-      IF_VERB(STANDARD) { std::cout << "\t  Set to current index succeeded (DRY_RUN)" << std::endl; }
+      IF_VERB(STANDARD) {
+        std::cout << "\t  Set to current index succeeded (DRY_RUN)" << std::endl;
+      }
 
       // Test setting to a different valid index if available
       if (valid_count > 1) {

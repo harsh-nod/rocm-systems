@@ -20,23 +20,25 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-
-#include <iostream>
+#include "fan_read.h"
 
 #include <gtest/gtest.h>
+
+#include <cstdint>
+#include <iostream>
+
 #include "amd_smi/amdsmi.h"
 #include "fan_read.h"
 #include "../test_common.h"
 
 TestFanRead::TestFanRead() : TestBase() {
   set_title("AMDSMI Fan Read Test");
-  set_description("The Fan Read tests verifies that the fan monitors can be "
-                  "read properly.");
+  set_description(
+      "The Fan Read tests verifies that the fan monitors can be "
+      "read properly.");
 }
 
-TestFanRead::~TestFanRead(void) {
-}
+TestFanRead::~TestFanRead(void) {}
 
 void TestFanRead::SetUp(void) {
   TestBase::SetUp();
@@ -44,9 +46,7 @@ void TestFanRead::SetUp(void) {
   return;
 }
 
-void TestFanRead::DisplayTestInfo(void) {
-  TestBase::DisplayTestInfo();
-}
+void TestFanRead::DisplayTestInfo(void) { TestBase::DisplayTestInfo(); }
 
 void TestFanRead::DisplayResults(void) const {
   TestBase::DisplayResults();
@@ -58,7 +58,6 @@ void TestFanRead::Close() {
   // amdsmi_shut_down(), so it should be done after other hsa cleanup
   TestBase::Close();
 }
-
 
 void TestFanRead::Run(void) {
   uint64_t val_ui64;
@@ -88,7 +87,6 @@ void TestFanRead::Run(void) {
         CHK_ERR_ASRT(err)
       }
 
-
       // Verify api support checking functionality is working
       DISPLAY_AMDSMI_API("amdsmi_get_gpu_fan_speed", "gpu="+std::to_string(i), VERB(STANDARD));
       err = amdsmi_get_gpu_fan_speed(processor_handles_[i], 0, nullptr);
@@ -114,9 +112,7 @@ void TestFanRead::Run(void) {
       err = amdsmi_get_gpu_fan_rpms(processor_handles_[i], 0, &val_i64);
       DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS);
       CHK_ERR_ASRT(err)
-      IF_VERB(STANDARD) {
-        std::cout << val_i64 << std::endl;
-      }
+      IF_VERB(STANDARD) { std::cout << val_i64 << std::endl; }
 
       // Verify api support checking functionality is working
       DISPLAY_AMDSMI_API("amdsmi_get_gpu_fan_rpms", "gpu="+std::to_string(i), VERB(STANDARD));

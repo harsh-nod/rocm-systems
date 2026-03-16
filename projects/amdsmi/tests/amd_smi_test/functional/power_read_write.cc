@@ -20,12 +20,14 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include "power_read_write.h"
 
+#include <gtest/gtest.h>
+
+#include <cstdint>
 #include <iostream>
 #include <string>
 
-#include <gtest/gtest.h>
 #include "amd_smi/amdsmi.h"
 #include "power_read_write.h"
 #include "../test_common.h"
@@ -33,12 +35,12 @@
 
 TestPowerReadWrite::TestPowerReadWrite() : TestBase() {
   set_title("AMDSMI Power Profiles Read/Write Test");
-  set_description("The Power Profiles tests verify that the power profile "
-                             "settings can be read and controlled properly.");
+  set_description(
+      "The Power Profiles tests verify that the power profile "
+      "settings can be read and controlled properly.");
 }
 
-TestPowerReadWrite::~TestPowerReadWrite(void) {
-}
+TestPowerReadWrite::~TestPowerReadWrite(void) {}
 
 void TestPowerReadWrite::SetUp(void) {
   TestBase::SetUp();
@@ -46,9 +48,7 @@ void TestPowerReadWrite::SetUp(void) {
   return;
 }
 
-void TestPowerReadWrite::DisplayTestInfo(void) {
-  TestBase::DisplayTestInfo();
-}
+void TestPowerReadWrite::DisplayTestInfo(void) { TestBase::DisplayTestInfo(); }
 
 void TestPowerReadWrite::DisplayResults(void) const {
   TestBase::DisplayResults();
@@ -61,8 +61,7 @@ void TestPowerReadWrite::Close() {
   TestBase::Close();
 }
 
-static const char *
-power_profile_string(amdsmi_power_profile_preset_masks_t profile) {
+static const char* power_profile_string(amdsmi_power_profile_preset_masks_t profile) {
   switch (profile) {
     case AMDSMI_PWR_PROF_PRST_CUSTOM_MASK:
       return "CUSTOM";
@@ -123,14 +122,13 @@ void TestPowerReadWrite::Run(void) {
       uint64_t tmp = 1;
       while (tmp <= AMDSMI_PWR_PROF_PRST_LAST) {
         if ((tmp & status.available_profiles) == tmp) {
-          std::cout << "\t" <<
-              power_profile_string((amdsmi_power_profile_preset_masks_t)tmp) <<
-                                                                      std::endl;
+          std::cout << "\t" << power_profile_string((amdsmi_power_profile_preset_masks_t)tmp)
+                    << std::endl;
         }
         tmp = tmp << 1;
       }
-      std::cout << "The current power profile is: " <<
-                              power_profile_string(status.current) << std::endl;
+      std::cout << "The current power profile is: " << power_profile_string(status.current)
+                << std::endl;
     }
 
     amdsmi_power_profile_preset_masks_t orig_profile = status.current;
@@ -151,8 +149,7 @@ void TestPowerReadWrite::Run(void) {
     } else if (diff_profiles & AMDSMI_PWR_PROF_PRST_3D_FULL_SCR_MASK) {
       new_prof = AMDSMI_PWR_PROF_PRST_3D_FULL_SCR_MASK;
     } else {
-      std::cout <<
-        "No other non-custom power profiles to set to. Exiting." << std::endl;
+      std::cout << "No other non-custom power profiles to set to. Exiting." << std::endl;
       return;
     }
 

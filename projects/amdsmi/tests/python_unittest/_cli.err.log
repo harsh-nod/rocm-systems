@@ -1,0 +1,130 @@
+==============================================================
+Available tests:
+ -__main__.TestAmdSmiCli.test_bad_pages
+ -__main__.TestAmdSmiCli.test_default
+ -__main__.TestAmdSmiCli.test_event
+ -__main__.TestAmdSmiCli.test_firmware
+ -__main__.TestAmdSmiCli.test_help
+ -__main__.TestAmdSmiCli.test_invalid
+ -__main__.TestAmdSmiCli.test_list
+ -__main__.TestAmdSmiCli.test_metric
+ -__main__.TestAmdSmiCli.test_monitor
+ -__main__.TestAmdSmiCli.test_node
+ -__main__.TestAmdSmiCli.test_partition
+ -__main__.TestAmdSmiCli.test_process
+ -__main__.TestAmdSmiCli.test_ras
+ -__main__.TestAmdSmiCli.test_reset
+ -__main__.TestAmdSmiCli.test_set
+ -__main__.TestAmdSmiCli.test_static
+ -__main__.TestAmdSmiCli.test_static_mem_carveout_gtt
+ -__main__.TestAmdSmiCli.test_topology
+ -__main__.TestAmdSmiCli.test_valid
+ -__main__.TestAmdSmiCli.test_version
+ -__main__.TestAmdSmiCli.test_xgmi
+Running with verbosity: VERBOSE
+
+test_bad_pages (__main__.TestAmdSmiCli) ... ok
+test_default (__main__.TestAmdSmiCli) ... ok
+test_event (__main__.TestAmdSmiCli) ... FAIL
+test_firmware (__main__.TestAmdSmiCli) ... ok
+test_help (__main__.TestAmdSmiCli) ...     Warning: event process did not print "EVENT LISTENING" within 10s for cmd: amd-smi event --help
+ok
+test_invalid (__main__.TestAmdSmiCli) ...     Warning: event process did not print "EVENT LISTENING" within 10s for cmd: amd-smi event --invalid
+FAIL
+test_list (__main__.TestAmdSmiCli) ... ok
+test_metric (__main__.TestAmdSmiCli) ... ok
+test_monitor (__main__.TestAmdSmiCli) ... FAIL
+test_node (__main__.TestAmdSmiCli) ... ok
+test_partition (__main__.TestAmdSmiCli)
+TODO: Can we add a test case for changing partitions while processes are accessing the GPUs. We can add the negative and the positive test case to show the behavior that processes need to be killed before partition changes. ... ok
+test_process (__main__.TestAmdSmiCli) ... ok
+test_ras (__main__.TestAmdSmiCli) ... skipped 'Not Yet Implemented'
+test_reset (__main__.TestAmdSmiCli) ... ok
+test_set (__main__.TestAmdSmiCli) ... skipped 'Requires User input'
+test_static (__main__.TestAmdSmiCli) ... ok
+test_static_mem_carveout_gtt (__main__.TestAmdSmiCli)
+Test static --mem-carveout and node --gtt flags (display mode only) ... FAIL
+test_topology (__main__.TestAmdSmiCli) ... ok
+test_valid (__main__.TestAmdSmiCli) ... ok
+test_version (__main__.TestAmdSmiCli) ... ok
+test_xgmi (__main__.TestAmdSmiCli) ... ok
+
+======================================================================
+FAIL: test_event (__main__.TestAmdSmiCli)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/josnarlo/work/git/rocm-systems/projects/amdsmi/tests/python_unittest/./cli_unit_test.py", line 1140, in test_event
+    self.RunCmds(cmds)
+  File "/home/josnarlo/work/git/rocm-systems/projects/amdsmi/tests/python_unittest/./cli_unit_test.py", line 859, in RunCmds
+    self._PrintResults(failures, fail_on_results=True)
+  File "/home/josnarlo/work/git/rocm-systems/projects/amdsmi/tests/python_unittest/./cli_unit_test.py", line 236, in _PrintResults
+    self.fail(f'Fail:\n\n{msg}')
+AssertionError: Fail:
+
+    amd-smi event --json --file _tmp.log                       : Failure: File _tmp.log contains invalid json
+    amd-smi event --json --file _tmp.log                       : Success: Received and Expected PASS (  0)
+        trigger: amd-smi reset --gpureset                      : Success: Received and Expected PASS (  0)
+    amd-smi event --json --file _tmp.log --append              : Failure: File _tmp.log contains invalid json
+    amd-smi event --json --file _tmp.log --append              : Success: Received and Expected PASS (  0)
+        trigger: amd-smi reset --gpureset                      : Success: Received and Expected PASS (  0)
+    amd-smi event --json --file _tmp.log --overwrite           : Failure: File _tmp.log contains invalid json
+    amd-smi event --json --file _tmp.log --overwrite           : Success: Received and Expected PASS (  0)
+        trigger: amd-smi reset --gpureset                      : Success: Received and Expected PASS (  0)
+    amd-smi event --gpu 0 --json --file _tmp.log               : Failure: File _tmp.log contains invalid json
+    amd-smi event --gpu 0 --json --file _tmp.log               : Success: Received and Expected PASS (  0)
+        trigger: amd-smi reset --gpureset                      : Success: Received and Expected PASS (  0)
+    amd-smi event --gpu 0 --json --file _tmp.log --append      : Failure: File _tmp.log contains invalid json
+    amd-smi event --gpu 0 --json --file _tmp.log --append      : Success: Received and Expected PASS (  0)
+        trigger: amd-smi reset --gpureset                      : Success: Received and Expected PASS (  0)
+    amd-smi event --gpu 0 --json --file _tmp.log --overwrite   : Failure: File _tmp.log contains invalid json
+    amd-smi event --gpu 0 --json --file _tmp.log --overwrite   : Success: Received and Expected PASS (  0)
+        trigger: amd-smi reset --gpureset                      : Success: Received and Expected PASS (  0)
+
+======================================================================
+FAIL: test_invalid (__main__.TestAmdSmiCli)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/josnarlo/work/git/rocm-systems/projects/amdsmi/tests/python_unittest/./cli_unit_test.py", line 1047, in test_invalid
+    self.RunCmds(cmds)
+  File "/home/josnarlo/work/git/rocm-systems/projects/amdsmi/tests/python_unittest/./cli_unit_test.py", line 859, in RunCmds
+    self._PrintResults(failures, fail_on_results=True)
+  File "/home/josnarlo/work/git/rocm-systems/projects/amdsmi/tests/python_unittest/./cli_unit_test.py", line 236, in _PrintResults
+    self.fail(f'Fail:\n\n{msg}')
+AssertionError: Fail:
+
+    amd-smi event --invalid                    : Failure: Received PASS (  0), expected FAIL ( !0)
+        trigger: amd-smi reset --gpureset      : Failure: Received rc = (  0), returned ec = (GPU)
+    amd-smi static --gpu 0000:03:00.00         : Failure: Received PASS (  0), returned FAIL (N/A)
+    amd-smi set --profile INVALID              : Failure: Received PASS (  0), returned FAIL (profiles)
+    amd-smi set --power-cap 271 ppt0 --gpu 0   : Failure: Received PASS (  0), returned FAIL (350W)
+    amd-smi set --power-cap 351 ppt0 --gpu 0   : Failure: Received PASS (  0), returned FAIL (350W)
+    amd-smi set --power-cap 385 ppt0 --gpu 0   : Failure: Received PASS (  0), returned FAIL (350W)
+
+======================================================================
+FAIL: test_monitor (__main__.TestAmdSmiCli)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/josnarlo/work/git/rocm-systems/projects/amdsmi/tests/python_unittest/./cli_unit_test.py", line 1317, in test_monitor
+    self.RunCmds(cmds)
+  File "/home/josnarlo/work/git/rocm-systems/projects/amdsmi/tests/python_unittest/./cli_unit_test.py", line 859, in RunCmds
+    self._PrintResults(failures, fail_on_results=True)
+  File "/home/josnarlo/work/git/rocm-systems/projects/amdsmi/tests/python_unittest/./cli_unit_test.py", line 236, in _PrintResults
+    self.fail(f'Fail:\n\n{msg}')
+AssertionError: Fail:
+
+    amd-smi monitor --brcm_nic      : Failure: Received FAIL (  1), expected PASS (  0)
+    amd-smi monitor --brcm_switch   : Failure: Received FAIL (  1), expected PASS (  0)
+
+======================================================================
+FAIL: test_static_mem_carveout_gtt (__main__.TestAmdSmiCli)
+Test static --mem-carveout and node --gtt flags (display mode only)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/josnarlo/work/git/rocm-systems/projects/amdsmi/tests/python_unittest/./cli_unit_test.py", line 1376, in test_static_mem_carveout_gtt
+    self.assertEqual(rc, self.PASS, f"Command '{cmd}' failed with rc={rc}")
+AssertionError: 2 != 0 : Command 'amd-smi static --mem-carveout' failed with rc=2
+
+----------------------------------------------------------------------
+Ran 21 tests in 143.754s
+
+FAILED (failures=4, skipped=2)

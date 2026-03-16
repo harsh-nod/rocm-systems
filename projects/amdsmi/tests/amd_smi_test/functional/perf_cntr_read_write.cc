@@ -20,43 +20,42 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-
-#include <iostream>
-#include <string>
-#include <vector>
-#include <memory>
-
-#include <gtest/gtest.h>
-#include "amd_smi/amdsmi.h"
 #include "perf_cntr_read_write.h"
 #include "../test_common.h"
 
-PerfCntrEvtGrp::PerfCntrEvtGrp(amdsmi_event_group_t grp, uint32_t first,
-        uint32_t last, std::string name) : grp_(grp), first_evt_(first),
-                                                last_evt_(last), name_(name) {
+#include <gtest/gtest.h>
+
+#include <cstdint>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "amd_smi/amdsmi.h"
+
+PerfCntrEvtGrp::PerfCntrEvtGrp(amdsmi_event_group_t grp, uint32_t first, uint32_t last,
+                               std::string name)
+    : grp_(grp), first_evt_(first), last_evt_(last), name_(name) {
   num_events_ = last_evt_ - first_evt_ + 1;
 }
 
 PerfCntrEvtGrp::~PerfCntrEvtGrp() {}
 
 // Add new event groups to test here
-#define PC_EVT_GRP(SHRT, NAME) \
-    PerfCntrEvtGrp(AMDSMI_EVNT_GRP_##SHRT, AMDSMI_EVNT_##SHRT##_FIRST, \
-                                                AMDSMI_EVNT_##SHRT##_LAST, NAME)
+#define PC_EVT_GRP(SHRT, NAME)                                                                  \
+  PerfCntrEvtGrp(AMDSMI_EVNT_GRP_##SHRT, AMDSMI_EVNT_##SHRT##_FIRST, AMDSMI_EVNT_##SHRT##_LAST, \
+                 NAME)
 static const std::vector<PerfCntrEvtGrp> s_event_groups = {
-    PC_EVT_GRP(XGMI, "XGMI"),
-    PC_EVT_GRP(XGMI_DATA_OUT, "XGMI_DATA_OUT")
-};
+    PC_EVT_GRP(XGMI, "XGMI"), PC_EVT_GRP(XGMI_DATA_OUT, "XGMI_DATA_OUT")};
 
 TestPerfCntrReadWrite::TestPerfCntrReadWrite() : TestBase() {
   set_title("AMDSMI Performance Counter Read/Write Test");
-  set_description("The Performance counter tests verify that performance"
-                            " counters can be controlled and read properly.");
+  set_description(
+      "The Performance counter tests verify that performance"
+      " counters can be controlled and read properly.");
 }
 
-TestPerfCntrReadWrite::~TestPerfCntrReadWrite(void) {
-}
+TestPerfCntrReadWrite::~TestPerfCntrReadWrite(void) {}
 
 void TestPerfCntrReadWrite::SetUp(void) {
   TestBase::SetUp();
@@ -64,9 +63,7 @@ void TestPerfCntrReadWrite::SetUp(void) {
   return;
 }
 
-void TestPerfCntrReadWrite::DisplayTestInfo(void) {
-  TestBase::DisplayTestInfo();
-}
+void TestPerfCntrReadWrite::DisplayTestInfo(void) { TestBase::DisplayTestInfo(); }
 
 void TestPerfCntrReadWrite::DisplayResults(void) const {
   TestBase::DisplayResults();
@@ -84,8 +81,8 @@ void TestPerfCntrReadWrite::Close() {
 
 // Refactor this to handle different event groups once we have > 1 event group
 
-void TestPerfCntrReadWrite::CountEvents(amdsmi_processor_handle dv_ind,
-       amdsmi_event_type_t evnt, amdsmi_counter_value_t *val, int32_t sleep_sec) {
+void TestPerfCntrReadWrite::CountEvents(amdsmi_processor_handle dv_ind, amdsmi_event_type_t evnt,
+                                        amdsmi_counter_value_t* val, int32_t sleep_sec) {
   amdsmi_event_handle_t evt_handle;
   amdsmi_status_t ret;
 
@@ -123,8 +120,9 @@ void TestPerfCntrReadWrite::CountEvents(amdsmi_processor_handle dv_ind,
     std::cout << "\t\t\tValue: " << val->value << std::endl;
     std::cout << "\t\t\tTime Enabled (nS): " << val->time_enabled << std::endl;
     std::cout << "\t\t\tTime Running (nS): " << val->time_running << std::endl;
-    std::cout << "\t\t\tEvents/Second Running: " <<
-            static_cast<float>(val->value)/static_cast<float>(val->time_running) << std::endl;
+    std::cout << "\t\t\tEvents/Second Running: "
+              << static_cast<float>(val->value) / static_cast<float>(val->time_running)
+              << std::endl;
   }
   DISPLAY_AMDSMI_API("amdsmi_gpu_destroy_counter", "", VERB(STANDARD));
   ret = amdsmi_gpu_destroy_counter(evt_handle);
@@ -137,24 +135,19 @@ static const uint64_t kGig = 1000000000;
 
 static const uint64_t kVg20Level1Bandwidth = 23;  // 23 GB/sec
 
-
-void
-TestPerfCntrReadWrite::testEventsIndividually(amdsmi_processor_handle dv_ind) {
+void TestPerfCntrReadWrite::testEventsIndividually(amdsmi_processor_handle dv_ind) {
   amdsmi_status_t ret;
   amdsmi_counter_value_t val;
   uint64_t throughput;
 
-  std::cout << "Test events sequentially (device "   <<
-                                                 dv_ind << ")" << std::endl;
+  std::cout << "Test events sequentially (device " << dv_ind << ")" << std::endl;
 
   auto utiliz = [&](amdsmi_event_type_t evt, uint32_t chan) {
     IF_VERB(STANDARD) {
       std::cout << "****************************" << std::endl;
-      std::cout << "Test XGMI Link Utilization (channel " <<
-                                                     chan << ")" << std::endl;
+      std::cout << "Test XGMI Link Utilization (channel " << chan << ")" << std::endl;
       std::cout << "****************************" << std::endl;
-      std::cout << "Assumed Level 1 Bandwidth: " <<
-                                 kVg20Level1Bandwidth << "GB/sec" << std::endl;
+      std::cout << "Assumed Level 1 Bandwidth: " << kVg20Level1Bandwidth << "GB/sec" << std::endl;
     }
     uint32_t tmp_verbosity = verbosity();
     set_verbosity(0);
@@ -162,21 +155,19 @@ TestPerfCntrReadWrite::testEventsIndividually(amdsmi_processor_handle dv_ind) {
       std::cout << "\t\tPass " << i << ":" << std::endl;
 
       CountEvents(dv_ind, evt, &val, 1);
-      double coll_time_sec = static_cast<double>(val.time_running)/kGig;
-      throughput = static_cast<uint64_t>(static_cast<double>((val.value * 32L))/coll_time_sec);
-      std::cout << "\t\t\tCollected events for " << coll_time_sec <<
-                                                        " seconds" << std::endl;
+      double coll_time_sec = static_cast<double>(val.time_running) / kGig;
+      throughput = static_cast<uint64_t>(static_cast<double>((val.value * 32L)) / coll_time_sec);
+      std::cout << "\t\t\tCollected events for " << coll_time_sec << " seconds" << std::endl;
       std::cout << "\t\t\tEvents collected: " << val.value << std::endl;
-      std::cout << "\t\t\tXGMI throughput: " << throughput <<
-                                                   " bytes/second" << std::endl;
-      std::cout << "\t\t\tXGMI Channel Utilization: " <<
-        static_cast<double>(100*throughput)/static_cast<double>(kVg20Level1Bandwidth*kGigByte) <<
-                                                               "%" << std::endl;
+      std::cout << "\t\t\tXGMI throughput: " << throughput << " bytes/second" << std::endl;
+      std::cout << "\t\t\tXGMI Channel Utilization: "
+                << static_cast<double>(100 * throughput) /
+                       static_cast<double>(kVg20Level1Bandwidth * kGigByte)
+                << "%" << std::endl;
       std::cout << "\t\t\t****" << std::endl;
     }
     set_verbosity(tmp_verbosity);
   };
-
 
   IF_VERB(STANDARD) {
     std::cout << "****************************" << std::endl;
@@ -191,9 +182,7 @@ TestPerfCntrReadWrite::testEventsIndividually(amdsmi_processor_handle dv_ind) {
       continue;
     }
 
-    IF_VERB(STANDARD) {
-      std::cout << "Testing Event Group " << grp.name() << std::endl;
-    }
+    IF_VERB(STANDARD) { std::cout << "Testing Event Group " << grp.name() << std::endl; }
     if (grp.group() == AMDSMI_EVNT_GRP_XGMI_DATA_OUT) {
       utiliz(AMDSMI_EVNT_XGMI_DATA_OUT_0, 0);
       utiliz(AMDSMI_EVNT_XGMI_DATA_OUT_1, 1);
@@ -206,24 +195,20 @@ TestPerfCntrReadWrite::testEventsIndividually(amdsmi_processor_handle dv_ind) {
       utiliz(AMDSMI_EVNT_XGMI_0_BEATS_TX, 0);
     }
     for (uint32_t evnt = grp.first_evt(); evnt <= grp.last_evt(); ++evnt) {
-      IF_VERB(STANDARD) {
-        std::cout << "\tTesting Event Type " << evnt << std::endl;
-      }
+      IF_VERB(STANDARD) { std::cout << "\tTesting Event Type " << evnt << std::endl; }
       CountEvents(dv_ind, static_cast<amdsmi_event_type_t>(evnt), &val);
     }
   }
 }
 
-void
-TestPerfCntrReadWrite::testEventsSimultaneously(amdsmi_processor_handle dv_ind) {
+void TestPerfCntrReadWrite::testEventsSimultaneously(amdsmi_processor_handle dv_ind) {
   amdsmi_status_t ret;
   amdsmi_counter_value_t val;
   uint32_t avail_counters;
 
   IF_VERB(STANDARD) {
     std::cout << "****************************" << std::endl;
-    std::cout << "Test events simultaneously (device "   <<
-                                                   dv_ind << ")" << std::endl;
+    std::cout << "Test events simultaneously (device " << dv_ind << ")" << std::endl;
     std::cout << "****************************" << std::endl;
   }
 
@@ -239,9 +224,7 @@ TestPerfCntrReadWrite::testEventsSimultaneously(amdsmi_processor_handle dv_ind) 
       continue;
     }
 
-    IF_VERB(STANDARD) {
-      std::cout << "Testing Event Group " << grp.name() << std::endl;
-    }
+    IF_VERB(STANDARD) { std::cout << "Testing Event Group " << grp.name() << std::endl; }
 
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_available_counters", "", VERB(STANDARD));
     ret =  amdsmi_get_gpu_available_counters(dv_ind, grp.group(),
@@ -253,20 +236,14 @@ TestPerfCntrReadWrite::testEventsSimultaneously(amdsmi_processor_handle dv_ind) 
     CHK_ERR_ASRT(ret)
 
     std::shared_ptr<amdsmi_event_handle_t> evt_handle(
-                                     new amdsmi_event_handle_t[avail_counters],
-                                     std::default_delete<amdsmi_event_handle_t[]>());
+        new amdsmi_event_handle_t[avail_counters], std::default_delete<amdsmi_event_handle_t[]>());
 
     uint32_t tmp, j;
     uint32_t num_created = 0;
 
-    for (uint32_t evnt = grp.first_evt(); evnt <= grp.last_evt();
-                                                     evnt += avail_counters) {
-      IF_VERB(STANDARD) {
-        std::cout << "\tTesting Event Type " << evnt << std::endl;
-      }
-      IF_VERB(STANDARD) {
-        std::cout << "\tCreating events..." << std::endl;
-      }
+    for (uint32_t evnt = grp.first_evt(); evnt <= grp.last_evt(); evnt += avail_counters) {
+      IF_VERB(STANDARD) { std::cout << "\tTesting Event Type " << evnt << std::endl; }
+      IF_VERB(STANDARD) { std::cout << "\tCreating events..." << std::endl; }
       for (j = 0; j < avail_counters; ++j) {
         tmp = static_cast<amdsmi_event_type_t>(evnt + j);
 
@@ -274,9 +251,7 @@ TestPerfCntrReadWrite::testEventsSimultaneously(amdsmi_processor_handle dv_ind) 
           break;
         }
 
-        IF_VERB(STANDARD) {
-          std::cout << "\tEvent Type " << tmp << std::endl;
-        }
+        IF_VERB(STANDARD) { std::cout << "\tEvent Type " << tmp << std::endl; }
 
         DISPLAY_AMDSMI_API("amdsmi_gpu_create_counter", "", VERB(STANDARD));
         ret = amdsmi_gpu_create_counter(dv_ind,
@@ -285,9 +260,7 @@ TestPerfCntrReadWrite::testEventsSimultaneously(amdsmi_processor_handle dv_ind) 
         CHK_ERR_ASRT(ret)
       }
       num_created = j;
-      IF_VERB(STANDARD) {
-        std::cout << "\tStart Counters..." << std::endl;
-      }
+      IF_VERB(STANDARD) { std::cout << "\tStart Counters..." << std::endl; }
       uint32_t tmp_cntrs;
 
       for (j = 0; j < num_created; ++j) {
@@ -309,9 +282,7 @@ TestPerfCntrReadWrite::testEventsSimultaneously(amdsmi_processor_handle dv_ind) 
 
       sleep(1);
 
-      IF_VERB(STANDARD) {
-        std::cout << "\tRead Counters..." << std::endl;
-      }
+      IF_VERB(STANDARD) { std::cout << "\tRead Counters..." << std::endl; }
       for (j = 0; j < num_created; ++j) {
         tmp = static_cast<amdsmi_event_type_t>(evnt + j);
 
@@ -351,18 +322,20 @@ void TestPerfCntrReadWrite::Run(void) {
     try {
       testEventsIndividually(dev_handle);
       testEventsSimultaneously(dev_handle);
-    } catch(amdsmi_status_t r) {
-       switch (r) {
-         case AMDSMI_STATUS_NOT_SUPPORTED:
-           std::cout << "The performance counter event tried is not "
-                                     "supported for this device" << std::endl;
-           break;
+    } catch (amdsmi_status_t r) {
+      switch (r) {
+        case AMDSMI_STATUS_NOT_SUPPORTED:
+          std::cout << "The performance counter event tried is not "
+                       "supported for this device"
+                    << std::endl;
+          break;
 
-         default:
-           std::cout << "Unexpected exception caught with amdsmi "
-                                         "return value of " << r << std::endl;
-       }
-    } catch(...) {
+        default:
+          std::cout << "Unexpected exception caught with amdsmi "
+                       "return value of "
+                    << r << std::endl;
+      }
+    } catch (...) {
       ASSERT_FALSE("Unexpected exception caught");
     }
   }

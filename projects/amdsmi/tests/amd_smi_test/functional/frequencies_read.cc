@@ -20,24 +20,26 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <iostream>
-#include <iomanip>
-#include <string>
+#include "frequencies_read.h"
 
 #include <gtest/gtest.h>
-#include "amd_smi/amdsmi.h"
-#include "frequencies_read.h"
+
+#include <cstdint>
+#include <iomanip>
+#include <iostream>
+#include <string>
+
 #include "../test_common.h"
+#include "amd_smi/amdsmi.h"
 
 TestFrequenciesRead::TestFrequenciesRead() : TestBase() {
   set_title("AMDSMI Frequencies Read Test");
-  set_description("The Frequency Read tests verifies that the "
-              "available and current frequency levels can be read properly.");
+  set_description(
+      "The Frequency Read tests verifies that the "
+      "available and current frequency levels can be read properly.");
 }
 
-TestFrequenciesRead::~TestFrequenciesRead(void) {
-}
+TestFrequenciesRead::~TestFrequenciesRead(void) {}
 
 void TestFrequenciesRead::SetUp(void) {
   TestBase::SetUp();
@@ -45,9 +47,7 @@ void TestFrequenciesRead::SetUp(void) {
   return;
 }
 
-void TestFrequenciesRead::DisplayTestInfo(void) {
-  TestBase::DisplayTestInfo();
-}
+void TestFrequenciesRead::DisplayTestInfo(void) { TestBase::DisplayTestInfo(); }
 
 void TestFrequenciesRead::DisplayResults(void) const {
   TestBase::DisplayResults();
@@ -60,19 +60,17 @@ void TestFrequenciesRead::Close() {
   TestBase::Close();
 }
 
-
-static void print_frequencies(amdsmi_frequencies_t *f, uint32_t *l = nullptr) {
+static void print_frequencies(amdsmi_frequencies_t* f, uint32_t* l = nullptr) {
   assert(f != nullptr);
   for (uint32_t clk_i = 0; clk_i < f->num_supported; ++clk_i) {
     std::string clk_i_str;
     if (f->has_deep_sleep) {
-      clk_i_str = (clk_i == 0) ? "S" : std::to_string(clk_i-1);
+      clk_i_str = (clk_i == 0) ? "S" : std::to_string(clk_i - 1);
     } else {
       clk_i_str = std::to_string(clk_i);
     }
-    std::cout << "\t**  " <<
-      std::setw(2) << std::right << clk_i_str << ": " <<
-      std::setw(11) << std::right << f->frequency[clk_i];
+    std::cout << "\t**  " << std::setw(2) << std::right << clk_i_str << ": " << std::setw(11)
+              << std::right << f->frequency[clk_i];
     if (l != nullptr) {
       std::cout << "T/s; x" << l[clk_i];
     } else {
@@ -118,7 +116,8 @@ void TestFrequenciesRead::Run(void) {
 
         if (err == AMDSMI_STATUS_UNEXPECTED_DATA) {
           // special driver issue, shouldn't normally occur
-          std::cerr << "WARN: Clock file [" << FreqEnumToStr(t) << "] exists on device [" << i << "] but empty!" << std::endl;
+          std::cerr << "WARN: Clock file [" << FreqEnumToStr(t) << "] exists on device [" << i
+                    << "] but empty!" << std::endl;
           std::cerr << "      Likely a driver issue!" << std::endl;
           return;
         }

@@ -20,17 +20,17 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-
-#include <iostream>
-#include <string>
-#include <map>
-
-#include <gtest/gtest.h>
-#include "amd_smi/amdsmi.h"
 #include "temp_read.h"
 #include "../test_common.h"
 
+#include <gtest/gtest.h>
+
+#include <cstdint>
+#include <iostream>
+#include <map>
+#include <string>
+
+#include "amd_smi/amdsmi.h"
 
 static const std::map<uint32_t, std::string> kTempSensorNameMap = {
     {AMDSMI_TEMPERATURE_TYPE_VRAM, "Memory"},
@@ -89,16 +89,15 @@ static const std::map<uint32_t, std::string> kTempSensorNameMap = {
     {AMDSMI_TEMPERATURE_TYPE_BASEBOARD_OAM_0_1_2_3_3V3_VR, "Baseboard OAM 0-1-2-3 3V3 VR"},
     {AMDSMI_TEMPERATURE_TYPE_BASEBOARD_OAM_4_5_6_7_3V3_VR, "Baseboard OAM 4-5-6-7 3V3 VR"},
     {AMDSMI_TEMPERATURE_TYPE_BASEBOARD_IBC_HSC, "Baseboard IBC HSC"},
-    {AMDSMI_TEMPERATURE_TYPE_BASEBOARD_IBC, "Baseboard IBC"}
-};
+    {AMDSMI_TEMPERATURE_TYPE_BASEBOARD_IBC, "Baseboard IBC"}};
 TestTempRead::TestTempRead() : TestBase() {
   set_title("AMDSMI Temp Read Test");
-  set_description("The Temperature Read tests verifies that the temperature "
-                   "monitors can be read properly.");
+  set_description(
+      "The Temperature Read tests verifies that the temperature "
+      "monitors can be read properly.");
 }
 
-TestTempRead::~TestTempRead(void) {
-}
+TestTempRead::~TestTempRead(void) {}
 
 void TestTempRead::SetUp(void) {
   TestBase::SetUp();
@@ -106,9 +105,7 @@ void TestTempRead::SetUp(void) {
   return;
 }
 
-void TestTempRead::DisplayTestInfo(void) {
-  TestBase::DisplayTestInfo();
-}
+void TestTempRead::DisplayTestInfo(void) { TestBase::DisplayTestInfo(); }
 
 void TestTempRead::DisplayResults(void) const {
   TestBase::DisplayResults();
@@ -120,7 +117,6 @@ void TestTempRead::Close() {
   // amdsmi_shut_down(), so it should be done after other hsa cleanup
   TestBase::Close();
 }
-
 
 void TestTempRead::Run(void) {
   amdsmi_status_t err;
@@ -172,35 +168,30 @@ void TestTempRead::Run(void) {
         DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
         ASSERT_EQ(err, AMDSMI_STATUS_INVAL);
 
-        IF_VERB(STANDARD) {
-          std::cout << "\t**" << label << ": " << val_i64 << "C" << std::endl;
-        }
+        IF_VERB(STANDARD) { std::cout << "\t**" << label << ": " << val_i64 << "C" << std::endl; }
       };
       for (type = AMDSMI_TEMPERATURE_TYPE_FIRST; type <= AMDSMI_TEMPERATURE_TYPE__MAX; ++type) {
         if (kTempSensorNameMap.find(type) == kTempSensorNameMap.end()) {
           continue;
         }
         IF_VERB(STANDARD) {
-          std::cout << "\t** **********" << kTempSensorNameMap.at(type) <<
-                                        " Temperatures **********" << std::endl;
+          std::cout << "\t** **********" << kTempSensorNameMap.at(type)
+                    << " Temperatures **********" << std::endl;
         }
         print_temp_metric(AMDSMI_TEMP_CURRENT, "Current Temp.");
         print_temp_metric(AMDSMI_TEMP_MAX, "Temperature max value");
         print_temp_metric(AMDSMI_TEMP_MIN, "Temperature min value");
-        print_temp_metric(AMDSMI_TEMP_MAX_HYST,
-                                  "Temperature hysteresis value for max limit");
-        print_temp_metric(AMDSMI_TEMP_MIN_HYST,
-                                  "Temperature hysteresis value for min limit");
+        print_temp_metric(AMDSMI_TEMP_MAX_HYST, "Temperature hysteresis value for max limit");
+        print_temp_metric(AMDSMI_TEMP_MIN_HYST, "Temperature hysteresis value for min limit");
         print_temp_metric(AMDSMI_TEMP_CRITICAL, "Temperature critical max value");
         print_temp_metric(AMDSMI_TEMP_CRITICAL_HYST,
-                             "Temperature hysteresis value for critical limit");
-        print_temp_metric(AMDSMI_TEMP_EMERGENCY,
-                                             "Temperature emergency max value");
+                          "Temperature hysteresis value for critical limit");
+        print_temp_metric(AMDSMI_TEMP_EMERGENCY, "Temperature emergency max value");
         print_temp_metric(AMDSMI_TEMP_EMERGENCY_HYST,
-                            "Temperature hysteresis value for emergency limit");
+                          "Temperature hysteresis value for emergency limit");
         print_temp_metric(AMDSMI_TEMP_CRIT_MIN, "Temperature critical min value");
         print_temp_metric(AMDSMI_TEMP_CRIT_MIN_HYST,
-                         "Temperature hysteresis value for critical min value");
+                          "Temperature hysteresis value for critical min value");
         print_temp_metric(AMDSMI_TEMP_OFFSET, "Temperature offset");
         print_temp_metric(AMDSMI_TEMP_LOWEST, "Historical minimum temperature");
         print_temp_metric(AMDSMI_TEMP_HIGHEST, "Historical maximum temperature");

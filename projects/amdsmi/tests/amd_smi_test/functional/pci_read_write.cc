@@ -20,27 +20,27 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-
-#include <iostream>
-#include <bitset>
-#include <string>
-#include <algorithm>
-
-#include <gtest/gtest.h>
-#include "amd_smi/amdsmi.h"
 #include "pci_read_write.h"
 #include "../test_common.h"
 
+#include <gtest/gtest.h>
+
+#include <algorithm>
+#include <bitset>
+#include <cstdint>
+#include <iostream>
+#include <string>
+
+#include "amd_smi/amdsmi.h"
 
 TestPciReadWrite::TestPciReadWrite() : TestBase() {
   set_title("AMDSMI PCIe Bandwidth Read/Write Test");
-  set_description("The PCIe Bandwidth tests verify that the PCIe bandwidth "
-                             "settings can be read and controlled properly.");
+  set_description(
+      "The PCIe Bandwidth tests verify that the PCIe bandwidth "
+      "settings can be read and controlled properly.");
 }
 
-TestPciReadWrite::~TestPciReadWrite(void) {
-}
+TestPciReadWrite::~TestPciReadWrite(void) {}
 
 void TestPciReadWrite::SetUp(void) {
   TestBase::SetUp();
@@ -48,9 +48,7 @@ void TestPciReadWrite::SetUp(void) {
   return;
 }
 
-void TestPciReadWrite::DisplayTestInfo(void) {
-  TestBase::DisplayTestInfo();
-}
+void TestPciReadWrite::DisplayTestInfo(void) { TestBase::DisplayTestInfo(); }
 
 void TestPciReadWrite::DisplayResults(void) const {
   TestBase::DisplayResults();
@@ -62,7 +60,6 @@ void TestPciReadWrite::Close() {
   // amdsmi_shut_down(), so it should be done after other hsa cleanup
   TestBase::Close();
 }
-
 
 void TestPciReadWrite::Run(void) {
   amdsmi_status_t ret;
@@ -125,8 +122,7 @@ void TestPciReadWrite::Run(void) {
       std::cout << "\tPCIe Throughput (1 sec.): " << std::endl;
       std::cout << "\t\tSent: " << sent << " bytes" << std::endl;
       std::cout << "\t\tReceived: " << received << " bytes" << std::endl;
-      std::cout << "\t\tMax Packet Size: " << max_pkt_sz << " bytes" <<
-                                                                    std::endl;
+      std::cout << "\t\tMax Packet Size: " << max_pkt_sz << " bytes" << std::endl;
       std::cout << std::endl;
     }
 
@@ -136,8 +132,9 @@ void TestPciReadWrite::Run(void) {
     DISPLAY_AMDSMI_STATUS(VERB(STANDARD), __FILE__, __LINE__, ret, AMDSMI_STATUS_SUCCESS);
     if (ret == AMDSMI_STATUS_NOT_SUPPORTED) {
       std::cout << "WARNING: Current PCIe bandwidth is not detected. "
-        "pp_dpm_pcie sysfs file is no longer supported on this device. "
-         "Aborting test." << std::endl;
+                   "pp_dpm_pcie sysfs file is no longer supported on this device. "
+                   "Aborting test."
+                << std::endl;
       // Verify api support checking functionality is working
       DISPLAY_AMDSMI_API("amdsmi_get_gpu_pci_bandwidth", "gpu=" + std::to_string(dv_ind),
                          VERB(STANDARD));
@@ -153,8 +150,7 @@ void TestPciReadWrite::Run(void) {
     CHK_ERR_ASRT(ret)
 
     IF_VERB(STANDARD) {
-      std::cout << "\tInitial PCIe BW index is " << bw.transfer_rate.current <<
-                                                                    std::endl;
+      std::cout << "\tInitial PCIe BW index is " << bw.transfer_rate.current << std::endl;
     }
     // Verify api support checking functionality is working
     // NOTE:  We expect AMDSMI_STATUS_NOT_SUPPORTED, if rsmi_pcie_bandwidth_t* is NULL
@@ -172,15 +168,12 @@ void TestPciReadWrite::Run(void) {
     // Then, set the bitmask to all bandwidths besides the initial BW
     freq_bitmask ^= (1 << bw.transfer_rate.current);
 
-    std::string freq_bm_str =
-               std::bitset<AMDSMI_MAX_NUM_FREQUENCIES>(freq_bitmask).to_string();
+    std::string freq_bm_str = std::bitset<AMDSMI_MAX_NUM_FREQUENCIES>(freq_bitmask).to_string();
 
-    freq_bm_str.erase(0, std::min(freq_bm_str.find_first_not_of('0'),
-                                                       freq_bm_str.size()-1));
+    freq_bm_str.erase(0, std::min(freq_bm_str.find_first_not_of('0'), freq_bm_str.size() - 1));
 
     IF_VERB(STANDARD) {
-    std::cout << "\tSetting bandwidth mask to " << "0b" << freq_bm_str <<
-                                                            " ..." << std::endl;
+      std::cout << "\tSetting bandwidth mask to " << "0b" << freq_bm_str << " ..." << std::endl;
     }
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_pci_bandwidth", "gpu=" + std::to_string(dv_ind),
                        VERB(STANDARD));
@@ -197,8 +190,7 @@ void TestPciReadWrite::Run(void) {
     CHK_ERR_ASRT(ret)
 
     IF_VERB(STANDARD) {
-      std::cout << "\tBandwidth is now index " << bw.transfer_rate.current <<
-                                                                      std::endl;
+      std::cout << "\tBandwidth is now index " << bw.transfer_rate.current << std::endl;
       std::cout << "\tResetting mask to all bandwidths." << std::endl;
     }
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_pci_bandwidth", "gpu=" + std::to_string(dv_ind),

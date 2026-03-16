@@ -20,30 +20,32 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include "mutual_exclusion.h"
 
+#include <gtest/gtest.h>
+
+#include <cstdint>
 #include <iostream>
 #include <string>
 
-#include <gtest/gtest.h>
 #include "amd_smi/amdsmi.h"
 #include "mutual_exclusion.h"
 #include "../test_common.h"
 
-#define  AMD_SMI_INIT_FLAG_RESRV_TEST1 0x800000000000000  //!< Reserved for test
+#define AMD_SMI_INIT_FLAG_RESRV_TEST1 0x800000000000000  //!< Reserved for test
 
 TestMutualExclusion::TestMutualExclusion() : TestBase() {
   set_title("Mutual Exclusion Test");
-  set_description("Verify that AMDSMI only allows 1 process at a time"
-    " to access AMDSMI resources (primarily sysfs files). This test has one "
-    "process that obtains the mutex that ensures only 1 process accesses a "
+  set_description(
+      "Verify that AMDSMI only allows 1 process at a time"
+      " to access AMDSMI resources (primarily sysfs files). This test has one "
+      "process that obtains the mutex that ensures only 1 process accesses a "
       "device's sysfs files at a time, and another process that attempts "
       "to access the device's sysfs files. The second process should fail "
       "in these attempts.");
 }
 
-TestMutualExclusion::~TestMutualExclusion(void) {
-}
+TestMutualExclusion::~TestMutualExclusion(void) {}
 
 extern amdsmi_status_t rsmi_test_sleep(uint32_t dv_ind, uint32_t seconds);
 
@@ -101,15 +103,11 @@ void TestMutualExclusion::SetUp(void) {
 }
 
 void TestMutualExclusion::DisplayTestInfo(void) {
-  IF_VERB(STANDARD) {
-    TestBase::DisplayTestInfo();
-  }
+  IF_VERB(STANDARD) { TestBase::DisplayTestInfo(); }
 }
 
 void TestMutualExclusion::DisplayResults(void) const {
-  IF_VERB(STANDARD) {
-    TestBase::DisplayResults();
-  }
+  IF_VERB(STANDARD) { TestBase::DisplayResults(); }
   return;
 }
 
@@ -119,8 +117,7 @@ void TestMutualExclusion::Close() {
   TestBase::Close();
 }
 
-extern amdsmi_status_t
-rsmi_test_sleep(uint32_t dv_ind, uint32_t seconds);
+extern amdsmi_status_t rsmi_test_sleep(uint32_t dv_ind, uint32_t seconds);
 
 void TestMutualExclusion::Run(void) {
   amdsmi_status_t ret;
@@ -132,14 +129,11 @@ void TestMutualExclusion::Run(void) {
 
   if (sleeper_process_) {
     IF_VERB(STANDARD) {
-      std::cout << "MUTEX_HOLDER process: started sleeping for 10 seconds..." <<
-                                                                     std::endl;
+      std::cout << "MUTEX_HOLDER process: started sleeping for 10 seconds..." << std::endl;
     }
     ret = rsmi_test_sleep(0, 10);
     ASSERT_EQ(ret, AMDSMI_STATUS_SUCCESS);
-    IF_VERB(STANDARD) {
-      std::cout << "MUTEX_HOLDER process: Sleep process woke up." << std::endl;
-    }
+    IF_VERB(STANDARD) { std::cout << "MUTEX_HOLDER process: Sleep process woke up." << std::endl; }
     pid_t cpid = wait(nullptr);
     ASSERT_EQ(cpid, child_);
   } else {
@@ -149,8 +143,9 @@ void TestMutualExclusion::Run(void) {
     TestBase::Run();
     IF_VERB(STANDARD) {
       std::cout << "TESTER process: verifing that all amdsmi_dev_* functions "
-                    "return AMDSMI_STATUS_BUSY because MUTEX_HOLDER process "
-                                               "holds the mutex" << std::endl;
+                   "return AMDSMI_STATUS_BUSY because MUTEX_HOLDER process "
+                   "holds the mutex"
+                << std::endl;
     }
     // Try all the device related rsmi calls. They should all fail with
     // AMDSMI_STATUS_BUSY
@@ -334,7 +329,8 @@ void TestMutualExclusion::Run(void) {
 
     IF_VERB(STANDARD) {
       std::cout << "TESTER process: Finished verifying that all "
-                "amdsmi_dev_* functions returned AMDSMI_STATUS_BUSY" << std::endl;
+                   "amdsmi_dev_* functions returned AMDSMI_STATUS_BUSY"
+                << std::endl;
     }
     exit(0);
   }
