@@ -2366,7 +2366,8 @@ Runtime::Runtime()
       ref_count_(0),
       kfd_version{},
       ipc_sock_server_fd_(0),
-      ipc_sock_server_thread_(nullptr) {
+      ipc_sock_server_thread_(nullptr),
+      thunkLoader_(nullptr) {
   virtual_mem_api_supported_ = false;
   aqlprofile_lib_ = nullptr;
   ipc_dmabuf_supported_ = false;
@@ -2535,6 +2536,7 @@ void Runtime::Unload() {
   thunkLoader_->DestroyThunkInstance();
 
   delete thunkLoader_;
+  thunkLoader_ = nullptr;
 }
 
 void Runtime::LoadExtensions() {
