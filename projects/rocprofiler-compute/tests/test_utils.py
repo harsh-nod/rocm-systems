@@ -7938,3 +7938,333 @@ def test_gpu_benchmark_locking(tmp_path, monkeypatch, capsys):
     assert "Waiting for GPU 0" in output
     assert "another rocprof-compute benchmark is in progress" in output
     assert "Acquired lock for GPU 0" in output
+
+
+# ---------------------------------------------------------------------------
+# Tests for call-tree functions (build/display)
+# ---------------------------------------------------------------------------
+
+from utils.tty import (  # noqa: E402
+    format_duration,
+    format_stats,
+    print_operator_node,
+    show_call_tree,
+)
+from utils.utils import (  # noqa: E402
+    CallTreeNode,
+    KernelStats,
+    build_call_trees,
+    parse_top_level_location,
+    rollup_node_stats,
+)
+
+
+class TestParseTopLevelLocation:
+    def test_normal_context_id(self):
+        assert parse_top_level_location("10@main.py:60/#10@main.py:21") == "main.py:60"
+
+    def test_single_entry(self):
+        assert parse_top_level_location("5@train.py:42") == "train.py:42"
+
+    def test_nan_returns_unknown(self):
+        assert parse_top_level_location(float("nan")) == "unknown:0"
+
+    def test_none_returns_unknown(self):
+        assert parse_top_level_location(None) == "unknown:0"
+
+    def test_empty_string_returns_unknown(self):
+        assert parse_top_level_location("") == "unknown:0"
+        assert parse_top_level_location("   ") == "unknown:0"
+
+    def test_no_at_sign(self):
+        assert parse_top_level_location("no_at_sign") == "unknown:0"
+
+    def test_no_colon_in_location(self):
+        assert parse_top_level_location("10@mainpy") == "unknown:0"
+
+
+class TestFormatDuration:
+    def test_microseconds(self):
+        assert "us" in format_duration(0.005)
+
+    def test_milliseconds(self):
+        assert format_duration(1.5) == "1.50 ms"
+
+    def test_boundary(self):
+        assert "ms" in format_duration(0.01)
+
+
+class TestFormatStats:
+    def test_basic(self):
+        result = format_stats(3, 1.5)
+        assert "kernel_launches: 3" in result
+        assert "total_duration: 1.50 ms" in result
+
+
+class TestRollupNodeStats:
+    def test_leaf_node(self):
+        node = CallTreeNode(name="leaf")
+        node.kernels["kern_a"] = KernelStats(launches=2, total_duration_ns=1000.0)
+        launches, dur_ns = rollup_node_stats(node)
+        assert launches == 2
+        assert dur_ns == 1000.0
+        assert node.kernel_launches == 2
+
+    def test_parent_rolls_up_children(self):
+        child = CallTreeNode(name="child")
+        child.kernels["kern_a"] = KernelStats(launches=3, total_duration_ns=3000.0)
+
+        parent = CallTreeNode(name="parent")
+        parent.children["child"] = child
+        parent.kernels["kern_b"] = KernelStats(launches=1, total_duration_ns=500.0)
+
+        rollup_node_stats(parent)
+        assert parent.kernel_launches == 4
+        assert child.kernel_launches == 3
+
+    def test_deep_hierarchy(self):
+        grandchild = CallTreeNode(name="grandchild")
+        grandchild.kernels["k"] = KernelStats(launches=1, total_duration_ns=100.0)
+
+        child = CallTreeNode(name="child")
+        child.children["grandchild"] = grandchild
+        child.kernels["k2"] = KernelStats(launches=2, total_duration_ns=200.0)
+
+        root = CallTreeNode(name="root")
+        root.children["child"] = child
+
+        rollup_node_stats(root)
+        assert grandchild.kernel_launches == 1
+        assert child.kernel_launches == 3
+        assert root.kernel_launches == 3
+
+
+class TestBuildCallTrees:
+    def test_empty_df(self):
+        df = pd.DataFrame()
+        assert build_call_trees(df) == {}
+
+    def test_missing_required_columns(self):
+        df = pd.DataFrame([{"Operator_Name": "a"}])
+        assert build_call_trees(df) == {}
+
+    def test_single_dispatch(self):
+        df = pd.DataFrame([
+            {
+                "Operator_Name": "torch.nn.Linear",
+                "Kernel_Name": "gemm_kernel",
+                "Context_Id": "10@train.py:42",
+                "Start_Timestamp_kernel": 1000,
+                "End_Timestamp_kernel": 2000,
+            }
+        ])
+        call_trees = build_call_trees(df)
+        assert "train.py:42" in call_trees
+        root = call_trees["train.py:42"]
+        assert root.kernel_launches == 1
+        assert "torch.nn.Linear" in root.children
+
+    def test_hierarchy_split(self):
+        df = pd.DataFrame([
+            {
+                "Operator_Name": "aten/linear/addmm",
+                "Kernel_Name": "gemm_kernel",
+                "Context_Id": "10@file.py:1",
+                "Start_Timestamp_kernel": 0,
+                "End_Timestamp_kernel": 1000,
+            }
+        ])
+        call_trees = build_call_trees(df)
+        root = call_trees["file.py:1"]
+        assert "aten" in root.children
+        assert "linear" in root.children["aten"].children
+        assert "addmm" in root.children["aten"].children["linear"].children
+
+    def test_multiple_dispatches_same_kernel(self):
+        rows = [
+            {
+                "Operator_Name": "op_a",
+                "Kernel_Name": "kern",
+                "Context_Id": "10@f.py:1",
+                "Start_Timestamp_kernel": i * 1000,
+                "End_Timestamp_kernel": (i + 1) * 1000,
+            }
+            for i in range(3)
+        ]
+        df = pd.DataFrame(rows)
+        call_trees = build_call_trees(df)
+        root = call_trees["f.py:1"]
+        assert root.kernel_launches == 3
+        leaf = root.children["op_a"]
+        assert leaf.kernels["kern"].launches == 3
+
+    def test_dedup_with_kernel_timestamps(self):
+        row = {
+            "Operator_Name": "op",
+            "Kernel_Name": "kern",
+            "Context_Id": "10@f.py:1",
+            "Start_Timestamp_kernel": 1000,
+            "End_Timestamp_kernel": 2000,
+        }
+        df = pd.DataFrame([row, row])
+        call_trees = build_call_trees(df)
+        assert call_trees["f.py:1"].kernel_launches == 1
+
+    def test_no_context_id_uses_unknown(self):
+        df = pd.DataFrame([
+            {
+                "Operator_Name": "op",
+                "Kernel_Name": "kern",
+                "Start_Timestamp_kernel": 0,
+                "End_Timestamp_kernel": 1000,
+            }
+        ])
+        call_trees = build_call_trees(df)
+        assert "unknown:0" in call_trees
+
+    def test_duration_rollup(self):
+        df = pd.DataFrame([
+            {
+                "Operator_Name": "parent/child",
+                "Kernel_Name": "kern_a",
+                "Context_Id": "10@f.py:1",
+                "Start_Timestamp_kernel": 0,
+                "End_Timestamp_kernel": 1_000_000,
+            },
+            {
+                "Operator_Name": "parent",
+                "Kernel_Name": "kern_b",
+                "Context_Id": "10@f.py:1",
+                "Start_Timestamp_kernel": 2_000_000,
+                "End_Timestamp_kernel": 3_000_000,
+            },
+        ])
+        call_trees = build_call_trees(df)
+        root = call_trees["f.py:1"]
+        assert root.kernel_launches == 2
+        parent_node = root.children["parent"]
+        assert parent_node.kernel_launches == 2
+        child_node = parent_node.children["child"]
+        assert child_node.kernel_launches == 1
+
+    def test_multiple_source_locations(self):
+        df = pd.DataFrame([
+            {
+                "Operator_Name": "op_a",
+                "Kernel_Name": "kern",
+                "Context_Id": "10@a.py:1",
+                "Start_Timestamp_kernel": 0,
+                "End_Timestamp_kernel": 1000,
+            },
+            {
+                "Operator_Name": "op_b",
+                "Kernel_Name": "kern",
+                "Context_Id": "10@b.py:2",
+                "Start_Timestamp_kernel": 0,
+                "End_Timestamp_kernel": 1000,
+            },
+        ])
+        call_trees = build_call_trees(df)
+        assert "a.py:1" in call_trees
+        assert "b.py:2" in call_trees
+
+
+class TestShowCallTree:
+    def test_prints_location_and_stats(self, capsys):
+        root = CallTreeNode(name="main.py:10")
+        root.kernel_launches = 1
+        root.total_duration_ms = 0.5
+        child = CallTreeNode(name="op_a")
+        child.kernel_launches = 1
+        child.total_duration_ms = 0.5
+        child.kernels["kern"] = KernelStats(launches=1, total_duration_ns=500_000.0)
+        root.children["op_a"] = child
+
+        show_call_tree({"main.py:10": root})
+        output = capsys.readouterr().out
+        assert "main.py:10" in output
+        assert "kernel_launches: 1" in output
+        assert "kern" in output
+
+    def test_sorted_by_duration_descending(self, capsys):
+        root_a = CallTreeNode(name="a.py:1")
+        root_a.total_duration_ms = 10.0
+        root_a.kernel_launches = 1
+        root_b = CallTreeNode(name="b.py:1")
+        root_b.total_duration_ms = 20.0
+        root_b.kernel_launches = 2
+
+        show_call_tree({"a.py:1": root_a, "b.py:1": root_b})
+        output = capsys.readouterr().out
+        assert output.index("b.py:1") < output.index("a.py:1")
+
+    def test_kernel_id_printed(self, capsys):
+        root = CallTreeNode(name="f.py:1")
+        root.kernel_launches = 1
+        root.total_duration_ms = 1.0
+        child = CallTreeNode(name="op")
+        child.kernel_launches = 1
+        child.total_duration_ms = 1.0
+        child.kernels["kern_x"] = KernelStats(
+            launches=1, total_duration_ns=1_000_000.0, kernel_id=42
+        )
+        root.children["op"] = child
+
+        show_call_tree({"f.py:1": root})
+        output = capsys.readouterr().out
+        assert "(id 42)" in output
+
+
+class TestPrintOperatorNode:
+    def test_branching_node_shows_stats(self, capsys):
+        node = CallTreeNode(name="branch")
+        node.kernel_launches = 2
+        node.total_duration_ms = 5.0
+        node.kernels["k1"] = KernelStats(launches=1, total_duration_ns=2_500_000.0)
+        node.kernels["k2"] = KernelStats(launches=1, total_duration_ns=2_500_000.0)
+
+        print_operator_node(node, depth=0)
+        output = capsys.readouterr().out
+        assert "kernel_launches: 2" in output
+        assert "k1" in output
+        assert "k2" in output
+
+    def test_non_branching_node_omits_inline_stats(self, capsys):
+        node = CallTreeNode(name="single")
+        node.kernel_launches = 1
+        node.total_duration_ms = 1.0
+        node.kernels["k1"] = KernelStats(launches=1, total_duration_ns=1_000_000.0)
+
+        print_operator_node(node, depth=0)
+        output = capsys.readouterr().out
+        lines = output.strip().split("\n")
+        assert "|- single" in lines[0]
+        assert "kernel_launches" not in lines[0]
+
+    def test_long_kernel_line_wraps_with_tree_indentation(self, capsys):
+        node = CallTreeNode(name="single")
+        node.kernel_launches = 1
+        node.total_duration_ms = 1.0
+        long_kernel_name = "K" * 220
+        node.kernels[long_kernel_name] = KernelStats(
+            launches=1,
+            total_duration_ns=1_000_000.0,
+            kernel_id=7,
+        )
+
+        print_operator_node(node, depth=0)
+        output_lines = capsys.readouterr().out.splitlines()
+
+        kernel_lines = [
+            line for line in output_lines if "(id 7)" in line or line.startswith("    ")
+        ]
+        assert any(line.startswith("    |- ") for line in kernel_lines)
+        wrapped_kernel_lines = [
+            line for line in kernel_lines if line.startswith("       ")
+        ]
+        assert wrapped_kernel_lines, (
+            "Expected wrapped continuation lines for long kernel names"
+        )
+        assert not any(line.strip().startswith("(id 7)") for line in output_lines), (
+            "Kernel suffix should not be detached onto its own line"
+        )
