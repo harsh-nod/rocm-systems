@@ -35,7 +35,20 @@ target_include_directories(b0a0_retarget_tool PRIVATE ${CMAKE_CURRENT_SOURCE_DIR
 add_executable(b0a0_hsaco_test tests/test_b0a0_hsaco.cpp)
 target_link_libraries(b0a0_hsaco_test PRIVATE rocr-hotswap)
 target_include_directories(b0a0_hsaco_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+find_program(LLVM_OBJDUMP_BIN llvm-objdump
+  HINTS ENV LLVM_OBJDUMP
+        /home/harmenon/dockerx/llvm-project/build/bin
+  NO_DEFAULT_PATH)
+if(NOT LLVM_OBJDUMP_BIN)
+  find_program(LLVM_OBJDUMP_BIN llvm-objdump)
+endif()
+if(NOT LLVM_OBJDUMP_BIN)
+  set(LLVM_OBJDUMP_BIN "llvm-objdump")
+endif()
+
 target_compile_definitions(b0a0_hsaco_test PRIVATE
   HSACO_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/hsaco_data"
+  LLVM_OBJDUMP="${LLVM_OBJDUMP_BIN}"
 )
 

@@ -46,12 +46,15 @@
 #include "hotswap_rules.hpp"
 #include "transpiler.hpp"
 
+#include <unistd.h>
+
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <string>
+#include <vector>
 
 namespace rocr {
 namespace hotswap {
@@ -449,9 +452,15 @@ int rocr_hotswap_retarget(void* elf_data, size_t elf_size,
 
 extern "C" __attribute__((visibility("default")))
 int rocr_hotswap_gfx1250_b0_to_a0(void* elf_data, size_t elf_size) {
-  auto result = rocr::hotswap::RetargetCodeObject(
-      elf_data, elf_size,
-      "amdgcn-amd-amdhsa--gfx1250", "amdgcn-amd-amdhsa--gfx1250");
+  void* out = nullptr;
+  size_t out_size = 0;
+  auto result = rocr::hotswap::RetargetCodeObjectB0A0Grow(
+      elf_data, elf_size, &out, &out_size);
+  if (out && out != elf_data) {
+    if (out_size <= elf_size)
+      std::memcpy(elf_data, out, out_size);
+    std::free(out);
+  }
   return result.rules_matched;
 }
 
@@ -473,7 +482,52 @@ int rocr_hotswap_classify_wmma_nops(const char* mnemonic, int* b0, int* a0) {
 }
 
 extern "C" __attribute__((visibility("default")))
-int rocr_hotswap_assemble_inst(const char* /*asm_str*/,
-                                uint8_t* /*out_bytes*/, int /*max_bytes*/) {
-  return -1;
+int rocr_hotswap_assemble_inst(const char* asm_str,
+                                uint8_t* out_bytes, int max_bytes) {
+  if (!asm_str || !out_bytes || max_bytes <= 0) return -1;
+
+  if (!rocr::hotswap::ComgrHotswapAvailable()) return -1;
+
+  // Build a minimal ELF with a .text section containing the instruction.
+  // Use the COMGR rewrite with B0_TO_A0 flag on a dummy ELF to trigger
+  // the assembly pipeline indirectly. For a clean approach, shell out to
+  // llvm-mc if available.
+  char tmpasm[] = "/tmp/hotswap_asm_XXXXXX";
+  int fd = mkstemp(tmpasm);
+  if (fd < 0) return -1;
+  std::string full_asm = ".text\n" + std::string(asm_str) + "\n";
+  write(fd, full_asm.c_str(), full_asm.size());
+  close(fd);
+
+  std::string tmpobj = std::string(tmpasm) + ".o";
+  const char* llvm_mc = std::getenv("HSA_HOTSWAP_LLVM_MC");
+  if (!llvm_mc || !*llvm_mc) llvm_mc = "llvm-mc";
+  std::string cmd = std::string(llvm_mc) + " -triple=amdgcn-amd-amdhsa -mcpu=gfx1250"
+      " -filetype=obj " + std::string(tmpasm) + " -o " + tmpobj + " 2>/dev/null";
+  int rc = system(cmd.c_str());
+  unlink(tmpasm);
+
+  if (rc != 0) {
+    unlink(tmpobj.c_str());
+    return -1;
+  }
+
+  // Read the object file and extract .text
+  std::ifstream ifs(tmpobj, std::ios::binary | std::ios::ate);
+  if (!ifs) { unlink(tmpobj.c_str()); return -1; }
+  auto sz = ifs.tellg();
+  ifs.seekg(0);
+  std::vector<uint8_t> obj(sz);
+  ifs.read(reinterpret_cast<char*>(obj.data()), sz);
+  ifs.close();
+  unlink(tmpobj.c_str());
+
+  rocr::hotswap::ElfInfo info;
+  if (!rocr::hotswap::ParseElfInfo(obj.data(), obj.size(), info))
+    return -1;
+  if (info.text_size == 0 || info.text_size > static_cast<uint64_t>(max_bytes))
+    return -1;
+
+  std::memcpy(out_bytes, obj.data() + info.text_offset, info.text_size);
+  return static_cast<int>(info.text_size);
 }
