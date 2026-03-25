@@ -243,6 +243,7 @@ if(ROCR_ENABLE_HOTSWAP)
     MC MCParser MCDisassembler Support)
   list(APPEND SRCS
     hotswap/hotswap.cpp
+    hotswap/hotswap_core.cpp
     hotswap/hotswap_rules.cpp
     hotswap/trampoline.cpp
     hotswap/transpiler.cpp)

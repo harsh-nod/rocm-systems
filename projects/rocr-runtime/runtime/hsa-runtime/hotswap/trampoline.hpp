@@ -48,15 +48,6 @@
 #include <string>
 #include <vector>
 
-namespace llvm {
-class MCSubtargetInfo;
-class MCInstrInfo;
-class MCRegisterInfo;
-class MCAsmInfo;
-class MCContext;
-class MCCodeEmitter;
-} // namespace llvm
-
 namespace rocr {
 namespace hotswap {
 
@@ -66,39 +57,6 @@ struct Trampoline {
   uint32_t original_size;     // Size of the original instruction
   std::vector<uint8_t> bytes; // Assembled trampoline bytes (replacement + branch back)
 };
-
-/// Build a trampoline for a size-changing rewrite.
-///
-/// The trampoline contains:
-///   1. The replacement instruction sequence (assembled from asm strings)
-///   2. An s_branch back to (original_offset + original_size)
-///
-/// The original instruction site will be overwritten with an s_branch
-/// to the trampoline (at trampoline_text_offset).
-///
-/// @param asm_lines             Assembly lines for the replacement sequence
-/// @param original_offset       Byte offset of the original instruction in .text
-/// @param original_size         Byte size of the original instruction
-/// @param trampoline_text_offset  Where the trampoline will be placed in .text
-/// @param cpu                   Target CPU string (e.g. "gfx1201")
-/// @param STI                   LLVM subtarget info
-/// @param MCII                  LLVM instruction info
-/// @param MRI                   LLVM register info
-/// @param MAI                   LLVM asm info
-/// @param Ctx                   LLVM MC context
-/// @param CE                    LLVM code emitter
-/// @return                      Assembled trampoline, or empty on error
-Trampoline BuildTrampoline(const std::vector<std::string>& asm_lines,
-                           uint64_t original_offset,
-                           uint32_t original_size,
-                           uint64_t trampoline_text_offset,
-                           const std::string& cpu,
-                           llvm::MCSubtargetInfo* STI,
-                           llvm::MCInstrInfo* MCII,
-                           llvm::MCRegisterInfo* MRI,
-                           const llvm::MCAsmInfo* MAI,
-                           llvm::MCContext* Ctx,
-                           llvm::MCCodeEmitter* CE);
 
 /// Encode an s_branch instruction to a relative target.
 /// The branch offset is in dwords, relative to the PC after the branch

@@ -29,6 +29,7 @@ llvm_map_components_to_libnames(LLVM_LIBS
 
 add_library(rocr-hotswap STATIC
   hotswap.cpp
+  hotswap_core.cpp
   hotswap_rules.cpp
   trampoline.cpp
   transpiler.cpp
