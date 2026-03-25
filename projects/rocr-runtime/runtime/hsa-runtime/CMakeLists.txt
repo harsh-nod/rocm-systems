@@ -233,25 +233,18 @@ set ( SRCS core/driver/driver.cpp
            libamdhsacode/amd_options.cpp
            libamdhsacode/amd_hsa_code.cpp)
 
-## Optional: HotSwap load-time ISA rewriting
+## Optional: HotSwap load-time ISA rewriting (LLVM-free, uses COMGR via dlopen)
 option(ROCR_ENABLE_HOTSWAP "Enable ROCm HotSwap load-time ISA rewriting" OFF)
 if(ROCR_ENABLE_HOTSWAP)
-  find_package(LLVM REQUIRED CONFIG)
-  message(STATUS "HotSwap: Found LLVM ${LLVM_PACKAGE_VERSION}")
-  llvm_map_components_to_libnames(HOTSWAP_LLVM_LIBS
-    AMDGPUDisassembler AMDGPUCodeGen AMDGPUDesc AMDGPUInfo AMDGPUAsmParser
-    MC MCParser MCDisassembler Support)
   list(APPEND SRCS
     hotswap/hotswap.cpp
     hotswap/hotswap_comgr_client.cpp
     hotswap/hotswap_core.cpp
     hotswap/hotswap_rules.cpp
-    hotswap/trampoline.cpp
-    hotswap/transpiler.cpp)
+    hotswap/trampoline.cpp)
   target_include_directories(${CORE_RUNTIME_TARGET} PRIVATE
-    ${LLVM_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}/hotswap)
-  target_link_libraries(${CORE_RUNTIME_TARGET} PRIVATE ${HOTSWAP_LLVM_LIBS})
+  target_link_libraries(${CORE_RUNTIME_TARGET} PRIVATE dl)
   target_compile_definitions(${CORE_RUNTIME_TARGET} PRIVATE ROCR_HOTSWAP_ENABLED=1)
 endif()
 
