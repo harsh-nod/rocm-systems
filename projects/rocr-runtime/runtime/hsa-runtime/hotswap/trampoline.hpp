@@ -107,9 +107,10 @@ Trampoline BuildTrampoline(const std::vector<std::string>& asm_lines,
 /// @param from_offset  Byte offset of the branch instruction in .text
 /// @param to_offset    Byte offset of the branch target in .text
 /// @param out_bytes    Output: 4 bytes of the encoded s_branch
+/// @param gfx12        Use GFX12 encoding (opcode 0x20) vs GFX9 (opcode 0x02)
 /// @return             true if the offset fits in 16-bit signed range
 bool EncodeSBranch(uint64_t from_offset, uint64_t to_offset,
-                   uint8_t out_bytes[4]);
+                   uint8_t out_bytes[4], bool gfx12 = false);
 
 /// Encode an s_nop 0 instruction (4 bytes).
 void EncodeSNop(uint8_t out_bytes[4]);

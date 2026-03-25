@@ -70,15 +70,19 @@ namespace rocr {
 namespace hotswap {
 
 // s_branch encoding: SOPP format
-// Bits [31:23] = 0b10111111 10 = 0xBF82 (s_branch opcode for GFX9+)
+// Bits [31:23] = 0b10111111_x (SOPP prefix)
+// Bits [22:16] = opcode
 // Bits [15:0]  = signed 16-bit offset in dwords (relative to PC after branch)
 //
-// For GFX10+/GFX11+/GFX12, the s_branch encoding is the same SOPP format.
-static constexpr uint32_t S_BRANCH_OPCODE = 0xBF820000u;
+// GFX12 renumbered SOPP opcodes:
+//   s_branch: opcode 0x20 → 0xBFA00000 (was opcode 0x02 → 0xBF820000 on GFX9)
+//   s_nop:    opcode 0x00 → 0xBF800000 (unchanged)
+static constexpr uint32_t S_BRANCH_GFX9   = 0xBF820000u;
+static constexpr uint32_t S_BRANCH_GFX12  = 0xBFA00000u;
 static constexpr uint32_t S_NOP_OPCODE    = 0xBF800000u;
 
 bool EncodeSBranch(uint64_t from_offset, uint64_t to_offset,
-                   uint8_t out_bytes[4]) {
+                   uint8_t out_bytes[4], bool gfx12) {
   // Branch offset is in dwords, relative to (from_offset + 4).
   // target_pc = (from_offset + 4) + offset_dwords * 4
   // offset_dwords = (to_offset - from_offset - 4) / 4
@@ -99,7 +103,8 @@ bool EncodeSBranch(uint64_t from_offset, uint64_t to_offset,
     return false;
   }
 
-  uint32_t encoded = S_BRANCH_OPCODE | (static_cast<uint16_t>(dword_offset) & 0xFFFF);
+  uint32_t opcode = gfx12 ? S_BRANCH_GFX12 : S_BRANCH_GFX9;
+  uint32_t encoded = opcode | (static_cast<uint16_t>(dword_offset) & 0xFFFF);
   std::memcpy(out_bytes, &encoded, 4);
   return true;
 }
@@ -124,8 +129,10 @@ Trampoline BuildTrampoline(const std::vector<std::string>& asm_lines,
   result.original_offset = original_offset;
   result.original_size = original_size;
 
-  // Build assembly source from lines
-  std::string asm_source;
+  Ctx->reset();
+
+  // Build assembly source from lines (prepend .text for LLVM MC context)
+  std::string asm_source = ".text\n";
   for (auto& line : asm_lines) {
     asm_source += line + "\n";
   }
@@ -295,7 +302,8 @@ Trampoline BuildTrampoline(const std::vector<std::string>& asm_lines,
   uint64_t branch_back_to = original_offset + original_size;
 
   uint8_t branch_bytes[4];
-  if (!EncodeSBranch(branch_back_from, branch_back_to, branch_bytes)) {
+  bool is_gfx12 = cpu.find("gfx12") == 0;
+  if (!EncodeSBranch(branch_back_from, branch_back_to, branch_bytes, is_gfx12)) {
     std::cerr << "hotswap: failed to encode return branch for trampoline\n";
     result.bytes.clear();
     return result;

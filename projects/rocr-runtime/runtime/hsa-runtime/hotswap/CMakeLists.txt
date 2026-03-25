@@ -37,7 +37,27 @@ add_library(rocr-hotswap STATIC
 target_include_directories(rocr-hotswap PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/..
+  ${CMAKE_CURRENT_SOURCE_DIR}/../inc
 )
 
 target_link_libraries(rocr-hotswap PUBLIC ${LLVM_LIBS})
 target_compile_definitions(rocr-hotswap PUBLIC ROCR_HOTSWAP_ENABLED=1)
+
+# ── Test targets ──────────────────────────────────────────────────────────────
+
+add_executable(hotswap_test tests/hotswap_test.cpp)
+target_link_libraries(hotswap_test PRIVATE rocr-hotswap)
+target_include_directories(hotswap_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_executable(b0a0_retarget_tool tests/test_b0a0_retarget.cpp)
+target_link_libraries(b0a0_retarget_tool PRIVATE rocr-hotswap)
+target_include_directories(b0a0_retarget_tool PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_executable(b0a0_hsaco_test tests/test_b0a0_hsaco.cpp)
+target_link_libraries(b0a0_hsaco_test PRIVATE rocr-hotswap)
+target_include_directories(b0a0_hsaco_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(b0a0_hsaco_test PRIVATE
+  HSACO_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/hsaco_data"
+  LLVM_OBJDUMP="${LLVM_DIR}/../../../bin/llvm-objdump"
+)
+

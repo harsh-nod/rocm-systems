@@ -1424,10 +1424,46 @@ hsa_status_t ExecutableImpl::LoadCodeObject(
   if (rocr::hotswap::IsEnabled()) {
     void* elfData = const_cast<void*>(static_cast<const void*>(code->ElfData()));
     size_t elfSize = code->ElfSize();
+    const char* hotswapRulesPath = std::getenv("HSA_HOTSWAP_RULES");
+    const bool hasHotswapRules = hotswapRulesPath && hotswapRulesPath[0];
+    const char* hotswapDumpElfPath = std::getenv("HSA_HOTSWAP_DUMP_ELF");
+
+    auto refreshLoadedCodeObject = [&]() {
+      objects.back() = std::make_shared<LoadedCodeObjectImpl>(this, agent, code->ElfData(), code->ElfSize());
+      loaded_code_objects.back() = std::static_pointer_cast<LoadedCodeObjectImpl>(objects.back());
+    };
+
+    auto dumpHotSwapElf = [&](const char* label) {
+      if (!hotswapDumpElfPath || !hotswapDumpElfPath[0]) {
+        return;
+      }
+      std::ofstream out(hotswapDumpElfPath, std::ios::binary);
+      if (!out) {
+        std::cerr << "hotswap: " << label << ": failed to open dump path '"
+                  << hotswapDumpElfPath << "'\n";
+        return;
+      }
+      out.write(reinterpret_cast<const char*>(elfData), static_cast<std::streamsize>(elfSize));
+      out.close();
+      std::cerr << "hotswap: " << label << ": dumped rewritten ELF to '"
+                << hotswapDumpElfPath << "' (" << elfSize << " bytes)\n";
+    };
+
+    bool needsRetarget = isaOverridden;
+    if (!needsRetarget && !hotswapTargetGfx.empty()) {
+      std::string targetIsaFull = std::string("amdgcn-amd-amdhsa--") + hotswapTargetGfx;
+      if (targetIsaFull == codeIsa) {
+        needsRetarget = true;
+        if (hotswapOriginalIsa.empty()) {
+          hotswapOriginalIsa = codeIsa;
+        }
+        std::cerr << "hotswap: same-ISA B0->A0 retarget for " << codeIsa << "\n";
+      }
+    }
 
     // If ISA was overridden, first retarget all instructions from the source
     // ISA to the target ISA, then apply any rewrite rules.
-    if (isaOverridden) {
+    if (needsRetarget) {
       // Determine the target ISA name from HSA_HOTSWAP_ISA_OVERRIDE
       std::string targetIsaName;
       if (!hotswapTargetGfx.empty()) {
@@ -1472,19 +1508,44 @@ hsa_status_t ExecutableImpl::LoadCodeObject(
             logger_ << "LoaderWarning: hotswap cross-family transpile failed\n";
           }
         } else {
-          // Same-family retarget (e.g., gfx950 → gfx942)
-          // Step 1: Retarget instructions from source ISA to target ISA
-          auto rt = rocr::hotswap::RetargetCodeObject(
-              elfData, elfSize, codeIsa, agentIsaName);
+          const bool isSameIsaGfx1250B0A0 =
+              (sourceIsa == "amdgcn-amd-amdhsa--gfx1250" &&
+               agentIsaName == "amdgcn-amd-amdhsa--gfx1250");
+          if (isSameIsaGfx1250B0A0) {
+            void* patchedData = elfData;
+            size_t patchedSize = elfSize;
+            auto rt = rocr::hotswap::RetargetCodeObjectB0A0Grow(
+                elfData, elfSize, &patchedData, &patchedSize);
+            if (rt.status == HSA_STATUS_SUCCESS && patchedData != elfData) {
+              elfData = patchedData;
+              elfSize = patchedSize;
+              code = std::make_unique<code::AmdHsaCode>();
+              if (!code->InitAsBuffer(elfData, elfSize)) {
+                std::cerr << "hotswap: B0->A0: failed to re-init code object with "
+                          << elfSize << " byte buffer\n";
+              } else {
+                refreshLoadedCodeObject();
+                dumpHotSwapElf("B0->A0");
+                std::cerr << "hotswap: B0->A0: code object re-initialized successfully\n";
+              }
+            } else if (rt.status != HSA_STATUS_SUCCESS) {
+              logger_ << "LoaderWarning: hotswap gfx1250 B0->A0 retarget failed\n";
+            }
+          } else {
+            // Same-family retarget (e.g., gfx950 → gfx942)
+            // Step 1: Retarget instructions from source ISA to target ISA
+            auto rt = rocr::hotswap::RetargetCodeObject(
+                elfData, elfSize, codeIsa, agentIsaName);
 
-          // Step 2: Only patch ELF metadata if retarget actually changed
-          // instructions. If it was skipped (e.g. LLVM limitation on
-          // subsequent code objects), don't patch — let the loader
-          // handle the unmodified code object normally.
-          if (rt.rules_matched > 0) {
-            rocr::hotswap::PatchElfIsa(elfData, elfSize, agentIsaName);
-          } else if (rt.status != HSA_STATUS_SUCCESS) {
-            logger_ << "LoaderWarning: hotswap ISA retarget failed\n";
+            // Step 2: Only patch ELF metadata if retarget actually changed
+            // instructions. If it was skipped (e.g. LLVM limitation on
+            // subsequent code objects), don't patch — let the loader
+            // handle the unmodified code object normally.
+            if (rt.rules_matched > 0) {
+              rocr::hotswap::PatchElfIsa(elfData, elfSize, agentIsaName);
+            } else if (rt.status != HSA_STATUS_SUCCESS) {
+              logger_ << "LoaderWarning: hotswap ISA retarget failed\n";
+            }
           }
         }
       }
@@ -1492,9 +1553,11 @@ hsa_status_t ExecutableImpl::LoadCodeObject(
 
     // Step 3: Apply rewrite rules (using original source ISA for matching,
     // or target ISA if retargeted)
-    auto rw = rocr::hotswap::RewriteCodeObject(elfData, elfSize, codeIsa);
-    if (rw.status != HSA_STATUS_SUCCESS) {
-      logger_ << "LoaderWarning: hotswap ISA rewrite failed\n";
+    if (hasHotswapRules) {
+      auto rw = rocr::hotswap::RewriteCodeObject(elfData, elfSize, codeIsa);
+      if (rw.status != HSA_STATUS_SUCCESS) {
+        logger_ << "LoaderWarning: hotswap ISA rewrite failed\n";
+      }
     }
   }
 #endif

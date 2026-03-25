@@ -133,7 +133,25 @@ RewriteResult RewriteCodeObjectGrow(const void* elf_data, size_t elf_size,
                                     void** out_data, size_t* out_size,
                                     const std::string& isa_name);
 
+/// Apply gfx1250 B0→A0 patches with ELF growth support.
+/// Always returns a new malloc'd buffer in out_data (caller must free).
+/// Unlike the in-place RetargetCodeObject, this handles tensor_load_to_lds
+/// patches that require appending trampolines beyond the existing .text.
+///
+/// @param elf_data     Pointer to input ELF buffer (read-only)
+/// @param elf_size     Size of the input ELF buffer
+/// @param out_data     Output: pointer to patched buffer (caller frees)
+/// @param out_size     Output: size of patched buffer
+/// @return             RewriteResult with status and statistics
+RewriteResult RetargetCodeObjectB0A0Grow(const void* elf_data, size_t elf_size,
+                                         void** out_data, size_t* out_size);
+
 } // namespace hotswap
 } // namespace rocr
+
+// C API for B0→A0 with ELF growth
+extern "C" int rocr_hotswap_gfx1250_b0_to_a0_grow(
+    const void* elf_data, size_t elf_size,
+    void** out_data, size_t* out_size);
 
 #endif // ROCR_HOTSWAP_HPP
