@@ -459,6 +459,8 @@ int rocr_hotswap_gfx1250_b0_to_a0(void* elf_data, size_t elf_size) {
   if (out && out != elf_data) {
     if (out_size <= elf_size)
       std::memcpy(elf_data, out, out_size);
+    else
+      result.rules_matched = 0;
     std::free(out);
   }
   return result.rules_matched;
