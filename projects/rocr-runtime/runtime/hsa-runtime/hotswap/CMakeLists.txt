@@ -52,3 +52,7 @@ target_compile_definitions(b0a0_hsaco_test PRIVATE
   LLVM_OBJDUMP="${LLVM_OBJDUMP_BIN}"
 )
 
+add_executable(dataflow_test tests/test_dataflow.cpp)
+target_link_libraries(dataflow_test PRIVATE dl)
+target_include_directories(dataflow_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
