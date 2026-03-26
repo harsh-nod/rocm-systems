@@ -63,3 +63,10 @@ add_executable(dataflow_test tests/test_dataflow.cpp)
 target_link_libraries(dataflow_test PRIVATE dl)
 target_include_directories(dataflow_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
+add_executable(transpiler_comgr_test tests/test_transpiler_comgr.cpp)
+target_link_libraries(transpiler_comgr_test PRIVATE rocr-hotswap pthread)
+target_include_directories(transpiler_comgr_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(transpiler_comgr_test PRIVATE
+  LLVM_OBJDUMP="${LLVM_OBJDUMP_BIN}"
+)
+
