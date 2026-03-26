@@ -70,3 +70,7 @@ target_compile_definitions(transpiler_comgr_test PRIVATE
   LLVM_OBJDUMP="${LLVM_OBJDUMP_BIN}"
 )
 
+add_executable(fuzz_hotswap tests/fuzz_hotswap.cpp)
+target_link_libraries(fuzz_hotswap PRIVATE rocr-hotswap)
+target_include_directories(fuzz_hotswap PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+

@@ -40,6 +40,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+// KEEP IN SYNC: ElfSection, ElfSymbol, ElfInfo, ParseElfInfo, ExtractCPU,
+// and FindKernelAtOffset are duplicated in
+// llvm-project/amd/comgr/src/comgr-hotswap-elf.h.
+
 #ifndef ROCR_HOTSWAP_CORE_HPP
 #define ROCR_HOTSWAP_CORE_HPP
 

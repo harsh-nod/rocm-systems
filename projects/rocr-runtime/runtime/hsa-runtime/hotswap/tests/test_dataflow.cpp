@@ -263,6 +263,65 @@ static void TestAlloc_PreferHighest() {
   Pass("TestAlloc_PreferHighest");
 }
 
+// ── Mutation Testing Approximation ────────────────────────────────────────────
+
+static void TestMutation_FlippedLiveness() {
+  // If liveness is flipped (ALL registers live), scratch allocator must
+  // allocate above KD range — never return a register within the KD range.
+  std::vector<int> all_live;
+  for (int i = 0; i < 64; i++) all_live.push_back(i);
+  int r = g_scratch_alloc(all_live.data(), all_live.size(), 64);
+  CHECK(r >= 64 || r == -1,
+        "flipped liveness (all live): allocator must go above KD or fail");
+  Pass("TestMutation_FlippedLiveness");
+}
+
+static void TestMutation_EmptyLiveness() {
+  // With empty live set and kd=32, allocator should return the highest
+  // dead register within KD range (v31).
+  int r = g_scratch_alloc(nullptr, 0, 32);
+  CHECK_EQ(r, 31, "empty liveness: should return highest dead in KD range");
+  Pass("TestMutation_EmptyLiveness");
+}
+
+static void TestMutation_DwarfExactValues() {
+  // Verify liveness at specific points returns exact register sets, not just
+  // "non-empty". This catches mutations that flip dataflow direction.
+  const char *lines[] = {
+      "v_mov_b32 v0, v1",      // def v0, use v1
+      "v_add_f32 v2, v0, v1",  // def v2, use v0, v1
+      "v_mul_f32 v3, v2, v0",  // def v3, use v2, v0
+      "s_endpgm"
+  };
+
+  // At inst 1 (v_add_f32): v0 and v1 must be live (used here), v2 not yet
+  int live1[256];
+  int n1 = g_liveness(lines, 4, kCPU, 1, live1, 256);
+  CHECK(n1 >= 0, "mutation dwarf liveness at inst 1 should succeed");
+  auto s1 = ToSet(live1, n1);
+  CHECK(s1.count(0), "mutation: v0 must be live at inst 1");
+  CHECK(s1.count(1), "mutation: v1 must be live at inst 1");
+  CHECK(!s1.count(2), "mutation: v2 must NOT be live before its def at inst 1");
+  CHECK(!s1.count(3), "mutation: v3 must NOT be live at inst 1");
+
+  // At inst 2 (v_mul_f32): v0 and v2 must be live, v1 may or may not be
+  int live2[256];
+  int n2 = g_liveness(lines, 4, kCPU, 2, live2, 256);
+  CHECK(n2 >= 0, "mutation dwarf liveness at inst 2 should succeed");
+  auto s2 = ToSet(live2, n2);
+  CHECK(s2.count(0), "mutation: v0 must be live at inst 2");
+  CHECK(s2.count(2), "mutation: v2 must be live at inst 2");
+  CHECK(!s2.count(3), "mutation: v3 must NOT be live before its def at inst 2");
+
+  // At inst 3 (s_endpgm): nothing should be live
+  int live3[256];
+  int n3 = g_liveness(lines, 4, kCPU, 3, live3, 256);
+  CHECK(n3 >= 0, "mutation dwarf liveness at s_endpgm should succeed");
+  CHECK_EQ(n3, 0, "mutation: nothing live at s_endpgm");
+
+  Pass("TestMutation_DwarfExactValues");
+}
+
 // ── Integration Test ─────────────────────────────────────────────────────────
 
 static void TestIntegration_LivenessAllocCombined() {
@@ -346,6 +405,11 @@ int main(int argc, char **argv) {
   TestAlloc_AboveKD();
   TestAlloc_Exhausted();
   TestAlloc_PreferHighest();
+
+  fprintf(stderr, "\n--- Mutation Testing Approximation ---\n");
+  TestMutation_FlippedLiveness();
+  TestMutation_EmptyLiveness();
+  TestMutation_DwarfExactValues();
 
   fprintf(stderr, "\n--- Integration Tests ---\n");
   TestIntegration_LivenessAllocCombined();
