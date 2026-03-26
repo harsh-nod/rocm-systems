@@ -52,6 +52,13 @@ target_compile_definitions(b0a0_hsaco_test PRIVATE
   LLVM_OBJDUMP="${LLVM_OBJDUMP_BIN}"
 )
 
+add_executable(dwarf_test tests/test_dwarf.cpp)
+target_link_libraries(dwarf_test PRIVATE rocr-hotswap)
+target_include_directories(dwarf_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(dwarf_test PRIVATE
+  HSACO_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/hsaco_data"
+)
+
 add_executable(dataflow_test tests/test_dataflow.cpp)
 target_link_libraries(dataflow_test PRIVATE dl)
 target_include_directories(dataflow_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
