@@ -9,8 +9,27 @@ import sys
 import tempfile
 from pathlib import Path
 
-LLVM_MC = "/home/nod/github/TheRock/therock-build/dist/rocm/lib/llvm/bin/llvm-mc"
-LLVM_OBJDUMP = "/home/nod/github/TheRock/therock-build/dist/rocm/lib/llvm/bin/llvm-objdump"
+import os
+import shutil
+
+def _find_tool(name, env_vars):
+    for env in env_vars:
+        val = os.environ.get(env)
+        if val and Path(val).exists():
+            return val
+    for candidate in [
+        f"/home/harmenon/dockerx/llvm-project/build/bin/{name}",
+        f"/home/nod/github/TheRock/therock-build/dist/rocm/lib/llvm/bin/{name}",
+    ]:
+        if Path(candidate).exists():
+            return candidate
+    found = shutil.which(name)
+    if found:
+        return found
+    return name
+
+LLVM_MC = _find_tool("llvm-mc", ["HSA_HOTSWAP_LLVM_MC", "LLVM_MC"])
+LLVM_OBJDUMP = _find_tool("llvm-objdump", ["HSA_HOTSWAP_LLVM_OBJDUMP", "LLVM_OBJDUMP"])
 
 # Translation rules (subset matching transpiler.cpp)
 MNEMONIC_MAP = {

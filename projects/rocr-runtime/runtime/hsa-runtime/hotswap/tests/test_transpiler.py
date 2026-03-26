@@ -13,7 +13,25 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-LLVM_MC = "/home/nod/github/TheRock/therock-build/dist/rocm/lib/llvm/bin/llvm-mc"
+import os
+import shutil
+
+def _find_llvm_mc():
+    env = os.environ.get("HSA_HOTSWAP_LLVM_MC") or os.environ.get("LLVM_MC")
+    if env and Path(env).exists():
+        return env
+    for candidate in [
+        "/home/harmenon/dockerx/llvm-project/build/bin/llvm-mc",
+        "/home/nod/github/TheRock/therock-build/dist/rocm/lib/llvm/bin/llvm-mc",
+    ]:
+        if Path(candidate).exists():
+            return candidate
+    found = shutil.which("llvm-mc")
+    if found:
+        return found
+    return "llvm-mc"
+
+LLVM_MC = _find_llvm_mc()
 
 @dataclass
 class TranslationTest:
