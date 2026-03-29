@@ -40,13 +40,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// KEEP IN SYNC: ElfSection, ElfSymbol, ElfInfo, ParseElfInfo, ExtractCPU,
-// and FindKernelAtOffset are duplicated in
-// llvm-project/amd/comgr/src/comgr-hotswap-elf.h.
-
 #ifndef ROCR_HOTSWAP_CORE_HPP
 #define ROCR_HOTSWAP_CORE_HPP
 
+#include "hotswap_shared_types.h"
 #include "trampoline.hpp"
 
 #include <cstddef>
@@ -59,38 +56,12 @@ namespace rocr {
 namespace hotswap {
 
 // ── ELF helpers ──────────────────────────────────────────────────────────────
-
-struct ElfSection {
-  uint32_t name_idx;
-  std::string name;
-  uint32_t type;
-  uint64_t offset;
-  uint64_t size;
-  uint64_t addr;
-};
-
-struct ElfSymbol {
-  std::string name;
-  uint64_t value;
-  uint64_t size;
-  uint8_t info;
-  uint16_t shndx;
-};
-
-struct ElfInfo {
-  std::vector<ElfSection> sections;
-  std::vector<ElfSymbol> symbols;
-  int text_section_idx = -1;
-  uint64_t text_offset = 0;
-  uint64_t text_size = 0;
-  uint64_t text_addr = 0;
-};
+// ElfSection, ElfSymbol, ElfInfo, and ExtractCPU are defined in
+// hotswap_shared_types.h (shared with COMGR's comgr-hotswap-elf.inc).
 
 bool ParseElfInfo(const uint8_t* elf, size_t elf_size, ElfInfo& info);
 
 std::string FindKernelAtOffset(const ElfInfo& elf_info, uint64_t text_offset);
-
-std::string ExtractCPU(const std::string& isa_name);
 
 // ── Instruction-level helpers (LLVM-free) ────────────────────────────────────
 

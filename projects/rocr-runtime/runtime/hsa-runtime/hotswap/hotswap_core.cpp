@@ -40,9 +40,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// KEEP IN SYNC: ElfSection, ElfSymbol, ElfInfo, ParseElfInfo, ExtractCPU,
-// and FindKernelAtOffset are duplicated in
-// llvm-project/amd/comgr/src/comgr-hotswap-elf.h.
+// ElfSection, ElfSymbol, ElfInfo, and ExtractCPU are defined in
+// hotswap_shared_types.h.  ParseElfInfo and FindKernelAtOffset are also
+// duplicated in llvm-project/amd/comgr/src/comgr-hotswap-elf.inc.
 
 #include "hotswap_core.hpp"
 #include "hotswap_rules.hpp"
