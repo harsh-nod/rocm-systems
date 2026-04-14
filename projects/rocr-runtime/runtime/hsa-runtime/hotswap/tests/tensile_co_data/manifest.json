@@ -1,0 +1,5138 @@
+{
+  "source": "hipblaslt-tensilelite",
+  "architecture": "gfx1250",
+  "code_objects": [
+    {
+      "file": "TensileLibrary_B8B8_B8B8_HA_Bias_SAB_SCD_SAV_UA_Type_B8B8_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 144112,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 774,
+        "ds_store": 652,
+        "s_wait": 897,
+        "buffer_load": 824,
+        "buffer_store": 248,
+        "v_fma": 244,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 16910
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_B8B8_HA_Bias_SAB_SCD_SAV_UA_Type_B8B8_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 122248,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 382,
+        "ds_store": 460,
+        "s_wait": 475,
+        "buffer_load": 684,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 13485
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_B8B8_HA_Bias_SAB_SCD_SAV_UA_Type_B8B8_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 125152,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 394,
+        "ds_store": 460,
+        "s_wait": 847,
+        "buffer_load": 676,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 14221
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_B8B8_HA_Bias_SAB_SCD_SAV_UA_Type_B8B8_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 111728,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 304,
+        "ds_store": 268,
+        "s_wait": 416,
+        "buffer_load": 532,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 12167
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_BB8_HA_Bias_SAB_SAV_UA_Type_B8B_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 131808,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 778,
+        "ds_store": 648,
+        "s_wait": 899,
+        "buffer_load": 824,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 15256
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_BB8_HA_Bias_SAB_SAV_UA_Type_B8B_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 100552,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 32,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 320,
+        "ds_store": 264,
+        "s_wait": 295,
+        "buffer_load": 408,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 10491
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_BB8_HA_Bias_SAB_SAV_UA_Type_B8B_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 112248,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 386,
+        "ds_store": 456,
+        "s_wait": 851,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 12448
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_BB8_HA_Bias_SAB_SAV_UA_Type_B8B_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 99144,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 304,
+        "ds_store": 264,
+        "s_wait": 420,
+        "buffer_load": 536,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 10407
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_B8F8_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 144264,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 774,
+        "ds_store": 652,
+        "s_wait": 897,
+        "buffer_load": 824,
+        "buffer_store": 248,
+        "v_fma": 244,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 16910
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_B8F8_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 122080,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 382,
+        "ds_store": 460,
+        "s_wait": 475,
+        "buffer_load": 684,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 13485
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_B8F8_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 125224,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 394,
+        "ds_store": 460,
+        "s_wait": 847,
+        "buffer_load": 676,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 14221
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_B8F8_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 111728,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 304,
+        "ds_store": 268,
+        "s_wait": 416,
+        "buffer_load": 532,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 12167
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_HB8_HA_Bias_SAB_SAV_UA_Type_B8H_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 129336,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 770,
+        "ds_store": 648,
+        "s_wait": 897,
+        "buffer_load": 824,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 390,
+        "v_pk": 256,
+        "total": 15007
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_HB8_HA_Bias_SAB_SAV_UA_Type_B8H_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 159392,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 84,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 566,
+        "ds_store": 652,
+        "s_wait": 699,
+        "buffer_load": 996,
+        "buffer_store": 384,
+        "v_fma": 342,
+        "v_cvt": 585,
+        "v_pk": 384,
+        "total": 17274
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_HB8_HA_Bias_SAB_SAV_UA_Type_B8H_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 109920,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 378,
+        "ds_store": 456,
+        "s_wait": 849,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 390,
+        "v_pk": 256,
+        "total": 12199
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_HB8_HA_Bias_SAB_SAV_UA_Type_B8H_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 49296,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 28,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 152,
+        "ds_store": 132,
+        "s_wait": 210,
+        "buffer_load": 268,
+        "buffer_store": 128,
+        "v_fma": 114,
+        "v_cvt": 195,
+        "v_pk": 128,
+        "total": 5089
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_SB8_HA_Bias_SAB_SAV_UA_Type_B8S_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 183712,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 63,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1274,
+        "ds_store": 1170,
+        "s_wait": 1202,
+        "buffer_load": 1374,
+        "buffer_store": 324,
+        "v_fma": 270,
+        "v_cvt": 204,
+        "v_pk": 288,
+        "total": 20835
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_SB8_HA_Bias_SAB_SAV_UA_Type_B8S_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 147104,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 60,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 570,
+        "ds_store": 722,
+        "s_wait": 645,
+        "buffer_load": 974,
+        "buffer_store": 324,
+        "v_fma": 270,
+        "v_cvt": 204,
+        "v_pk": 288,
+        "total": 15280
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_SB8_HA_Bias_SAB_SAV_UA_Type_B8S_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 160072,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 63,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 672,
+        "ds_store": 978,
+        "s_wait": 1154,
+        "buffer_load": 1230,
+        "buffer_store": 324,
+        "v_fma": 270,
+        "v_cvt": 204,
+        "v_pk": 288,
+        "total": 17357
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8B8_SB8_HA_Bias_SAB_SAV_UA_Type_B8S_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 203008,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 91,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 532,
+        "ds_store": 1304,
+        "s_wait": 1030,
+        "buffer_load": 1652,
+        "buffer_store": 468,
+        "v_fma": 384,
+        "v_cvt": 272,
+        "v_pk": 416,
+        "total": 21739
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_B8B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_B8B8_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 144120,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 774,
+        "ds_store": 652,
+        "s_wait": 897,
+        "buffer_load": 824,
+        "buffer_store": 248,
+        "v_fma": 244,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 16910
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_B8B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_B8B8_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 122088,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 382,
+        "ds_store": 460,
+        "s_wait": 475,
+        "buffer_load": 684,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 13485
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_B8B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_B8B8_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 125160,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 394,
+        "ds_store": 460,
+        "s_wait": 847,
+        "buffer_load": 676,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 14221
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_B8B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_B8B8_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 56848,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 28,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 152,
+        "ds_store": 134,
+        "s_wait": 208,
+        "buffer_load": 266,
+        "buffer_store": 120,
+        "v_fma": 130,
+        "v_cvt": 260,
+        "v_pk": 192,
+        "total": 6083
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_BB8F8_HA_Bias_SAB_SAV_UA_Type_B8B_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 121200,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 442,
+        "ds_store": 648,
+        "s_wait": 899,
+        "buffer_load": 824,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 13607
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_BB8F8_HA_Bias_SAB_SAV_UA_Type_B8B_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 110224,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 386,
+        "ds_store": 456,
+        "s_wait": 473,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 11931
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_BB8F8_HA_Bias_SAB_SAV_UA_Type_B8B_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 165160,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 84,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 574,
+        "ds_store": 652,
+        "s_wait": 1204,
+        "buffer_load": 996,
+        "buffer_store": 384,
+        "v_fma": 342,
+        "v_cvt": 873,
+        "v_pk": 384,
+        "total": 18294
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_BB8F8_HA_Bias_SAB_SAV_UA_Type_B8B_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 50472,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 28,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 152,
+        "ds_store": 132,
+        "s_wait": 210,
+        "buffer_load": 268,
+        "buffer_store": 128,
+        "v_fma": 114,
+        "v_cvt": 291,
+        "v_pk": 128,
+        "total": 5203
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_F8B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_B8F8_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 144120,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 774,
+        "ds_store": 652,
+        "s_wait": 897,
+        "buffer_load": 824,
+        "buffer_store": 248,
+        "v_fma": 244,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 16910
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_F8B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_B8F8_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 122256,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 382,
+        "ds_store": 460,
+        "s_wait": 475,
+        "buffer_load": 684,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 13485
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_F8B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_B8F8_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 184520,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 84,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 586,
+        "ds_store": 658,
+        "s_wait": 1198,
+        "buffer_load": 990,
+        "buffer_store": 360,
+        "v_fma": 390,
+        "v_cvt": 780,
+        "v_pk": 576,
+        "total": 20951
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_F8B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_B8F8_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 111736,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 304,
+        "ds_store": 268,
+        "s_wait": 416,
+        "buffer_load": 532,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 12167
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_HB8F8_HA_Bias_SAB_SAV_UA_Type_B8H_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 184184,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 84,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 986,
+        "ds_store": 844,
+        "s_wait": 1250,
+        "buffer_load": 1140,
+        "buffer_store": 384,
+        "v_fma": 342,
+        "v_cvt": 585,
+        "v_pk": 384,
+        "total": 21082
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_HB8F8_HA_Bias_SAB_SAV_UA_Type_B8H_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 107888,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 378,
+        "ds_store": 456,
+        "s_wait": 471,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 390,
+        "v_pk": 256,
+        "total": 11682
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_HB8F8_HA_Bias_SAB_SAV_UA_Type_B8H_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 109912,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 378,
+        "ds_store": 456,
+        "s_wait": 849,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 390,
+        "v_pk": 256,
+        "total": 12199
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_HB8F8_HA_Bias_SAB_SAV_UA_Type_B8H_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 49552,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 28,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 152,
+        "ds_store": 132,
+        "s_wait": 210,
+        "buffer_load": 268,
+        "buffer_store": 128,
+        "v_fma": 114,
+        "v_cvt": 195,
+        "v_pk": 128,
+        "total": 5089
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_SB8F8_HA_Bias_SAB_SAV_UA_Type_B8S_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 238104,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 91,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1490,
+        "ds_store": 1368,
+        "s_wait": 1557,
+        "buffer_load": 1700,
+        "buffer_store": 468,
+        "v_fma": 384,
+        "v_cvt": 272,
+        "v_pk": 416,
+        "total": 26837
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_SB8F8_HA_Bias_SAB_SAV_UA_Type_B8S_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 147296,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 60,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 570,
+        "ds_store": 722,
+        "s_wait": 645,
+        "buffer_load": 974,
+        "buffer_store": 324,
+        "v_fma": 270,
+        "v_cvt": 204,
+        "v_pk": 288,
+        "total": 15280
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_SB8F8_HA_Bias_SAB_SAV_UA_Type_B8S_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 160024,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 63,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 672,
+        "ds_store": 978,
+        "s_wait": 1154,
+        "buffer_load": 1230,
+        "buffer_store": 324,
+        "v_fma": 270,
+        "v_cvt": 204,
+        "v_pk": 288,
+        "total": 17357
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_SB8F8_HA_Bias_SAB_SAV_UA_Type_B8S_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 96504,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 35,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 228,
+        "ds_store": 652,
+        "s_wait": 510,
+        "buffer_load": 808,
+        "buffer_store": 180,
+        "v_fma": 156,
+        "v_cvt": 136,
+        "v_pk": 160,
+        "total": 9995
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_B8F8_SB8F8_UA_Type_B8S_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 27512,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 40,
+        "ds_store": 32,
+        "s_wait": 133,
+        "buffer_load": 164,
+        "buffer_store": 38,
+        "v_fma": 24,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 2293
+      },
+      "meta": {
+        "data_types": [
+          "BF8"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_Bias_UA_Type_BB_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 73544,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 10,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 340,
+        "ds_store": 36,
+        "s_wait": 524,
+        "buffer_load": 108,
+        "buffer_store": 76,
+        "v_fma": 48,
+        "v_cvt": 412,
+        "v_pk": 0,
+        "total": 7013
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_Bias_UA_Type_BB_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 63080,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 10,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 195,
+        "ds_store": 36,
+        "s_wait": 76,
+        "buffer_load": 108,
+        "buffer_store": 76,
+        "v_fma": 48,
+        "v_cvt": 412,
+        "v_pk": 0,
+        "total": 5581
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_Bias_UA_Type_BB_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 66160,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 10,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 195,
+        "ds_store": 36,
+        "s_wait": 524,
+        "buffer_load": 108,
+        "buffer_store": 76,
+        "v_fma": 48,
+        "v_cvt": 412,
+        "v_pk": 0,
+        "total": 6251
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_Bias_UA_Type_BB_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 55288,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 10,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 50,
+        "ds_store": 36,
+        "s_wait": 76,
+        "buffer_load": 108,
+        "buffer_store": 76,
+        "v_fma": 48,
+        "v_cvt": 412,
+        "v_pk": 0,
+        "total": 4767
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Bias_Grad_UA_Type_BB_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 41408,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 160,
+        "ds_store": 16,
+        "s_wait": 261,
+        "buffer_load": 75,
+        "buffer_store": 59,
+        "v_fma": 60,
+        "v_cvt": 182,
+        "v_pk": 20,
+        "total": 3752
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient",
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Bias_Grad_UA_Type_BB_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 36576,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 90,
+        "ds_store": 16,
+        "s_wait": 37,
+        "buffer_load": 75,
+        "buffer_store": 59,
+        "v_fma": 60,
+        "v_cvt": 182,
+        "v_pk": 20,
+        "total": 3090
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient",
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Bias_Grad_UA_Type_BB_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 38136,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 90,
+        "ds_store": 16,
+        "s_wait": 261,
+        "buffer_load": 75,
+        "buffer_store": 59,
+        "v_fma": 60,
+        "v_cvt": 182,
+        "v_pk": 20,
+        "total": 3425
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient",
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Bias_Grad_UA_Type_BB_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 33168,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 20,
+        "ds_store": 16,
+        "s_wait": 37,
+        "buffer_load": 75,
+        "buffer_store": 59,
+        "v_fma": 60,
+        "v_cvt": 182,
+        "v_pk": 20,
+        "total": 2737
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient",
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Bias_SAV_UA_Type_BB_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 318984,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 293,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1784,
+        "ds_store": 216,
+        "s_wait": 2103,
+        "buffer_load": 714,
+        "buffer_store": 1089,
+        "v_fma": 828,
+        "v_cvt": 2118,
+        "v_pk": 1320,
+        "total": 49032
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Bias_SAV_UA_Type_BB_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 470168,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 581,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 2530,
+        "ds_store": 248,
+        "s_wait": 405,
+        "buffer_load": 1122,
+        "buffer_store": 2145,
+        "v_fma": 1596,
+        "v_cvt": 4038,
+        "v_pk": 2600,
+        "total": 74284
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Bias_SAV_UA_Type_BB_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 38264,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 142,
+        "ds_store": 104,
+        "s_wait": 93,
+        "buffer_load": 114,
+        "buffer_store": 33,
+        "v_fma": 42,
+        "v_cvt": 128,
+        "v_pk": 40,
+        "total": 3276
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Bias_SAV_UA_Type_BB_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 255064,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 293,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1056,
+        "ds_store": 216,
+        "s_wait": 278,
+        "buffer_load": 714,
+        "buffer_store": 1089,
+        "v_fma": 828,
+        "v_cvt": 2118,
+        "v_pk": 1320,
+        "total": 37505
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Grad_UA_Type_BB_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 40008,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 160,
+        "ds_store": 16,
+        "s_wait": 261,
+        "buffer_load": 75,
+        "buffer_store": 33,
+        "v_fma": 60,
+        "v_cvt": 182,
+        "v_pk": 20,
+        "total": 3636
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Grad_UA_Type_BB_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 35176,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 90,
+        "ds_store": 16,
+        "s_wait": 37,
+        "buffer_load": 75,
+        "buffer_store": 33,
+        "v_fma": 60,
+        "v_cvt": 182,
+        "v_pk": 20,
+        "total": 2974
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Grad_UA_Type_BB_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 36744,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 90,
+        "ds_store": 16,
+        "s_wait": 261,
+        "buffer_load": 75,
+        "buffer_store": 33,
+        "v_fma": 60,
+        "v_cvt": 182,
+        "v_pk": 20,
+        "total": 3309
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_BB_HA_Grad_UA_Type_BB_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 31768,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 20,
+        "ds_store": 16,
+        "s_wait": 37,
+        "buffer_load": 75,
+        "buffer_store": 33,
+        "v_fma": 60,
+        "v_cvt": 182,
+        "v_pk": 20,
+        "total": 2621
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_SB_HA_Bias_SAV_UA_Type_BS_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 273208,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 297,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1348,
+        "ds_store": 1048,
+        "s_wait": 688,
+        "buffer_load": 1444,
+        "buffer_store": 1254,
+        "v_fma": 828,
+        "v_cvt": 138,
+        "v_pk": 1320,
+        "total": 39523
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_SB_HA_Bias_SAV_UA_Type_BS_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 269736,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 297,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1172,
+        "ds_store": 1048,
+        "s_wait": 692,
+        "buffer_load": 1444,
+        "buffer_store": 1254,
+        "v_fma": 828,
+        "v_cvt": 138,
+        "v_pk": 1320,
+        "total": 39237
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_SB_HA_Bias_SAV_UA_Type_BS_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 267688,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 297,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1236,
+        "ds_store": 1048,
+        "s_wait": 688,
+        "buffer_load": 1444,
+        "buffer_store": 1254,
+        "v_fma": 828,
+        "v_cvt": 138,
+        "v_pk": 1320,
+        "total": 38851
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_BB_SB_HA_Bias_SAV_UA_Type_BS_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 261952,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 297,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1060,
+        "ds_store": 1048,
+        "s_wait": 692,
+        "buffer_load": 1444,
+        "buffer_store": 1254,
+        "v_fma": 828,
+        "v_cvt": 138,
+        "v_pk": 1320,
+        "total": 37989
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_DD_DD_UA_Type_DD_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 22984,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 0,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 80,
+        "ds_store": 15,
+        "s_wait": 48,
+        "buffer_load": 23,
+        "buffer_store": 28,
+        "v_fma": 92,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 1710
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_DD_DD_UA_Type_DD_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 22984,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 0,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 80,
+        "ds_store": 15,
+        "s_wait": 48,
+        "buffer_load": 23,
+        "buffer_store": 28,
+        "v_fma": 92,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 1708
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_DD_DD_UA_Type_DD_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 22984,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 0,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 80,
+        "ds_store": 15,
+        "s_wait": 48,
+        "buffer_load": 23,
+        "buffer_store": 28,
+        "v_fma": 92,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 1708
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_DD_DD_UA_Type_DD_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 22984,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 0,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 80,
+        "ds_store": 15,
+        "s_wait": 48,
+        "buffer_load": 23,
+        "buffer_store": 28,
+        "v_fma": 92,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 1706
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_B8F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_F8B8_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 144120,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 774,
+        "ds_store": 652,
+        "s_wait": 897,
+        "buffer_load": 824,
+        "buffer_store": 248,
+        "v_fma": 244,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 16910
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_B8F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_F8B8_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 122088,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 382,
+        "ds_store": 460,
+        "s_wait": 475,
+        "buffer_load": 684,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 13485
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_B8F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_F8B8_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 187536,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 84,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 586,
+        "ds_store": 658,
+        "s_wait": 1454,
+        "buffer_load": 990,
+        "buffer_store": 360,
+        "v_fma": 390,
+        "v_cvt": 780,
+        "v_pk": 576,
+        "total": 21467
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_B8F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_F8B8_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 111736,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 304,
+        "ds_store": 268,
+        "s_wait": 416,
+        "buffer_load": 532,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 12167
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_BF8B8_HA_Bias_SAB_SAV_UA_Type_F8B_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 131824,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 778,
+        "ds_store": 648,
+        "s_wait": 899,
+        "buffer_load": 824,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 15256
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_BF8B8_HA_Bias_SAB_SAV_UA_Type_F8B_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 110240,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 386,
+        "ds_store": 456,
+        "s_wait": 473,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 11931
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_BF8B8_HA_Bias_SAB_SAV_UA_Type_F8B_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 112264,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 386,
+        "ds_store": 456,
+        "s_wait": 851,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 12448
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_BF8B8_HA_Bias_SAB_SAV_UA_Type_F8B_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 99160,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 304,
+        "ds_store": 264,
+        "s_wait": 420,
+        "buffer_load": 536,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 10407
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_F8F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_F8F8_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 144120,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 774,
+        "ds_store": 652,
+        "s_wait": 897,
+        "buffer_load": 824,
+        "buffer_store": 248,
+        "v_fma": 244,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 16910
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_F8F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_F8F8_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 122088,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 382,
+        "ds_store": 460,
+        "s_wait": 475,
+        "buffer_load": 684,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 13485
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_F8F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_F8F8_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 125160,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 394,
+        "ds_store": 460,
+        "s_wait": 847,
+        "buffer_load": 676,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 14221
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_F8F8B8_HA_Bias_SAB_SCD_SAV_UA_Type_F8F8_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 56848,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 28,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 152,
+        "ds_store": 134,
+        "s_wait": 208,
+        "buffer_load": 266,
+        "buffer_store": 120,
+        "v_fma": 130,
+        "v_cvt": 260,
+        "v_pk": 192,
+        "total": 6083
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_HF8B8_HA_Bias_SAB_SAV_UA_Type_F8H_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 129344,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 770,
+        "ds_store": 648,
+        "s_wait": 897,
+        "buffer_load": 824,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 390,
+        "v_pk": 256,
+        "total": 15007
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_HF8B8_HA_Bias_SAB_SAV_UA_Type_F8H_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 107784,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 378,
+        "ds_store": 456,
+        "s_wait": 471,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 390,
+        "v_pk": 256,
+        "total": 11682
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_HF8B8_HA_Bias_SAB_SAV_UA_Type_F8H_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 161808,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 84,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 566,
+        "ds_store": 652,
+        "s_wait": 1202,
+        "buffer_load": 996,
+        "buffer_store": 384,
+        "v_fma": 342,
+        "v_cvt": 585,
+        "v_pk": 384,
+        "total": 17928
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_HF8B8_HA_Bias_SAB_SAV_UA_Type_F8H_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 96704,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 304,
+        "ds_store": 264,
+        "s_wait": 420,
+        "buffer_load": 536,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 390,
+        "v_pk": 256,
+        "total": 10179
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_SF8B8_HA_Bias_SAB_SAV_UA_Type_F8S_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 238256,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 91,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1490,
+        "ds_store": 1368,
+        "s_wait": 1557,
+        "buffer_load": 1700,
+        "buffer_store": 468,
+        "v_fma": 384,
+        "v_cvt": 272,
+        "v_pk": 416,
+        "total": 26837
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_SF8B8_HA_Bias_SAB_SAV_UA_Type_F8S_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 147120,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 60,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 570,
+        "ds_store": 722,
+        "s_wait": 645,
+        "buffer_load": 974,
+        "buffer_store": 324,
+        "v_fma": 270,
+        "v_cvt": 204,
+        "v_pk": 288,
+        "total": 15280
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_SF8B8_HA_Bias_SAB_SAV_UA_Type_F8S_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 219520,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 91,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 852,
+        "ds_store": 1496,
+        "s_wait": 1459,
+        "buffer_load": 1796,
+        "buffer_store": 468,
+        "v_fma": 384,
+        "v_cvt": 272,
+        "v_pk": 416,
+        "total": 24157
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_SF8B8_HA_Bias_SAB_SAV_UA_Type_F8S_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 143792,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 63,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 380,
+        "ds_store": 786,
+        "s_wait": 722,
+        "buffer_load": 1086,
+        "buffer_store": 324,
+        "v_fma": 270,
+        "v_cvt": 204,
+        "v_pk": 288,
+        "total": 15012
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8B8_SF8B8_UA_Type_F8S_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 27512,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 40,
+        "ds_store": 32,
+        "s_wait": 133,
+        "buffer_load": 164,
+        "buffer_store": 38,
+        "v_fma": 24,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 2293
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_F8B8_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 144264,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 774,
+        "ds_store": 652,
+        "s_wait": 897,
+        "buffer_load": 824,
+        "buffer_store": 248,
+        "v_fma": 244,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 16910
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_F8B8_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 122248,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 382,
+        "ds_store": 460,
+        "s_wait": 475,
+        "buffer_load": 684,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 13485
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_F8B8_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 125224,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 394,
+        "ds_store": 460,
+        "s_wait": 847,
+        "buffer_load": 676,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 14221
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_B8F8_HA_Bias_SAB_SCD_SAV_UA_Type_F8B8_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 111728,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 304,
+        "ds_store": 268,
+        "s_wait": 416,
+        "buffer_load": 532,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 12167
+      },
+      "meta": {
+        "data_types": [
+          "FP8",
+          "BF8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_BF8_HA_Bias_SAB_SAV_UA_Type_F8B_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 131816,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 778,
+        "ds_store": 648,
+        "s_wait": 899,
+        "buffer_load": 824,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 15256
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_BF8_HA_Bias_SAB_SAV_UA_Type_F8B_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 110224,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 386,
+        "ds_store": 456,
+        "s_wait": 473,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 11931
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_BF8_HA_Bias_SAB_SAV_UA_Type_F8B_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 112256,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 386,
+        "ds_store": 456,
+        "s_wait": 851,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 582,
+        "v_pk": 256,
+        "total": 12448
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_BF8_HA_Bias_SAB_SAV_UA_Type_F8B_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 50472,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 28,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 152,
+        "ds_store": 132,
+        "s_wait": 210,
+        "buffer_load": 268,
+        "buffer_store": 128,
+        "v_fma": 114,
+        "v_cvt": 291,
+        "v_pk": 128,
+        "total": 5203
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_F8F8_HA_Bias_SAB_SCD_SAV_UA_Type_F8F8_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 144264,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 774,
+        "ds_store": 652,
+        "s_wait": 897,
+        "buffer_load": 824,
+        "buffer_store": 248,
+        "v_fma": 244,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 16910
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_F8F8_HA_Bias_SAB_SCD_SAV_UA_Type_F8F8_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 122248,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 382,
+        "ds_store": 460,
+        "s_wait": 475,
+        "buffer_load": 684,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 13485
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_F8F8_HA_Bias_SAB_SCD_SAV_UA_Type_F8F8_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 125152,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 394,
+        "ds_store": 460,
+        "s_wait": 847,
+        "buffer_load": 676,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 14221
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_F8F8_HA_Bias_SAB_SCD_SAV_UA_Type_F8F8_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 111728,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 304,
+        "ds_store": 268,
+        "s_wait": 416,
+        "buffer_load": 532,
+        "buffer_store": 240,
+        "v_fma": 260,
+        "v_cvt": 520,
+        "v_pk": 384,
+        "total": 12167
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_HF8_HA_Bias_SAB_SAV_UA_Type_F8H_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 129336,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 770,
+        "ds_store": 648,
+        "s_wait": 897,
+        "buffer_load": 824,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 390,
+        "v_pk": 256,
+        "total": 15007
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_HF8_HA_Bias_SAB_SAV_UA_Type_F8H_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 107776,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 378,
+        "ds_store": 456,
+        "s_wait": 471,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 390,
+        "v_pk": 256,
+        "total": 11682
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_HF8_HA_Bias_SAB_SAV_UA_Type_F8H_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 109920,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 378,
+        "ds_store": 456,
+        "s_wait": 849,
+        "buffer_load": 680,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 390,
+        "v_pk": 256,
+        "total": 12199
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_HF8_HA_Bias_SAB_SAV_UA_Type_F8H_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 96696,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 56,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 304,
+        "ds_store": 264,
+        "s_wait": 420,
+        "buffer_load": 536,
+        "buffer_store": 256,
+        "v_fma": 228,
+        "v_cvt": 390,
+        "v_pk": 256,
+        "total": 10179
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_SF8_HA_Bias_SAB_SAV_UA_Type_F8S_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 183864,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 63,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1274,
+        "ds_store": 1170,
+        "s_wait": 1202,
+        "buffer_load": 1374,
+        "buffer_store": 324,
+        "v_fma": 270,
+        "v_cvt": 204,
+        "v_pk": 288,
+        "total": 20835
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_SF8_HA_Bias_SAB_SAV_UA_Type_F8S_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 147104,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 60,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 570,
+        "ds_store": 722,
+        "s_wait": 645,
+        "buffer_load": 974,
+        "buffer_store": 324,
+        "v_fma": 270,
+        "v_cvt": 204,
+        "v_pk": 288,
+        "total": 15280
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_SF8_HA_Bias_SAB_SAV_UA_Type_F8S_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 160072,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 63,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 672,
+        "ds_store": 978,
+        "s_wait": 1154,
+        "buffer_load": 1230,
+        "buffer_store": 324,
+        "v_fma": 270,
+        "v_cvt": 204,
+        "v_pk": 288,
+        "total": 17357
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_F8F8_SF8_HA_Bias_SAB_SAV_UA_Type_F8S_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 202840,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 91,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 532,
+        "ds_store": 1304,
+        "s_wait": 1030,
+        "buffer_load": 1652,
+        "buffer_store": 468,
+        "v_fma": 384,
+        "v_cvt": 272,
+        "v_pk": 416,
+        "total": 21739
+      },
+      "meta": {
+        "data_types": [
+          "FP8"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_Bias_UA_Type_HH_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 71984,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 10,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 340,
+        "ds_store": 36,
+        "s_wait": 524,
+        "buffer_load": 108,
+        "buffer_store": 76,
+        "v_fma": 48,
+        "v_cvt": 368,
+        "v_pk": 0,
+        "total": 6891
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_Bias_UA_Type_HH_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 61224,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 10,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 195,
+        "ds_store": 36,
+        "s_wait": 76,
+        "buffer_load": 108,
+        "buffer_store": 76,
+        "v_fma": 48,
+        "v_cvt": 368,
+        "v_pk": 0,
+        "total": 5451
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_Bias_UA_Type_HH_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 64328,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 10,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 195,
+        "ds_store": 36,
+        "s_wait": 524,
+        "buffer_load": 108,
+        "buffer_store": 76,
+        "v_fma": 48,
+        "v_cvt": 368,
+        "v_pk": 0,
+        "total": 6120
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_Bias_UA_Type_HH_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 53728,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 10,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 50,
+        "ds_store": 36,
+        "s_wait": 76,
+        "buffer_load": 108,
+        "buffer_store": 76,
+        "v_fma": 48,
+        "v_cvt": 368,
+        "v_pk": 0,
+        "total": 4645
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_Aux_SAV_UA_Type_HH_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 40448,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 212,
+        "ds_store": 104,
+        "s_wait": 93,
+        "buffer_load": 114,
+        "buffer_store": 54,
+        "v_fma": 42,
+        "v_cvt": 140,
+        "v_pk": 40,
+        "total": 3492
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_Aux_SAV_UA_Type_HH_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 39560,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 142,
+        "ds_store": 104,
+        "s_wait": 93,
+        "buffer_load": 114,
+        "buffer_store": 54,
+        "v_fma": 42,
+        "v_cvt": 140,
+        "v_pk": 40,
+        "total": 3384
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_Aux_SAV_UA_Type_HH_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 39560,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 142,
+        "ds_store": 104,
+        "s_wait": 93,
+        "buffer_load": 114,
+        "buffer_store": 54,
+        "v_fma": 42,
+        "v_cvt": 140,
+        "v_pk": 40,
+        "total": 3384
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_Aux_SAV_UA_Type_HH_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 38640,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 72,
+        "ds_store": 104,
+        "s_wait": 93,
+        "buffer_load": 114,
+        "buffer_store": 54,
+        "v_fma": 42,
+        "v_cvt": 140,
+        "v_pk": 40,
+        "total": 3267
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_Grad_UA_Type_HH_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 40752,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 160,
+        "ds_store": 16,
+        "s_wait": 261,
+        "buffer_load": 75,
+        "buffer_store": 59,
+        "v_fma": 60,
+        "v_cvt": 158,
+        "v_pk": 20,
+        "total": 3705
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient",
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_Grad_UA_Type_HH_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 35920,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 90,
+        "ds_store": 16,
+        "s_wait": 37,
+        "buffer_load": 75,
+        "buffer_store": 59,
+        "v_fma": 60,
+        "v_cvt": 158,
+        "v_pk": 20,
+        "total": 3043
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient",
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_Grad_UA_Type_HH_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 37480,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 90,
+        "ds_store": 16,
+        "s_wait": 261,
+        "buffer_load": 75,
+        "buffer_store": 59,
+        "v_fma": 60,
+        "v_cvt": 158,
+        "v_pk": 20,
+        "total": 3378
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient",
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_Grad_UA_Type_HH_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 32512,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 20,
+        "ds_store": 16,
+        "s_wait": 37,
+        "buffer_load": 75,
+        "buffer_store": 59,
+        "v_fma": 60,
+        "v_cvt": 158,
+        "v_pk": 20,
+        "total": 2690
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient",
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_SAV_UA_Type_HH_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 38712,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 212,
+        "ds_store": 104,
+        "s_wait": 93,
+        "buffer_load": 114,
+        "buffer_store": 33,
+        "v_fma": 42,
+        "v_cvt": 104,
+        "v_pk": 40,
+        "total": 3338
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_SAV_UA_Type_HH_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 37832,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 142,
+        "ds_store": 104,
+        "s_wait": 93,
+        "buffer_load": 114,
+        "buffer_store": 33,
+        "v_fma": 42,
+        "v_cvt": 104,
+        "v_pk": 40,
+        "total": 3230
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_SAV_UA_Type_HH_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 37832,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 142,
+        "ds_store": 104,
+        "s_wait": 93,
+        "buffer_load": 114,
+        "buffer_store": 33,
+        "v_fma": 42,
+        "v_cvt": 104,
+        "v_pk": 40,
+        "total": 3230
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Bias_SAV_UA_Type_HH_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 36912,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 72,
+        "ds_store": 104,
+        "s_wait": 93,
+        "buffer_load": 114,
+        "buffer_store": 33,
+        "v_fma": 42,
+        "v_cvt": 104,
+        "v_pk": 40,
+        "total": 3113
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Grad_UA_Type_HH_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 39368,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 160,
+        "ds_store": 16,
+        "s_wait": 261,
+        "buffer_load": 75,
+        "buffer_store": 33,
+        "v_fma": 60,
+        "v_cvt": 158,
+        "v_pk": 20,
+        "total": 3593
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Grad_UA_Type_HH_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 34536,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 90,
+        "ds_store": 16,
+        "s_wait": 37,
+        "buffer_load": 75,
+        "buffer_store": 33,
+        "v_fma": 60,
+        "v_cvt": 158,
+        "v_pk": 20,
+        "total": 2931
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Grad_UA_Type_HH_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 36104,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 90,
+        "ds_store": 16,
+        "s_wait": 261,
+        "buffer_load": 75,
+        "buffer_store": 33,
+        "v_fma": 60,
+        "v_cvt": 158,
+        "v_pk": 20,
+        "total": 3266
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_HH_HA_Grad_UA_Type_HH_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 31128,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 20,
+        "ds_store": 16,
+        "s_wait": 37,
+        "buffer_load": 75,
+        "buffer_store": 33,
+        "v_fma": 60,
+        "v_cvt": 158,
+        "v_pk": 20,
+        "total": 2578
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "gradient"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_SH_HA_Bias_SAV_UA_Type_HS_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 273088,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 297,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1348,
+        "ds_store": 1048,
+        "s_wait": 688,
+        "buffer_load": 1444,
+        "buffer_store": 1254,
+        "v_fma": 828,
+        "v_cvt": 138,
+        "v_pk": 1320,
+        "total": 39518
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_SH_HA_Bias_SAV_UA_Type_HS_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 269856,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 297,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1172,
+        "ds_store": 1048,
+        "s_wait": 692,
+        "buffer_load": 1444,
+        "buffer_store": 1254,
+        "v_fma": 828,
+        "v_cvt": 138,
+        "v_pk": 1320,
+        "total": 39232
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_SH_HA_Bias_SAV_UA_Type_HS_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 267680,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 297,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1236,
+        "ds_store": 1048,
+        "s_wait": 688,
+        "buffer_load": 1444,
+        "buffer_store": 1254,
+        "v_fma": 828,
+        "v_cvt": 138,
+        "v_pk": 1320,
+        "total": 38850
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_HH_SH_HA_Bias_SAV_UA_Type_HS_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 261824,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 297,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 1060,
+        "ds_store": 1048,
+        "s_wait": 692,
+        "buffer_load": 1444,
+        "buffer_store": 1254,
+        "v_fma": 828,
+        "v_cvt": 138,
+        "v_pk": 1320,
+        "total": 37988
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_I8I8_I8I8_HA_SAV_UA_Type_I8I8_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 56952,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 9,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 538,
+        "ds_store": 514,
+        "s_wait": 298,
+        "buffer_load": 524,
+        "buffer_store": 33,
+        "v_fma": 0,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 6144
+      },
+      "meta": {
+        "data_types": [
+          "INT8"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_I8I8_I8I8_HA_SAV_UA_Type_I8I8_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 40864,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 196,
+        "ds_store": 258,
+        "s_wait": 167,
+        "buffer_load": 268,
+        "buffer_store": 33,
+        "v_fma": 0,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 3768
+      },
+      "meta": {
+        "data_types": [
+          "INT8"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_I8I8_I8I8_HA_SAV_UA_Type_I8I8_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 51800,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 9,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 298,
+        "ds_store": 514,
+        "s_wait": 298,
+        "buffer_load": 524,
+        "buffer_store": 33,
+        "v_fma": 0,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 5352
+      },
+      "meta": {
+        "data_types": [
+          "INT8"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_I8I8_I8I8_HA_SAV_UA_Type_I8I8_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 48256,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 9,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 58,
+        "ds_store": 514,
+        "s_wait": 298,
+        "buffer_load": 524,
+        "buffer_store": 33,
+        "v_fma": 0,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 4968
+      },
+      "meta": {
+        "data_types": [
+          "INT8"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_I8I8_II8_HA_SAV_UA_Type_I8I_HPA_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 55472,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 9,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 538,
+        "ds_store": 514,
+        "s_wait": 298,
+        "buffer_load": 526,
+        "buffer_store": 38,
+        "v_fma": 0,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 5879
+      },
+      "meta": {
+        "data_types": [
+          "INT8"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_I8I8_II8_HA_SAV_UA_Type_I8I_HPA_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 39376,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 5,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 196,
+        "ds_store": 258,
+        "s_wait": 167,
+        "buffer_load": 270,
+        "buffer_store": 38,
+        "v_fma": 0,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 3503
+      },
+      "meta": {
+        "data_types": [
+          "INT8"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_I8I8_II8_HA_SAV_UA_Type_I8I_HPA_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 50320,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 9,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 298,
+        "ds_store": 514,
+        "s_wait": 298,
+        "buffer_load": 526,
+        "buffer_store": 38,
+        "v_fma": 0,
+        "v_cvt": 66,
+        "v_pk": 0,
+        "total": 5087
+      },
+      "meta": {
+        "data_types": [
+          "INT8"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_I8I8_II8_HA_SAV_UA_Type_I8I_HPA_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 104584,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 45,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 174,
+        "ds_store": 1028,
+        "s_wait": 609,
+        "buffer_load": 1088,
+        "buffer_store": 190,
+        "v_fma": 0,
+        "v_cvt": 132,
+        "v_pk": 0,
+        "total": 11351
+      },
+      "meta": {
+        "data_types": [
+          "INT8"
+        ],
+        "features": []
+      }
+    },
+    {
+      "file": "TensileLibrary_SS_SS_HA_Bias_SAB_SAV_MX_UA_Type_SS_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 34248,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 12,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 136,
+        "ds_store": 132,
+        "s_wait": 103,
+        "buffer_load": 148,
+        "buffer_store": 48,
+        "v_fma": 18,
+        "v_cvt": 323,
+        "v_pk": 0,
+        "total": 3104
+      },
+      "meta": {
+        "data_types": [
+          "MX"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_SS_SS_HA_Bias_SAB_SAV_MX_UA_Type_SS_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 77560,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 42,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 296,
+        "ds_store": 456,
+        "s_wait": 308,
+        "buffer_load": 504,
+        "buffer_store": 96,
+        "v_fma": 36,
+        "v_cvt": 1030,
+        "v_pk": 0,
+        "total": 7802
+      },
+      "meta": {
+        "data_types": [
+          "MX"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_SS_SS_HA_Bias_SAB_SAV_MX_UA_Type_SS_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 40480,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 21,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 148,
+        "ds_store": 260,
+        "s_wait": 172,
+        "buffer_load": 276,
+        "buffer_store": 48,
+        "v_fma": 18,
+        "v_cvt": 515,
+        "v_pk": 0,
+        "total": 4001
+      },
+      "meta": {
+        "data_types": [
+          "MX"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_SS_SS_HA_Bias_SAB_SAV_MX_UA_Type_SS_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 63808,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 24,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 80,
+        "ds_store": 232,
+        "s_wait": 190,
+        "buffer_load": 272,
+        "buffer_store": 96,
+        "v_fma": 36,
+        "v_cvt": 646,
+        "v_pk": 0,
+        "total": 5929
+      },
+      "meta": {
+        "data_types": [
+          "MX"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_SS_SS_HA_Bias_SAV_UA_Type_SS_Contraction_l_Ailk_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 34528,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 17,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 116,
+        "ds_store": 36,
+        "s_wait": 68,
+        "buffer_load": 48,
+        "buffer_store": 38,
+        "v_fma": 42,
+        "v_cvt": 66,
+        "v_pk": 40,
+        "total": 2802
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_SS_SS_HA_Bias_SAV_UA_Type_SS_Contraction_l_Ailk_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 34272,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 17,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 92,
+        "ds_store": 36,
+        "s_wait": 68,
+        "buffer_load": 48,
+        "buffer_store": 38,
+        "v_fma": 42,
+        "v_cvt": 66,
+        "v_pk": 40,
+        "total": 2814
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_SS_SS_HA_Bias_SAV_UA_Type_SS_Contraction_l_Alik_Bjlk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 34272,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 17,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 92,
+        "ds_store": 36,
+        "s_wait": 68,
+        "buffer_load": 48,
+        "buffer_store": 38,
+        "v_fma": 42,
+        "v_cvt": 66,
+        "v_pk": 40,
+        "total": 2814
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "TensileLibrary_SS_SS_HA_Bias_SAV_UA_Type_SS_Contraction_l_Alik_Bljk_Cijk_Dijk_ID73f0_gfx1250.co",
+      "size_bytes": 34064,
+      "kernels": [],
+      "instruction_counts": {
+        "v_wmma": 17,
+        "v_swmmac": 0,
+        "global_load": 0,
+        "global_store": 0,
+        "ds_load": 68,
+        "ds_store": 36,
+        "s_wait": 68,
+        "buffer_load": 48,
+        "buffer_store": 38,
+        "v_fma": 42,
+        "v_cvt": 66,
+        "v_pk": 40,
+        "total": 2790
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": [
+          "bias"
+        ]
+      }
+    },
+    {
+      "file": "Kernels.so-000-gfx1250.hsaco",
+      "size_bytes": 8760648,
+      "kernels": [
+        "Cijk_DD_GG_PostGSU16_VW1",
+        "Cijk_DD_GG_PostGSU16_VW2",
+        "Cijk_DD_GG_PostGSU2_VW1",
+        "Cijk_DD_GG_PostGSU2_VW2",
+        "Cijk_DD_GG_PostGSU4_VW1",
+        "Cijk_DD_GG_PostGSU4_VW2",
+        "Cijk_DD_GG_PostGSU8_VW1",
+        "Cijk_DD_GG_PostGSU8_VW2",
+        "Cijk_DD_PostGSU16_VW1",
+        "Cijk_DD_PostGSU16_VW2",
+        "Cijk_DD_PostGSU2_VW1",
+        "Cijk_DD_PostGSU2_VW2",
+        "Cijk_DD_PostGSU4_VW1",
+        "Cijk_DD_PostGSU4_VW2",
+        "Cijk_DD_PostGSU8_VW1",
+        "Cijk_DD_PostGSU8_VW2",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_II8_GG_HAI_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_II8_HAI_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_II_GG_HAI_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_II_HAI_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU16_VW1",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU16_VW2",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU16_VW4",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU2_VW1",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU2_VW2",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU2_VW4",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU4_VW1",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU4_VW2",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU4_VW4",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU8_VW1",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU8_VW2",
+        "Cijk_SB_DBiasB_BiasSrcA_PostGSU8_VW4",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU16_VW1",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU16_VW2",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU16_VW4",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU2_VW1",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU2_VW2",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU2_VW4",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU4_VW1",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU4_VW2",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU4_VW4",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU8_VW1",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU8_VW2",
+        "Cijk_SB_DBiasB_BiasSrcB_PostGSU8_VW4",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU16_VW1",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU16_VW2",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU16_VW4",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU2_VW1",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU2_VW2",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU2_VW4",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU4_VW1",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU4_VW2",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU4_VW4",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU8_VW1",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU8_VW2",
+        "Cijk_SB_DBiasB_BiasSrcD_GradB_HAS_PostGSU8_VW4",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU16_VW1",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU16_VW2",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU16_VW4",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU2_VW1",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU2_VW2",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU2_VW4",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU4_VW1",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU4_VW2",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU4_VW4",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU8_VW1",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU8_VW2",
+        "Cijk_SB_DBiasS_BiasSrcA_PostGSU8_VW4",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU16_VW1",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU16_VW2",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU16_VW4",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU2_VW1",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU2_VW2",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU2_VW4",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU4_VW1",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU4_VW2",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU4_VW4",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU8_VW1",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU8_VW2",
+        "Cijk_SB_DBiasS_BiasSrcB_PostGSU8_VW4",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU16_VW1",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU16_VW2",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU16_VW4",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU2_VW1",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU2_VW2",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU2_VW4",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU4_VW1",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU4_VW2",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU4_VW4",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU8_VW1",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU8_VW2",
+        "Cijk_SB_DBiasS_BiasSrcD_GradB_HAS_PostGSU8_VW4",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB_GG_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SB_GG_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU16_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU16_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU16_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU2_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU2_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU2_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU4_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU4_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU4_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU8_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU8_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcA_PostGSU8_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU16_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU16_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU16_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU2_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU2_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU2_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU4_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU4_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU4_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU8_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU8_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcB_PostGSU8_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU16_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU16_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU16_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU2_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU2_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU2_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU4_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU4_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU4_VW4",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU8_VW1",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU8_VW2",
+        "Cijk_SB_GG_DBiasB_BiasSrcD_GradB_HAS_PostGSU8_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU16_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU16_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU16_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU2_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU2_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU2_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU4_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU4_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU4_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU8_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU8_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcA_PostGSU8_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU16_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU16_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU16_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU2_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU2_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU2_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU4_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU4_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU4_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU8_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU8_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcB_PostGSU8_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU16_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU16_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU16_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU2_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU2_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU2_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU4_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU4_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU4_VW4",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU8_VW1",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU8_VW2",
+        "Cijk_SB_GG_DBiasS_BiasSrcD_GradB_HAS_PostGSU8_VW4",
+        "Cijk_SB_GG_GradB_HAS_PostGSU16_VW1",
+        "Cijk_SB_GG_GradB_HAS_PostGSU16_VW2",
+        "Cijk_SB_GG_GradB_HAS_PostGSU16_VW4",
+        "Cijk_SB_GG_GradB_HAS_PostGSU2_VW1",
+        "Cijk_SB_GG_GradB_HAS_PostGSU2_VW2",
+        "Cijk_SB_GG_GradB_HAS_PostGSU2_VW4",
+        "Cijk_SB_GG_GradB_HAS_PostGSU4_VW1",
+        "Cijk_SB_GG_GradB_HAS_PostGSU4_VW2",
+        "Cijk_SB_GG_GradB_HAS_PostGSU4_VW4",
+        "Cijk_SB_GG_GradB_HAS_PostGSU8_VW1",
+        "Cijk_SB_GG_GradB_HAS_PostGSU8_VW2",
+        "Cijk_SB_GG_GradB_HAS_PostGSU8_VW4",
+        "Cijk_SB_GG_PostGSU16_VW1",
+        "Cijk_SB_GG_PostGSU16_VW2",
+        "Cijk_SB_GG_PostGSU16_VW4",
+        "Cijk_SB_GG_PostGSU2_VW1",
+        "Cijk_SB_GG_PostGSU2_VW2",
+        "Cijk_SB_GG_PostGSU2_VW4",
+        "Cijk_SB_GG_PostGSU4_VW1",
+        "Cijk_SB_GG_PostGSU4_VW2",
+        "Cijk_SB_GG_PostGSU4_VW4",
+        "Cijk_SB_GG_PostGSU8_VW1",
+        "Cijk_SB_GG_PostGSU8_VW2",
+        "Cijk_SB_GG_PostGSU8_VW4",
+        "Cijk_SB_GradB_HAS_PostGSU16_VW1",
+        "Cijk_SB_GradB_HAS_PostGSU16_VW2",
+        "Cijk_SB_GradB_HAS_PostGSU16_VW4",
+        "Cijk_SB_GradB_HAS_PostGSU2_VW1",
+        "Cijk_SB_GradB_HAS_PostGSU2_VW2",
+        "Cijk_SB_GradB_HAS_PostGSU2_VW4",
+        "Cijk_SB_GradB_HAS_PostGSU4_VW1",
+        "Cijk_SB_GradB_HAS_PostGSU4_VW2",
+        "Cijk_SB_GradB_HAS_PostGSU4_VW4",
+        "Cijk_SB_GradB_HAS_PostGSU8_VW1",
+        "Cijk_SB_GradB_HAS_PostGSU8_VW2",
+        "Cijk_SB_GradB_HAS_PostGSU8_VW4",
+        "Cijk_SB_PostGSU16_VW1",
+        "Cijk_SB_PostGSU16_VW2",
+        "Cijk_SB_PostGSU16_VW4",
+        "Cijk_SB_PostGSU2_VW1",
+        "Cijk_SB_PostGSU2_VW2",
+        "Cijk_SB_PostGSU2_VW4",
+        "Cijk_SB_PostGSU4_VW1",
+        "Cijk_SB_PostGSU4_VW2",
+        "Cijk_SB_PostGSU4_VW4",
+        "Cijk_SB_PostGSU8_VW1",
+        "Cijk_SB_PostGSU8_VW2",
+        "Cijk_SB_PostGSU8_VW4",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SF8_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SF8_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SF8_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SF8_GG_BiasB_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SF8_GG_BiasH_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SF8_GG_BiasS_HAS_ScaleAB_ScaleCD_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU16_VW1",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU16_VW2",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU16_VW4",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU2_VW1",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU2_VW2",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU2_VW4",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU4_VW1",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU4_VW2",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU4_VW4",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU8_VW1",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU8_VW2",
+        "Cijk_SH_DBiasH_BiasSrcA_PostGSU8_VW4",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU16_VW1",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU16_VW2",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU16_VW4",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU2_VW1",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU2_VW2",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU2_VW4",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU4_VW1",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU4_VW2",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU4_VW4",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU8_VW1",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU8_VW2",
+        "Cijk_SH_DBiasH_BiasSrcB_PostGSU8_VW4",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU16_VW1",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU16_VW2",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU16_VW4",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU2_VW1",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU2_VW2",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU2_VW4",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU4_VW1",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU4_VW2",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU4_VW4",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU8_VW1",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU8_VW2",
+        "Cijk_SH_DBiasH_BiasSrcD_GradH_HAS_PostGSU8_VW4",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU16_VW1",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU16_VW2",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU16_VW4",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU2_VW1",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU2_VW2",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU2_VW4",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU4_VW1",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU4_VW2",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU4_VW4",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU8_VW1",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU8_VW2",
+        "Cijk_SH_DBiasS_BiasSrcA_PostGSU8_VW4",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU16_VW1",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU16_VW2",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU16_VW4",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU2_VW1",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU2_VW2",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU2_VW4",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU4_VW1",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU4_VW2",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU4_VW4",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU8_VW1",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU8_VW2",
+        "Cijk_SH_DBiasS_BiasSrcB_PostGSU8_VW4",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU16_VW1",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU16_VW2",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU16_VW4",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU2_VW1",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU2_VW2",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU2_VW4",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU4_VW1",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU4_VW2",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU4_VW4",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU8_VW1",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU8_VW2",
+        "Cijk_SH_DBiasS_BiasSrcD_GradH_HAS_PostGSU8_VW4",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_GG_BiasH_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_GG_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_GG_BiasS_AuxH_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SH_GG_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU16_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU16_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU16_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU2_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU2_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU2_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU4_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU4_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU4_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU8_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU8_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcA_PostGSU8_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU16_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU16_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU16_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU2_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU2_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU2_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU4_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU4_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU4_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU8_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU8_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcB_PostGSU8_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU16_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU16_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU16_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU2_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU2_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU2_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU4_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU4_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU4_VW4",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU8_VW1",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU8_VW2",
+        "Cijk_SH_GG_DBiasH_BiasSrcD_GradH_HAS_PostGSU8_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU16_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU16_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU16_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU2_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU2_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU2_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU4_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU4_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU4_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU8_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU8_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcA_PostGSU8_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU16_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU16_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU16_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU2_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU2_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU2_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU4_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU4_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU4_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU8_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU8_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcB_PostGSU8_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU16_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU16_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU16_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU2_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU2_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU2_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU4_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU4_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU4_VW4",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU8_VW1",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU8_VW2",
+        "Cijk_SH_GG_DBiasS_BiasSrcD_GradH_HAS_PostGSU8_VW4",
+        "Cijk_SH_GG_GradH_HAS_PostGSU16_VW1",
+        "Cijk_SH_GG_GradH_HAS_PostGSU16_VW2",
+        "Cijk_SH_GG_GradH_HAS_PostGSU16_VW4",
+        "Cijk_SH_GG_GradH_HAS_PostGSU2_VW1",
+        "Cijk_SH_GG_GradH_HAS_PostGSU2_VW2",
+        "Cijk_SH_GG_GradH_HAS_PostGSU2_VW4",
+        "Cijk_SH_GG_GradH_HAS_PostGSU4_VW1",
+        "Cijk_SH_GG_GradH_HAS_PostGSU4_VW2",
+        "Cijk_SH_GG_GradH_HAS_PostGSU4_VW4",
+        "Cijk_SH_GG_GradH_HAS_PostGSU8_VW1",
+        "Cijk_SH_GG_GradH_HAS_PostGSU8_VW2",
+        "Cijk_SH_GG_GradH_HAS_PostGSU8_VW4",
+        "Cijk_SH_GG_PostGSU16_VW1",
+        "Cijk_SH_GG_PostGSU16_VW2",
+        "Cijk_SH_GG_PostGSU16_VW4",
+        "Cijk_SH_GG_PostGSU2_VW1",
+        "Cijk_SH_GG_PostGSU2_VW2",
+        "Cijk_SH_GG_PostGSU2_VW4",
+        "Cijk_SH_GG_PostGSU4_VW1",
+        "Cijk_SH_GG_PostGSU4_VW2",
+        "Cijk_SH_GG_PostGSU4_VW4",
+        "Cijk_SH_GG_PostGSU8_VW1",
+        "Cijk_SH_GG_PostGSU8_VW2",
+        "Cijk_SH_GG_PostGSU8_VW4",
+        "Cijk_SH_GradH_HAS_PostGSU16_VW1",
+        "Cijk_SH_GradH_HAS_PostGSU16_VW2",
+        "Cijk_SH_GradH_HAS_PostGSU16_VW4",
+        "Cijk_SH_GradH_HAS_PostGSU2_VW1",
+        "Cijk_SH_GradH_HAS_PostGSU2_VW2",
+        "Cijk_SH_GradH_HAS_PostGSU2_VW4",
+        "Cijk_SH_GradH_HAS_PostGSU4_VW1",
+        "Cijk_SH_GradH_HAS_PostGSU4_VW2",
+        "Cijk_SH_GradH_HAS_PostGSU4_VW4",
+        "Cijk_SH_GradH_HAS_PostGSU8_VW1",
+        "Cijk_SH_GradH_HAS_PostGSU8_VW2",
+        "Cijk_SH_GradH_HAS_PostGSU8_VW4",
+        "Cijk_SH_PostGSU16_VW1",
+        "Cijk_SH_PostGSU16_VW2",
+        "Cijk_SH_PostGSU16_VW4",
+        "Cijk_SH_PostGSU2_VW1",
+        "Cijk_SH_PostGSU2_VW2",
+        "Cijk_SH_PostGSU2_VW4",
+        "Cijk_SH_PostGSU4_VW1",
+        "Cijk_SH_PostGSU4_VW2",
+        "Cijk_SH_PostGSU4_VW4",
+        "Cijk_SH_PostGSU8_VW1",
+        "Cijk_SH_PostGSU8_VW2",
+        "Cijk_SH_PostGSU8_VW4",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_GG_BiasB_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_GG_BiasH_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAB_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW1",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW2",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU16_VW4",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW1",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW2",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU2_VW4",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW1",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW2",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU4_VW4",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW1",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW2",
+        "Cijk_SS_GG_BiasS_HAS_ScaleAlphaVec_PostGSU8_VW4",
+        "Cijk_SS_GG_PostGSU16_VW1",
+        "Cijk_SS_GG_PostGSU16_VW2",
+        "Cijk_SS_GG_PostGSU16_VW4",
+        "Cijk_SS_GG_PostGSU2_VW1",
+        "Cijk_SS_GG_PostGSU2_VW2",
+        "Cijk_SS_GG_PostGSU2_VW4",
+        "Cijk_SS_GG_PostGSU4_VW1",
+        "Cijk_SS_GG_PostGSU4_VW2",
+        "Cijk_SS_GG_PostGSU4_VW4",
+        "Cijk_SS_GG_PostGSU8_VW1",
+        "Cijk_SS_GG_PostGSU8_VW2",
+        "Cijk_SS_GG_PostGSU8_VW4",
+        "Cijk_SS_PostGSU16_VW1",
+        "Cijk_SS_PostGSU16_VW2",
+        "Cijk_SS_PostGSU16_VW4",
+        "Cijk_SS_PostGSU2_VW1",
+        "Cijk_SS_PostGSU2_VW2",
+        "Cijk_SS_PostGSU2_VW4",
+        "Cijk_SS_PostGSU4_VW1",
+        "Cijk_SS_PostGSU4_VW2",
+        "Cijk_SS_PostGSU4_VW4",
+        "Cijk_SS_PostGSU8_VW1",
+        "Cijk_SS_PostGSU8_VW2",
+        "Cijk_SS_PostGSU8_VW4",
+        "Dijk_BS_MT128x2_VW1_Reduction",
+        "Dijk_BS_MT16x16_VW1_Reduction",
+        "Dijk_BS_MT256x1_VW1_Reduction",
+        "Dijk_BS_MT32x32_VW4_Reduction",
+        "Dijk_BS_MT32x8_VW1_Reduction",
+        "Dijk_BS_MT64x4_VW1_Reduction",
+        "Dijk_BS_MT8x32_VW1_Reduction",
+        "Dijk_HS_MT128x2_VW1_Reduction",
+        "Dijk_HS_MT16x16_VW1_Reduction",
+        "Dijk_HS_MT256x1_VW1_Reduction",
+        "Dijk_HS_MT32x32_VW4_Reduction",
+        "Dijk_HS_MT32x8_VW1_Reduction",
+        "Dijk_HS_MT64x4_VW1_Reduction",
+        "Dijk_HS_MT8x32_VW1_Reduction",
+        "Dijk_SS_MT128x2_VW1_Reduction",
+        "Dijk_SS_MT16x16_VW1_Reduction",
+        "Dijk_SS_MT256x1_VW1_Reduction",
+        "Dijk_SS_MT32x32_VW4_Reduction",
+        "Dijk_SS_MT32x8_VW1_Reduction",
+        "Dijk_SS_MT64x4_VW1_Reduction",
+        "Dijk_SS_MT8x32_VW1_Reduction"
+      ],
+      "instruction_counts": {
+        "v_wmma": 0,
+        "v_swmmac": 0,
+        "global_load": 6003,
+        "global_store": 184,
+        "ds_load": 279,
+        "ds_store": 45,
+        "s_wait": 152086,
+        "buffer_load": 41536,
+        "buffer_store": 1034,
+        "v_fma": 4390,
+        "v_cvt": 6987,
+        "v_pk": 97458,
+        "total": 1277306
+      },
+      "meta": {
+        "data_types": [
+          "unknown"
+        ],
+        "features": []
+      }
+    }
+  ]
+}

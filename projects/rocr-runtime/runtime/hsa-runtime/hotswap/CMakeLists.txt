@@ -74,3 +74,11 @@ add_executable(fuzz_hotswap tests/fuzz_hotswap.cpp)
 target_link_libraries(fuzz_hotswap PRIVATE rocr-hotswap)
 target_include_directories(fuzz_hotswap PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
+add_executable(tensile_co_test tests/test_tensile_co.cpp)
+target_link_libraries(tensile_co_test PRIVATE rocr-hotswap)
+target_include_directories(tensile_co_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(tensile_co_test PRIVATE
+  TENSILE_CO_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/tensile_co_data/code_objects"
+  LLVM_OBJDUMP="${LLVM_OBJDUMP_BIN}"
+)
+
