@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <set>
 #include <string>
+#include <cstdint>
 #include <vector>
 
 static const char *kCPU = "gfx1250";
